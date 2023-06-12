@@ -198,3 +198,4 @@ dependency-reduced-pom.xml
 README.html
 *.iml
 .exercism
+/.idea/
