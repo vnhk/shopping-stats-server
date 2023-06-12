@@ -1,4 +1,4 @@
-package com.shstat.shoppingstatsserver;
+package com.shstat.shstat;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
