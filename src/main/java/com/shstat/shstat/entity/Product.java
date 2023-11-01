@@ -1,9 +1,6 @@
 package com.shstat.shstat.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,12 +12,12 @@ import java.util.Set;
 @Setter
 public class Product {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private String url;
     private String href;
-    private Integer price;
-    @OneToMany
+    private String price;
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<ProductAttribute> attributes = new HashSet<>();
 }
