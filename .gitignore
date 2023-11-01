@@ -199,3 +199,4 @@ README.html
 *.iml
 .exercism
 /.idea/
+/src/main/resources/application-pi.properties
