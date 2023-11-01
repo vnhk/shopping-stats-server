@@ -1,21 +1,18 @@
 package com.shstat.shstat.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Entity
 @Getter
 @Setter
-public class ProductAttribute {
+public abstract class ProductAttribute {
     @Id
-    @GeneratedValue
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    protected Long id;
+    protected String name;
     @ManyToOne
-    private Product product;
-    private String name;
-    private String value;
+    protected Product product;
 }
