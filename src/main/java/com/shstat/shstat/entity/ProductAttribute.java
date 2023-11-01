@@ -13,6 +13,6 @@ public abstract class ProductAttribute {
     @GeneratedValue(strategy = GenerationType.AUTO)
     protected Long id;
     protected String name;
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     protected Product product;
 }
