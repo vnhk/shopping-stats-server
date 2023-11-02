@@ -21,8 +21,18 @@ public class Product {
     private String productListUrl;
     @ElementCollection
     private Set<String> categories = new HashSet<>();
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER, mappedBy = "product")
     private Set<ProductAttribute> attributes = new HashSet<>();
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    private Set<ProductBasedOnDateAttributes> perDateAttributes = new HashSet<>();
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "product")
+    private Set<ProductBasedOnDateAttributes> productBasedOnDateAttributes = new HashSet<>();
+
+    public void addAttribute(ProductAttribute productAttribute) {
+        this.attributes.add(productAttribute);
+        productAttribute.setProduct(this);
+    }
+
+    public void addAttribute(ProductBasedOnDateAttributes perDateAttributes) {
+        this.productBasedOnDateAttributes.add(perDateAttributes);
+        perDateAttributes.setProduct(this);
+    }
 }

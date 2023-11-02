@@ -12,9 +12,9 @@ import java.util.Date;
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "scrapDate"})})
 public class ProductBasedOnDateAttributes {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, optional = false)
     @JoinColumn(name = "product_id")
     private Product product;
     private String price;

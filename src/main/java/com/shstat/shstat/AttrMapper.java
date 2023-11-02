@@ -8,6 +8,8 @@ public interface AttrMapper {
     }
 
     static AttrMapper defaultMapping() {
-        return (val) -> val;
+        return (val) -> {
+            return val;
+        };
     }
 }
