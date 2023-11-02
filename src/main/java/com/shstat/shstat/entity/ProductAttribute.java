@@ -14,5 +14,6 @@ public abstract class ProductAttribute {
     protected Long id;
     protected String name;
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "product_id")
     protected Product product;
 }

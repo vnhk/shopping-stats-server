@@ -1,9 +1,15 @@
 package com.shstat.shstat;
 
+import com.shstat.shstat.entity.Product;
 import com.shstat.shstat.entity.ProductAttribute;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.NoRepositoryBean;
 
-@Repository
-public interface ProductAttributeRepository extends JpaRepository<ProductAttribute, Long> {
+import java.util.Optional;
+
+@NoRepositoryBean
+public interface ProductAttributeRepository<T extends ProductAttribute> extends JpaRepository<T, Long> {
+    Optional<? extends ProductAttribute> findByProductAndNameAndValue(Product product, String name, Object value);
+
+    Optional<? extends ProductAttribute> findByProductAndName(Product product, String name);
 }
