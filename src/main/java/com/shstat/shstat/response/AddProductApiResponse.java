@@ -1,4 +1,4 @@
-package com.shstat.shstat;
+package com.shstat.shstat.response;
 
 import lombok.Getter;
 import lombok.Setter;

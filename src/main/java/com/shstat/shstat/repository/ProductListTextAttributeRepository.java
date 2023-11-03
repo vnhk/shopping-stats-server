@@ -1,4 +1,4 @@
-package com.shstat.shstat;
+package com.shstat.shstat.repository;
 
 import com.shstat.shstat.entity.ProductListTextAttribute;
 import org.springframework.stereotype.Repository;
