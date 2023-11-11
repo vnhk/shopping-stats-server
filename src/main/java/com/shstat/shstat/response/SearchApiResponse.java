@@ -3,25 +3,37 @@ package com.shstat.shstat.response;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 @Getter
 @Setter
-public class SearchApiResponse extends ApiResponse {
+public class SearchApiResponse<T> extends ApiResponse {
     private Integer allFound;
     private Integer page;
     private Integer pageSize;
     private Integer currentFound;
-    private List<Map<String, Object>> products;
+    private Collection<T> items;
 
-    public SearchApiResponse(List<String> messages, List<Map<String, Object>> products) {
+    public SearchApiResponse(List<String> messages, Collection<T> items) {
         super(messages);
-        this.setProducts(products);
+        this.setItems(items);
+        this.page = 1;
+        this.pageSize = items.size();
+        this.allFound = items.size();
     }
 
-    public void setProducts(List<Map<String, Object>> products) {
-        this.products = products;
-        this.currentFound = products.size();
+    public SearchApiResponse(List<String> messages, Collection<T> items, Integer page,
+                             Integer pageSize, Integer allFound) {
+        super(messages);
+        this.setItems(items);
+        this.page = page;
+        this.pageSize = pageSize;
+        this.allFound = allFound;
+    }
+
+    public void setItems(Collection<T> items) {
+        this.items = items;
+        this.currentFound = items.size();
     }
 }

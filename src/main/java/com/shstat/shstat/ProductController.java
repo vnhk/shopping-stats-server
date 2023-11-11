@@ -33,4 +33,14 @@ public class ProductController {
                                                          @RequestParam(required = false) Integer priceMax) {
         return ResponseEntity.ok(searchService.getProducts(categories, name, shop, priceMin, priceMax));
     }
+
+    @GetMapping(path = "/name-list")
+    public ResponseEntity<ApiResponse> getProductList(@RequestParam String shop) {
+        return ResponseEntity.ok(searchService.findProductNames(shop));
+    }
+
+    @GetMapping(path = "/product")
+    public ResponseEntity<ApiResponse> findProduct(@RequestParam String shop, @RequestParam String name) {
+        return ResponseEntity.ok(searchService.findProduct(name, shop));
+    }
 }

@@ -8,7 +8,6 @@ import com.shstat.shstat.repository.ProductBasedOnDateAttributesRepository;
 import com.shstat.shstat.repository.ProductRepository;
 import com.shstat.shstat.response.AddProductApiResponse;
 import com.shstat.shstat.response.ApiResponse;
-import com.shstat.shstat.response.SearchApiResponse;
 import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.stereotype.Service;
 

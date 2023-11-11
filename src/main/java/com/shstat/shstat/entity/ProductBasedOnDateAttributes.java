@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
@@ -17,7 +18,17 @@ public class ProductBasedOnDateAttributes {
     @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, optional = false)
     @JoinColumn(name = "product_id")
     private Product product;
-    private String price;
+    private BigDecimal price;
     private String formattedScrapDate;
     private Date scrapDate;
+
+    public ProductBasedOnDateAttributes() {
+
+    }
+
+    public ProductBasedOnDateAttributes(BigDecimal price, Date scrapDate, String formattedScrapDate) {
+        this.price = price;
+        this.scrapDate = scrapDate;
+        this.formattedScrapDate = formattedScrapDate;
+    }
 }
