@@ -12,6 +12,7 @@ import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -47,7 +48,8 @@ public class ProductService {
 
         try {
             productPerDateAttributeProperties = List.of(
-                    AttrFieldMappingVal.of("Price", ProductBasedOnDateAttributes.class.getDeclaredField("price")),
+                    AttrFieldMappingVal.of("Price", ProductBasedOnDateAttributes.class.getDeclaredField("price"),
+                            (val) -> BigDecimal.valueOf(Double.parseDouble(val.toString()))),
                     AttrFieldMappingVal.of("Date", ProductBasedOnDateAttributes.class.getDeclaredField("scrapDate"),
                             (val) -> {
                                 if (val instanceof Long) {
