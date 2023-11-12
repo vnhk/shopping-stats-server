@@ -9,6 +9,8 @@ import com.shstat.shstat.repository.ProductRepository;
 import com.shstat.shstat.response.AddProductApiResponse;
 import com.shstat.shstat.response.ApiResponse;
 import org.apache.logging.log4j.message.StringFormattedMessage;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -49,7 +51,12 @@ public class ProductService {
         try {
             productPerDateAttributeProperties = List.of(
                     AttrFieldMappingVal.of("Price", ProductBasedOnDateAttributes.class.getDeclaredField("price"),
-                            (val) -> BigDecimal.valueOf(Double.parseDouble(val.toString()))),
+                            (val) -> {
+                                if (val.toString().isBlank()) {
+                                    return BigDecimal.valueOf(-1);
+                                }
+                                return BigDecimal.valueOf(Double.parseDouble(val.toString()));
+                            }),
                     AttrFieldMappingVal.of("Date", ProductBasedOnDateAttributes.class.getDeclaredField("scrapDate"),
                             (val) -> {
                                 if (val instanceof Long) {
@@ -172,20 +179,22 @@ public class ProductService {
     }
 
     private ProductBasedOnDateAttributes mapProductPerDateAttributes(Map<String, Object> productToMap, Product product) {
-        ProductBasedOnDateAttributes res = new ProductBasedOnDateAttributes();
+        BeanWrapper wrapper = new BeanWrapperImpl(ProductBasedOnDateAttributes.class);
+        Map<String, Object> productProperties = new HashMap<>();
         for (AttrFieldMappingVal<Field> perDateAttrs : productPerDateAttributeProperties) {
             try {
                 Object value = productToMap.get(perDateAttrs.attr);
                 Field field = perDateAttrs.val;
-                field.setAccessible(true);
                 value = perDateAttrs.mapper.map(value);
-                field.set(res, value);
-                field.setAccessible(false);
+                productProperties.put(field.getName(), value);
                 productToMap.remove(perDateAttrs.attr);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
+
+        wrapper.setPropertyValues(productProperties);
+        ProductBasedOnDateAttributes res = (ProductBasedOnDateAttributes) wrapper.getWrappedInstance();
 
         if (product.getId() != null &&
                 productBasedOnDateAttributesRepository.existsByProductAndScrapDate(product, res.getScrapDate())) {
@@ -208,20 +217,21 @@ public class ProductService {
     }
 
     private Product mapProductCommonAttr(Map<String, Object> product) {
-        Product res = new Product();
+        BeanWrapper wrapper = new BeanWrapperImpl(Product.class);
+        Map<String, Object> productProperties = new HashMap<>();
         for (AttrFieldMappingVal<Field> commonProductProperty : commonProductProperties) {
             try {
                 Object value = product.get(commonProductProperty.attr);
                 Field field = commonProductProperty.val;
-                field.setAccessible(true);
                 value = commonProductProperty.mapper.map(value);
-                field.set(res, value);
-                field.setAccessible(false);
+                productProperties.put(field.getName(), value);
                 product.remove(commonProductProperty.attr);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
+        wrapper.setPropertyValues(productProperties);
+        Product res = (Product) wrapper.getWrappedInstance();
 
         return findProductBasedOnAttributes(res);
     }
