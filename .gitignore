@@ -200,3 +200,4 @@ README.html
 .exercism
 /.idea/
 /src/main/resources/application-pi.properties
+/src/main/resources/application-pilocal.properties

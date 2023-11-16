@@ -92,7 +92,7 @@ public class ProductService {
                 System.err.println(e.getMessage());
                 messages.add(e.getMessage());
             }
-            System.out.println("Product " + i + " mapped. " + (products.size() - i) + " products left.");
+//            System.out.println("Product " + i + " mapped. " + (products.size() - i) + " products left.");
             i++;
         }
 
@@ -205,7 +205,7 @@ public class ProductService {
     }
 
     private Product findProductBasedOnAttributes(Product res) {
-        System.out.println("Looking for: " + res.getName() + ":");
+//        System.out.println("Looking for: " + res.getName() + ":");
         Optional<Product> product = productRepository.findByNameAndShopAndProductListNameAndProductListUrl(res.getName(), res.getShop(),
                 res.getProductListName(), res.getProductListUrl());
 
