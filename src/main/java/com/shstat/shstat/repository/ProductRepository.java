@@ -33,6 +33,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "          FROM Product p " +
             "             JOIN ProductBasedOnDateAttributes pd ON pd.product = p " +
             "          WHERE p.shop = :shop " +
+            "             AND pd.price <> -1" +
             "             AND p.name = :name)" +
             "   ORDER BY pd.scrapDate DESC LIMIT 1")
     ProductBasedOnDateAttributes lastMinPrice(String name, String shop);
@@ -47,6 +48,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "          FROM Product p " +
             "             JOIN ProductBasedOnDateAttributes pd ON pd.product = p " +
             "          WHERE p.shop = :shop " +
+            "             AND pd.price <> -1" +
             "             AND p.name = :name)" +
             "   ORDER BY pd.scrapDate DESC LIMIT 1")
     ProductBasedOnDateAttributes lastMaxPrice(String name, String shop);
@@ -55,6 +57,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value = "SELECT DISTINCT avg(pd.price) FROM Product p " +
             " JOIN ProductBasedOnDateAttributes pd ON " +
             " pd.product = p WHERE p.shop = :shop " +
+            " AND pd.price <> -1" +
             " AND p.name = :name")
     Double avgPrice(String name, String shop);
 }
