@@ -1,6 +1,8 @@
 package com.shstat.shstat.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,9 +17,15 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotNull
+    @Size(min = 3, max = 300)
     private String name;
+    @NotNull
+    @Size(min = 3, max = 150)
     private String shop;
+    @NotNull
     private String productListName;
+    @NotNull
     private String productListUrl;
     @ElementCollection
     private Set<String> categories = new HashSet<>();
