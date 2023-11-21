@@ -1,7 +1,7 @@
-package com.shstat.shstat.repository;
+package com.shstat.repository;
 
-import com.shstat.shstat.entity.Product;
-import com.shstat.shstat.entity.ProductAttribute;
+import com.shstat.entity.Product;
+import com.shstat.entity.ProductAttribute;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 

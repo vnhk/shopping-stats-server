@@ -1,4 +1,4 @@
-package com.shstat.shstat.entity;
+package com.shstat.entity;
 
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;

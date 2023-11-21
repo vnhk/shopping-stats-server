@@ -1,4 +1,4 @@
-package com.shstat.shstat;
+package com.shstat;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

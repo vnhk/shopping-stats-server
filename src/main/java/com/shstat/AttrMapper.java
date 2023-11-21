@@ -1,4 +1,4 @@
-package com.shstat.shstat;
+package com.shstat;
 
 public interface AttrMapper {
     Object map(Object val);

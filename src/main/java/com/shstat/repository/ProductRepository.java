@@ -1,7 +1,7 @@
-package com.shstat.shstat.repository;
+package com.shstat.repository;
 
-import com.shstat.shstat.entity.Product;
-import com.shstat.shstat.entity.ProductBasedOnDateAttributes;
+import com.shstat.entity.Product;
+import com.shstat.entity.ProductBasedOnDateAttributes;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -17,8 +17,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                                                            String productListName,
                                                                            String productListUrl);
 
-    List<Product> findByNameContainingAndShop(String name,
-                                              String shop);
+    List<Product> findByNameContainingAndShop(String name, String shop);
+
+    List<Product> findByNameContaining(String name);
 
     @Query(value = "SELECT DISTINCT p.name FROM Product p WHERE p.shop = :shop")
     Set<String> findProductNames(String shop);

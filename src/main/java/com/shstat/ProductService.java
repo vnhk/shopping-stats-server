@@ -1,13 +1,13 @@
-package com.shstat.shstat;
+package com.shstat;
 
-import com.shstat.shstat.entity.Product;
-import com.shstat.shstat.entity.ProductAttribute;
-import com.shstat.shstat.entity.ProductBasedOnDateAttributes;
-import com.shstat.shstat.entity.ProductListTextAttribute;
-import com.shstat.shstat.repository.ProductBasedOnDateAttributesRepository;
-import com.shstat.shstat.repository.ProductRepository;
-import com.shstat.shstat.response.AddProductApiResponse;
-import com.shstat.shstat.response.ApiResponse;
+import com.shstat.entity.Product;
+import com.shstat.entity.ProductAttribute;
+import com.shstat.entity.ProductBasedOnDateAttributes;
+import com.shstat.entity.ProductListTextAttribute;
+import com.shstat.repository.ProductBasedOnDateAttributesRepository;
+import com.shstat.repository.ProductRepository;
+import com.shstat.response.AddProductApiResponse;
+import com.shstat.response.ApiResponse;
 import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static com.shstat.shstat.AttrMapper.mappingError;
+import static com.shstat.AttrMapper.mappingError;
 
 @Service
 public class ProductService {

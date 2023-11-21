@@ -1,4 +1,4 @@
-package com.shstat.shstat;
+package com.shstat;
 
 import org.apache.logging.log4j.message.StringFormattedMessage;
 

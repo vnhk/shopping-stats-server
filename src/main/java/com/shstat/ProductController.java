@@ -1,6 +1,7 @@
-package com.shstat.shstat;
+package com.shstat;
 
-import com.shstat.shstat.response.ApiResponse;
+import com.shstat.response.ApiResponse;
+import com.shstat.response.SearchApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,6 @@ public class ProductController {
         return ResponseEntity.ok(productService.addProducts(products));
     }
 
-
     @GetMapping(path = "/basic-search")
     public ResponseEntity<ApiResponse> getLatestProducts(@RequestParam(required = false) String categories,
                                                          @RequestParam(required = false) String name,
@@ -36,11 +36,6 @@ public class ProductController {
 
     @GetMapping(path = "/name-list")
     public ResponseEntity<ApiResponse> getProductList(@RequestParam String shop) {
-        return ResponseEntity.ok(searchService.findProductNames(shop));
-    }
-
-    @GetMapping(path = "/product")
-    public ResponseEntity<ApiResponse> findProduct(@RequestParam String shop, @RequestParam String name) {
-        return ResponseEntity.ok(searchService.findProduct(name, shop));
+        return ResponseEntity.ok(new SearchApiResponse<>(searchService.findProductNames(shop)));
     }
 }

@@ -1,8 +1,9 @@
-package com.shstat.shstat.response;
+package com.shstat.response;
 
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -17,6 +18,14 @@ public class SearchApiResponse<T> extends ApiResponse {
 
     public SearchApiResponse(List<String> messages, Collection<T> items) {
         super(messages);
+        this.setItems(items);
+        this.page = 1;
+        this.pageSize = items.size();
+        this.allFound = items.size();
+    }
+
+    public SearchApiResponse(Collection<T> items) {
+        super(new ArrayList<>());
         this.setItems(items);
         this.page = 1;
         this.pageSize = items.size();

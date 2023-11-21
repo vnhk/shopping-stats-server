@@ -1,4 +1,4 @@
-package com.shstat.shstat.entity;
+package com.shstat.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

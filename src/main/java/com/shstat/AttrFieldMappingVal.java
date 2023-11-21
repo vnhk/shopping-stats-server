@@ -1,4 +1,4 @@
-package com.shstat.shstat;
+package com.shstat;
 
 public class AttrFieldMappingVal<T> {
     public String attr;

@@ -1,6 +1,6 @@
-package com.shstat.shstat.repository;
+package com.shstat.repository;
 
-import com.shstat.shstat.entity.ProductListTextAttribute;
+import com.shstat.entity.ProductListTextAttribute;
 import org.springframework.stereotype.Repository;
 
 @Repository
