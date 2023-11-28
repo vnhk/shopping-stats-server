@@ -1,5 +1,6 @@
 package com.shstat.summaryview;
 
+import com.shstat.DataHolder;
 import com.shstat.SearchService;
 import com.shstat.ViewBuilder;
 import com.shstat.dtomappers.BaseProductAttributesMapper;
@@ -29,7 +30,7 @@ public class SummaryViewService extends ViewBuilder {
         List<Product> products = searchService.findProducts(name);
         for (Product product : products) {
             ProductDTO productDTO = new ProductDTO();
-            mappers.forEach(m -> m.map(product, productDTO));
+            mappers.forEach(m -> m.map(DataHolder.of(product), DataHolder.of(productDTO)));
             result.add(productDTO);
         }
         return new SearchApiResponse(result);

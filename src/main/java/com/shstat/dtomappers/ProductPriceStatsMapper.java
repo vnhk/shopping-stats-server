@@ -1,5 +1,6 @@
 package com.shstat.dtomappers;
 
+import com.shstat.DataHolder;
 import com.shstat.entity.Product;
 import com.shstat.entity.ProductBasedOnDateAttributes;
 import com.shstat.repository.ProductRepository;
@@ -19,16 +20,16 @@ public class ProductPriceStatsMapper implements DTOMapper<Product, ProductDTO> {
     }
 
     @Override
-    public void map(Product product, ProductDTO productDTO) {
-        ProductBasedOnDateAttributes min = productRepository.lastMinPrice(product.getName(), product.getShop());
-        ProductBasedOnDateAttributes max = productRepository.lastMaxPrice(product.getName(), product.getShop());
-        Double avg = productRepository.avgPrice(product.getName(), product.getShop());
-        productDTO.setMinPrice(buildPrice(min));
-        productDTO.setMaxPrice(buildPrice(max));
+    public void map(DataHolder<Product> product, DataHolder<ProductDTO> productDTO) {
+        ProductBasedOnDateAttributes min = productRepository.lastMinPrice(product.value.getName(), product.value.getShop());
+        ProductBasedOnDateAttributes max = productRepository.lastMaxPrice(product.value.getName(), product.value.getShop());
+        Double avg = productRepository.avgPrice(product.value.getName(), product.value.getShop());
+        productDTO.value.setMinPrice(buildPrice(min));
+        productDTO.value.setMaxPrice(buildPrice(max));
         if (avg != null) {
-            productDTO.setAvgPrice(BigDecimal.valueOf(avg));
+            productDTO.value.setAvgPrice(BigDecimal.valueOf(avg));
         } else {
-            productDTO.setAvgPrice(BigDecimal.valueOf(-1));
+            productDTO.value.setAvgPrice(BigDecimal.valueOf(-1));
         }
     }
 }

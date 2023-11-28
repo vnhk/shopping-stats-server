@@ -1,6 +1,7 @@
 package com.shstat;
 
 import com.shstat.entity.Product;
+import com.shstat.entity.ProductBasedOnDateAttributes;
 import com.shstat.repository.ProductRepository;
 import com.shstat.response.ApiResponse;
 import com.shstat.response.SearchApiResponse;
@@ -46,6 +47,10 @@ public class SearchService {
 
     public List<Product> findProducts(String name, String shop) {
         return productRepository.findByNameContainingAndShop(name, shop);
+    }
+
+    public Set<ProductBasedOnDateAttributes> findHistoricalLowProducts() {
+        return productRepository.historicalLowPriceProducts();
     }
 
     public List<Product> findProducts(String name) {

@@ -24,6 +24,21 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value = "SELECT DISTINCT p.name FROM Product p WHERE p.shop = :shop")
     Set<String> findProductNames(String shop);
 
+    @Query(value = "SELECT pd " +
+            " FROM Product p " +
+            "   JOIN ProductBasedOnDateAttributes pd ON pd.product = p " +
+            " WHERE pd.price in " +
+            "     (SELECT min(pd.price) as price " +
+            "          FROM Product p " +
+            "             JOIN ProductBasedOnDateAttributes pd ON pd.product = p " +
+            "          WHERE pd.price <> -1) " +
+            " AND pd.id in " +
+            "     (SELECT pd.id " +
+            "          FROM Product p " +
+            "             JOIN ProductBasedOnDateAttributes pd ON pd.product = p " +
+            "          ORDER BY pd.scrapDate DESC LIMIT 1)")
+    Set<ProductBasedOnDateAttributes> historicalLowPriceProducts();
+
     @Query(value = "SELECT DISTINCT new ProductBasedOnDateAttributes(pd.price, pd.scrapDate, pd.formattedScrapDate) " +
             " FROM Product p " +
             "   JOIN ProductBasedOnDateAttributes pd ON pd.product = p " +

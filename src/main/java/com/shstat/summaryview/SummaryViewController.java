@@ -11,13 +11,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "/summary-view/products")
 public class SummaryViewController {
     private final SummaryViewService summaryViewService;
+    private final HistoricalLowPricesViewService historicalLowPricesViewService;
 
-    public SummaryViewController(SummaryViewService summaryViewService) {
+    public SummaryViewController(SummaryViewService summaryViewService,
+                                 HistoricalLowPricesViewService historicalLowPricesViewService) {
         this.summaryViewService = summaryViewService;
+        this.historicalLowPricesViewService = historicalLowPricesViewService;
     }
 
     @GetMapping(path = "/product")
     public ResponseEntity<ApiResponse> findProductContainingName(@RequestParam String name) {
         return ResponseEntity.ok(summaryViewService.findProductContainingName(name));
+    }
+
+    @GetMapping(path = "/historical-low")
+    public ResponseEntity<ApiResponse> findHistoricalLowPriceProducts() {
+        return ResponseEntity.ok(historicalLowPricesViewService.findHistoricalLowPriceProducts());
     }
 }
