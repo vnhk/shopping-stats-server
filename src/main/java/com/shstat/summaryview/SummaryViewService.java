@@ -26,13 +26,14 @@ public class SummaryViewService extends ViewBuilder {
     }
 
     public SearchApiResponse findProductContainingName(String name) {
-        List<ProductDTO> result = new ArrayList<>();
+        List<Object> result = new ArrayList<>();
         List<Product> products = searchService.findProducts(name);
         for (Product product : products) {
             ProductDTO productDTO = new ProductDTO();
             mappers.forEach(m -> m.map(DataHolder.of(product), DataHolder.of(productDTO)));
             result.add(productDTO);
         }
-        return new SearchApiResponse(result);
+
+        return SearchApiResponse.builder().items(result).allFound((long) result.size()).build();
     }
 }

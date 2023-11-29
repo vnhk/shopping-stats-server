@@ -1,6 +1,7 @@
 package com.shstat.summaryview;
 
 import com.shstat.response.ApiResponse;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +26,7 @@ public class SummaryViewController {
     }
 
     @GetMapping(path = "/historical-low")
-    public ResponseEntity<ApiResponse> findHistoricalLowPriceProducts() {
-        return ResponseEntity.ok(historicalLowPricesViewService.findHistoricalLowPriceProducts());
+    public ResponseEntity<ApiResponse> findHistoricalLowPriceProducts(Pageable pageable) {
+        return ResponseEntity.ok(historicalLowPricesViewService.findHistoricalLowPriceProducts(pageable));
     }
 }

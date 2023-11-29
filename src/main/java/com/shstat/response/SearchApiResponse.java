@@ -10,39 +10,73 @@ import java.util.List;
 @Getter
 @Setter
 public class SearchApiResponse<T> extends ApiResponse {
-    private Integer allFound;
+    private Long allFound;
     private Integer page;
     private Integer pageSize;
+    private Integer allPages = 0;
     private Integer currentFound;
     private Collection<T> items;
 
-    public SearchApiResponse(List<String> messages, Collection<T> items) {
-        super(messages);
-        this.setItems(items);
-        this.page = 1;
-        this.pageSize = items.size();
-        this.allFound = items.size();
+    public static <T> SearchApiResponseBuilder<T> builder() {
+        return new SearchApiResponseBuilder<>();
     }
 
-    public SearchApiResponse(Collection<T> items) {
-        super(new ArrayList<>());
-        this.setItems(items);
-        this.page = 1;
-        this.pageSize = items.size();
-        this.allFound = items.size();
+    public static class SearchApiResponseBuilder<T> {
+        private Long allFound = 0L;
+        private Integer page = 0;
+        private Integer allPages = 0;
+        private Integer pageSize = 0;
+        private Integer currentFound = 0;
+        private Collection<T> items = new ArrayList<>();
+        private List<String> messages = new ArrayList<>();
+
+        private SearchApiResponseBuilder() {
+
+        }
+
+        public SearchApiResponseBuilder messages(List<String> messages) {
+            this.messages = messages;
+            return this;
+        }
+
+        public SearchApiResponseBuilder allFound(Long allFound) {
+            this.allFound = allFound;
+            return this;
+        }
+
+        public SearchApiResponseBuilder allPages(Integer allPages) {
+            this.allPages = allPages;
+            return this;
+        }
+
+        public SearchApiResponseBuilder page(Integer page) {
+            this.page = page;
+            return this;
+        }
+
+        public SearchApiResponseBuilder pageSize(Integer pageSize) {
+            this.pageSize = pageSize;
+            return this;
+        }
+
+        public SearchApiResponseBuilder items(Collection<T> items) {
+            this.items = items;
+            this.currentFound = items.size();
+            return this;
+        }
+
+        public SearchApiResponse<T> build() {
+            return new SearchApiResponse<>(messages, allFound, allPages, page, pageSize, currentFound, items);
+        }
     }
 
-    public SearchApiResponse(List<String> messages, Collection<T> items, Integer page,
-                             Integer pageSize, Integer allFound) {
+    private SearchApiResponse(List<String> messages, Long allFound, Integer allPages, Integer page, Integer pageSize, Integer currentFound, Collection<T> items) {
         super(messages);
-        this.setItems(items);
+        this.allFound = allFound;
+        this.allPages = allPages;
         this.page = page;
         this.pageSize = pageSize;
-        this.allFound = allFound;
-    }
-
-    public void setItems(Collection<T> items) {
+        this.currentFound = currentFound;
         this.items = items;
-        this.currentFound = items.size();
     }
 }

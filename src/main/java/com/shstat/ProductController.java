@@ -5,8 +5,7 @@ import com.shstat.response.SearchApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping(path = "/products")
@@ -36,6 +35,10 @@ public class ProductController {
 
     @GetMapping(path = "/name-list")
     public ResponseEntity<ApiResponse> getProductList(@RequestParam String shop) {
-        return ResponseEntity.ok(new SearchApiResponse<>(searchService.findProductNames(shop)));
+        Set<String> productNames = searchService.findProductNames(shop);
+        Collection<Object> res = new HashSet<>(productNames);
+        SearchApiResponse<String> response = SearchApiResponse.builder().items(res).allFound((long) productNames.size()).build();
+
+        return ResponseEntity.ok(response);
     }
 }
