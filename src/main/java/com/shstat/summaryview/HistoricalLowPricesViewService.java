@@ -40,6 +40,16 @@ public class HistoricalLowPricesViewService extends ViewBuilder {
     }
 
     public SearchApiResponse findHistoricalLowPriceProducts(Pageable pageable) {
+        Page<ProductRepository.ProductBasedOnDateAttributesNativeRes> historicalLowProducts = searchService.findHistoricalLowProducts(pageable);
+        return buildResponse(pageable, historicalLowProducts);
+    }
+
+    public SearchApiResponse find10PercentLowerPriceThanHistoricalLow(Pageable pageable) {
+        Page<ProductRepository.ProductBasedOnDateAttributesNativeRes> historicalLowProducts = searchService.find10PercentLowerPriceThanHistoricalLow(pageable);
+        return buildResponse(pageable, historicalLowProducts);
+    }
+
+    private SearchApiResponse buildResponse(Pageable pageable, Page<ProductRepository.ProductBasedOnDateAttributesNativeRes> historicalLowProducts) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
                 .withFieldVisibility(JsonAutoDetect.Visibility.NONE)
@@ -49,7 +59,6 @@ public class HistoricalLowPricesViewService extends ViewBuilder {
 
 
         Collection<Object> result = new ArrayList<>();
-        Page<ProductRepository.ProductBasedOnDateAttributesNativeRes> historicalLowProducts = searchService.findHistoricalLowProducts(pageable);
         Set<ProductBasedOnDateAttributes> res = map(mapper, historicalLowProducts);
 
         for (ProductBasedOnDateAttributes attrs : res) {

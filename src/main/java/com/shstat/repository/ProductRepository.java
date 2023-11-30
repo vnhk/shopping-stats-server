@@ -57,6 +57,43 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Product findProductByProductBasedOnDateAttributesId(Long id);
 
+    @Query(nativeQuery = true, value =
+            """
+                    SELECT pda.id AS id, pda.scrap_date, pda.price
+                    FROM scrapdb.product AS p
+                    JOIN scrapdb.product_based_on_date_attributes AS pda ON p.id = pda.product_id
+                    JOIN (
+                        SELECT product_id, MAX(scrap_date) AS max_date
+                        FROM scrapdb.product_based_on_date_attributes
+                        WHERE price <> -1
+                        GROUP BY product_id
+                    ) AS latest_dates ON pda.product_id = latest_dates.product_id AND pda.scrap_date = latest_dates.max_date
+                    WHERE (pda.product_id, pda.price) IN (
+                        SELECT product_id, MIN(price) AS min_price
+                        FROM scrapdb.product_based_on_date_attributes
+                        WHERE price <> -1
+                        GROUP BY product_id
+                    ) AND (pda.product_id, pda.price) NOT IN (
+                          SELECT product_id, MAX(price) AS max_price
+                          FROM scrapdb.product_based_on_date_attributes
+                          WHERE price <> -1
+                          GROUP BY product_id
+                    ) AND pda.price <= 0.90 * (
+                          SELECT MIN(price)
+                            FROM scrapdb.product_based_on_date_attributes
+                          WHERE product_id = p.id
+                            AND price NOT IN
+                            (SELECT MIN(price)
+                                FROM scrapdb.product_based_on_date_attributes
+                             WHERE product_id = p.id
+                                AND pda.price <> -1)
+                            AND pda.price <> -1
+                    )
+                    ORDER BY p.id;
+                    """
+    )
+    Page<ProductBasedOnDateAttributesNativeRes> find10PercentLowerPriceThanHistoricalLow(Pageable pageable);
+
     interface ProductBasedOnDateAttributesNativeRes {
         Long getId();
 

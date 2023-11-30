@@ -54,6 +54,10 @@ public class SearchService {
         return productRepository.historicalLowPriceProducts(pageable);
     }
 
+    public Page<ProductRepository.ProductBasedOnDateAttributesNativeRes> find10PercentLowerPriceThanHistoricalLow(Pageable pageable) {
+        return productRepository.find10PercentLowerPriceThanHistoricalLow(pageable);
+    }
+
     public List<Product> findProducts(String name) {
         return productRepository.findByNameContaining(name);
     }

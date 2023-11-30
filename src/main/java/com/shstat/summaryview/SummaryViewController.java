@@ -29,4 +29,8 @@ public class SummaryViewController {
     public ResponseEntity<ApiResponse> findHistoricalLowPriceProducts(Pageable pageable) {
         return ResponseEntity.ok(historicalLowPricesViewService.findHistoricalLowPriceProducts(pageable));
     }
+    @GetMapping(path = "/historical-low-10-percent")
+    public ResponseEntity<ApiResponse> find10PercentLowerPriceThanHistoricalLow(Pageable pageable) {
+        return ResponseEntity.ok(historicalLowPricesViewService.find10PercentLowerPriceThanHistoricalLow(pageable));
+    }
 }
