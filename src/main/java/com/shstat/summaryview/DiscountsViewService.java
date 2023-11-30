@@ -22,12 +22,12 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class HistoricalLowPricesViewService extends ViewBuilder {
+public class DiscountsViewService extends ViewBuilder {
     private final SearchService searchService;
 
-    public HistoricalLowPricesViewService(SearchService searchService,
-                                          List<? extends DTOMapper<Product, ProductDTO>> productMappers,
-                                          List<? extends DTOMapper<ProductBasedOnDateAttributes, PriceDTO>> productBasedOnDateAttributesToPrice) {
+    public DiscountsViewService(SearchService searchService,
+                                List<? extends DTOMapper<Product, ProductDTO>> productMappers,
+                                List<? extends DTOMapper<ProductBasedOnDateAttributes, PriceDTO>> productBasedOnDateAttributesToPrice) {
         super(getSet(productMappers, productBasedOnDateAttributesToPrice), Set.of(BaseProductAttributesMapper.class, ProductBasedOnDateAttributePriceMapper.class));
         this.searchService = searchService;
     }
@@ -46,6 +46,11 @@ public class HistoricalLowPricesViewService extends ViewBuilder {
 
     public SearchApiResponse findXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discount) {
         Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findXPercentLowerPriceThanHistoricalLow(pageable, discount);
+        return buildResponse(pageable, historicalLowProducts);
+    }
+
+    public SearchApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discount, Integer months) {
+        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discount, months);
         return buildResponse(pageable, historicalLowProducts);
     }
 

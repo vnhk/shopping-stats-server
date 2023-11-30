@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -77,6 +78,28 @@ public class SearchService {
         return new PageImpl<>(res, pageable, (Long) countQuery.getResultList().get(0));
     }
 
+    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discount, Integer months) {
+        LocalDate beginDateForCalculatingAVG = LocalDate.now().minusMonths(months);
+
+        Query query = entityManager.createNativeQuery(findXPercentLowerPriceThanHistoricalLowQuery2(false), Object[].class);
+        Query countQuery = entityManager.createNativeQuery(findXPercentLowerPriceThanHistoricalLowQuery2(true), Long.class);
+        countQuery.setParameter("discount", discount);
+        countQuery.setParameter("scrap_date_begin", beginDateForCalculatingAVG.toString());
+        query.setParameter("discount", discount);
+        query.setParameter("scrap_date_begin", beginDateForCalculatingAVG.toString());
+        int pageNumber = pageable.getPageNumber();
+        int pageSize = pageable.getPageSize();
+        query.setFirstResult((pageNumber) * pageSize);
+        query.setMaxResults(pageSize);
+        List<Object[]> objs = query.getResultList();
+        List<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> res = new ArrayList<>();
+        for (Object[] obj : objs) {
+            res.add(new ProductRepository.ProductBasedOnDateAttributesNativeRes((Long) obj[0], (Date) obj[1], (BigDecimal) obj[2]));
+        }
+
+        return new PageImpl<>(res, pageable, (Long) countQuery.getResultList().get(0));
+    }
+
     private static String findXPercentLowerPriceThanHistoricalLowQuery(boolean countQuery) {
         return """
                    WITH RankedPrices AS (
@@ -106,6 +129,33 @@ public class SearchService {
                                       JOIN scrapdb.product_based_on_date_attributes AS pda ON p.id = pda.product_id
                                  WHERE price <> -1
                                       AND rp1.product_id = pda.product_id)
+                        ORDER BY pda.id;
+                        """;
+    }
+
+    private static String findXPercentLowerPriceThanHistoricalLowQuery2(boolean countQuery) {
+        return """
+                SELECT
+                """ + (countQuery ? "count(pda.id)" : """
+                                DISTINCT
+                                pda.id AS id,
+                                pda.scrap_date AS scrap_date,
+                                pda.price AS price
+                """)
+                +
+                """
+                        FROM scrapdb.product_based_on_date_attributes pda
+                        WHERE pda.price / :discount <= (
+                            SELECT AVG(price) AS average_price
+                                  FROM scrapdb.product_based_on_date_attributes AS pda1
+                                  WHERE price <> -1
+                                      AND pda.id = pda1.id
+                                      AND scrap_date >= :scrap_date_begin)
+                          AND pda.scrap_date in
+                          (SELECT MAX(scrap_date)
+                                 FROM scrapdb.product_based_on_date_attributes AS pda1
+                                 WHERE price <> -1
+                                      AND pda.id = pda1.id)
                         ORDER BY pda.id;
                         """;
     }
