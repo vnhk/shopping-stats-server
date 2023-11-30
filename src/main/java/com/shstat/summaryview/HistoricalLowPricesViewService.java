@@ -40,16 +40,16 @@ public class HistoricalLowPricesViewService extends ViewBuilder {
     }
 
     public SearchApiResponse findHistoricalLowPriceProducts(Pageable pageable) {
-        Page<ProductRepository.ProductBasedOnDateAttributesNativeRes> historicalLowProducts = searchService.findHistoricalLowProducts(pageable);
+        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findHistoricalLowProducts(pageable);
         return buildResponse(pageable, historicalLowProducts);
     }
 
-    public SearchApiResponse find10PercentLowerPriceThanHistoricalLow(Pageable pageable) {
-        Page<ProductRepository.ProductBasedOnDateAttributesNativeRes> historicalLowProducts = searchService.find10PercentLowerPriceThanHistoricalLow(pageable);
+    public SearchApiResponse findXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discount) {
+        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findXPercentLowerPriceThanHistoricalLow(pageable, discount);
         return buildResponse(pageable, historicalLowProducts);
     }
 
-    private SearchApiResponse buildResponse(Pageable pageable, Page<ProductRepository.ProductBasedOnDateAttributesNativeRes> historicalLowProducts) {
+    private SearchApiResponse buildResponse(Pageable pageable, Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
                 .withFieldVisibility(JsonAutoDetect.Visibility.NONE)
@@ -80,10 +80,10 @@ public class HistoricalLowPricesViewService extends ViewBuilder {
                 .build();
     }
 
-    private Set<ProductBasedOnDateAttributes> map(ObjectMapper mapper, Page<ProductRepository.ProductBasedOnDateAttributesNativeRes> historicalLowProducts) {
+    private Set<ProductBasedOnDateAttributes> map(ObjectMapper mapper, Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts) {
         Set<ProductBasedOnDateAttributes> res = new HashSet<>();
         try {
-            for (ProductRepository.ProductBasedOnDateAttributesNativeRes productBasedOnDateAttributesNativeRe : historicalLowProducts) {
+            for (ProductRepository.ProductBasedOnDateAttributesNativeResInterface productBasedOnDateAttributesNativeRe : historicalLowProducts) {
                 String val = mapper.writeValueAsString(productBasedOnDateAttributesNativeRe);
                 ProductBasedOnDateAttributes productBasedOnDateAttributes = mapper.readValue(val, ProductBasedOnDateAttributes.class);
                 Product product = searchService.findProductByProductBasedOnDateAttributesId(productBasedOnDateAttributes.getId());

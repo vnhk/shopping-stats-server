@@ -50,10 +50,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                           WHERE price <> -1
                           GROUP BY product_id
                       )
-                    ORDER BY p.id;
+                    ORDER BY pda.id;
                     """
     )
-    Page<ProductBasedOnDateAttributesNativeRes> historicalLowPriceProducts(Pageable pageable);
+    Page<ProductBasedOnDateAttributesNativeResInterface> historicalLowPriceProducts(Pageable pageable);
 
     Product findProductByProductBasedOnDateAttributesId(Long id);
 
@@ -78,7 +78,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                           FROM scrapdb.product_based_on_date_attributes
                           WHERE price <> -1
                           GROUP BY product_id
-                    ) AND pda.price <= 0.90 * (
+                    ) AND pda.price <= 0.80 * (
                           SELECT MIN(price)
                             FROM scrapdb.product_based_on_date_attributes
                           WHERE product_id = p.id
@@ -92,14 +92,42 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                     ORDER BY p.id;
                     """
     )
-    Page<ProductBasedOnDateAttributesNativeRes> find10PercentLowerPriceThanHistoricalLow(Pageable pageable);
+        //not working very well
+    Page<ProductBasedOnDateAttributesNativeResInterface> findXPercentLowerPriceThanHistoricalLow(Pageable pageable);
 
-    interface ProductBasedOnDateAttributesNativeRes {
+    interface ProductBasedOnDateAttributesNativeResInterface {
         Long getId();
 
         Date getScrapDate();
 
         BigDecimal getPrice();
+    }
+
+    class ProductBasedOnDateAttributesNativeRes implements ProductBasedOnDateAttributesNativeResInterface {
+        Long id;
+        Date scrapDate;
+        BigDecimal price;
+
+        public ProductBasedOnDateAttributesNativeRes(Long id, Date scrapDate, BigDecimal price) {
+            this.id = id;
+            this.scrapDate = scrapDate;
+            this.price = price;
+        }
+
+        @Override
+        public Long getId() {
+            return id;
+        }
+
+        @Override
+        public Date getScrapDate() {
+            return scrapDate;
+        }
+
+        @Override
+        public BigDecimal getPrice() {
+            return price;
+        }
     }
 
     @Query(value = "SELECT DISTINCT new ProductBasedOnDateAttributes(pd.price, pd.scrapDate, pd.formattedScrapDate) " +
