@@ -20,5 +20,6 @@ public class BaseProductAttributesMapper implements DTOMapper<Product, ProductDT
                 filter(e -> e.getName().equals("Offer Url")).findFirst().get())
                 .getValue().iterator().next();
         productDTO.value.setOfferLink(offerUrl);
+        productDTO.value.setImgSrc(product.value.getImgSrc());
     }
 }

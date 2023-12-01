@@ -12,6 +12,7 @@ public class ProductDTO {
     private String name;
     private String shop;
     private String offerLink;
+    private String imgSrc;
     private PriceDTO minPrice;
     private BigDecimal avgPrice;
     private PriceDTO maxPrice;

@@ -25,6 +25,7 @@ public class Product {
     private String shop;
     @NotNull
     private String productListName;
+    private String imgSrc;
     @NotNull
     private String productListUrl;
     @ElementCollection

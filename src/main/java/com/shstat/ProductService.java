@@ -34,6 +34,7 @@ public class ProductService {
                     AttrFieldMappingVal.of("Name", Product.class.getDeclaredField("name")),
                     AttrFieldMappingVal.of("Product List Url", Product.class.getDeclaredField("productListUrl")),
                     AttrFieldMappingVal.of("Shop", Product.class.getDeclaredField("shop")),
+                    AttrFieldMappingVal.of("Image", Product.class.getDeclaredField("imgSrc")),
                     AttrFieldMappingVal.of("Categories", Product.class.getDeclaredField("categories"),
                             (val) -> {
                                 if (val instanceof Collection<?>) {
@@ -210,7 +211,12 @@ public class ProductService {
                 res.getProductListName(), res.getProductListUrl());
 
         if (product.isPresent()) {
+            //update categories
             product.get().setCategories(res.getCategories());
+            if (res.getImgSrc() != null) {
+                //update image src
+                product.get().setImgSrc(res.getImgSrc());
+            }
             return product.get();
         }
         return res;
