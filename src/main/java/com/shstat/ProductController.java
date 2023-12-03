@@ -1,11 +1,12 @@
 package com.shstat;
 
 import com.shstat.response.ApiResponse;
-import com.shstat.response.SearchApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping(path = "/products")
@@ -24,21 +25,9 @@ public class ProductController {
         return ResponseEntity.ok(productService.addProducts(products));
     }
 
-    @GetMapping(path = "/basic-search")
-    public ResponseEntity<ApiResponse> getLatestProducts(@RequestParam(required = false) String categories,
-                                                         @RequestParam(required = false) String name,
-                                                         @RequestParam(required = false) String shop,
-                                                         @RequestParam(required = false) Integer priceMin,
-                                                         @RequestParam(required = false) Integer priceMax) {
-        return ResponseEntity.ok(searchService.getProducts(categories, name, shop, priceMin, priceMax));
-    }
-
-    @GetMapping(path = "/name-list")
-    public ResponseEntity<ApiResponse> getProductList(@RequestParam String shop) {
-        Set<String> productNames = searchService.findProductNames(shop);
-        Collection<Object> res = new HashSet<>(productNames);
-        SearchApiResponse<String> response = SearchApiResponse.builder().items(res).allFound((long) productNames.size()).build();
-
-        return ResponseEntity.ok(response);
+    @GetMapping(path = "/categories")
+    public ResponseEntity<Set<String>> getCategories() {
+        Set<String> categories = searchService.findCategories();
+        return ResponseEntity.ok(categories);
     }
 }

@@ -48,12 +48,19 @@ public class SearchService {
                 .build();
     }
 
-    public Set<String> findProductNames(String shop) {
-        return productRepository.findProductNames(shop);
+    public Page<Product> findProductsByCategory(String category, String shop, Pageable pageable) {
+        if (shop == null || shop.isBlank()) {
+            return productRepository.findProductsByCategoriesIn(category, pageable);
+        }
+        return productRepository.findProductsByCategoriesInAndShop(category, shop, pageable);
     }
 
     public List<Product> findProducts(String name, String shop) {
         return productRepository.findByNameContainingAndShop(name, shop);
+    }
+
+    public Set<String> findCategories() {
+        return productRepository.findCategories();
     }
 
     public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findHistoricalLowProducts(Pageable pageable) {

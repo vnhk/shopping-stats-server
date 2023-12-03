@@ -25,8 +25,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByNameContaining(String name);
 
-    @Query(value = "SELECT DISTINCT p.name FROM Product p WHERE p.shop = :shop")
-    Set<String> findProductNames(String shop);
+    @Query(value = "SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE :category = c")
+    Page<Product> findProductsByCategoriesIn(String category, Pageable pageable);
+
+    @Query(value = "SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE :category = c AND p.shop = :shop")
+    Page<Product> findProductsByCategoriesInAndShop(String category, String shop, Pageable pageable);
 
     @Query(nativeQuery = true, value =
             """
@@ -94,6 +97,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     )
         //not working very well
     Page<ProductBasedOnDateAttributesNativeResInterface> findXPercentLowerPriceThanHistoricalLow(Pageable pageable);
+
+    @Query(value = "SELECT DISTINCT p.categories FROM Product p")
+    Set<String> findCategories();
 
     interface ProductBasedOnDateAttributesNativeResInterface {
         Long getId();

@@ -13,19 +13,26 @@ import java.util.Collections;
 
 @RestController
 @RequestMapping(path = "/summary-view/products")
-public class SummaryViewController {
-    private final SummaryViewService summaryViewService;
+public class ProductViewController {
+    private final ProductViewService productViewService;
     private final DiscountsViewService discountsViewService;
 
-    public SummaryViewController(SummaryViewService summaryViewService,
+    public ProductViewController(ProductViewService productViewService,
                                  DiscountsViewService discountsViewService) {
-        this.summaryViewService = summaryViewService;
+        this.productViewService = productViewService;
         this.discountsViewService = discountsViewService;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse> getProductList(@RequestParam String category,
+                                                      @RequestParam(required = false) String shop,
+                                                      Pageable pageable) {
+        return ResponseEntity.ok(productViewService.findProductsByCategory(category, shop, pageable));
     }
 
     @GetMapping(path = "/product")
     public ResponseEntity<ApiResponse> findProductContainingName(@RequestParam String name) {
-        return ResponseEntity.ok(summaryViewService.findProductContainingName(name));
+        return ResponseEntity.ok(productViewService.findProductContainingName(name));
     }
 
     @GetMapping(path = "/historical-low")

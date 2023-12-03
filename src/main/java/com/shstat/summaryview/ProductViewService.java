@@ -9,6 +9,8 @@ import com.shstat.dtomappers.ProductPriceStatsMapper;
 import com.shstat.entity.Product;
 import com.shstat.response.ProductDTO;
 import com.shstat.response.SearchApiResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -16,10 +18,10 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-public class SummaryViewService extends ViewBuilder {
+public class ProductViewService extends ViewBuilder {
     private final SearchService searchService;
 
-    public SummaryViewService(SearchService searchService,
+    public ProductViewService(SearchService searchService,
                               List<? extends DTOMapper<Product, ProductDTO>> productMappers) {
         super(productMappers, Set.of(BaseProductAttributesMapper.class, ProductPriceStatsMapper.class));
         this.searchService = searchService;
@@ -35,5 +37,22 @@ public class SummaryViewService extends ViewBuilder {
         }
 
         return SearchApiResponse.builder().items(result).allFound((long) result.size()).build();
+    }
+
+    public SearchApiResponse findProductsByCategory(String category, String shop, Pageable pageable) {
+        Page<Product> productsByCategory = searchService.findProductsByCategory(category, shop, pageable);
+        SearchApiResponse response = SearchApiResponse.builder()
+                .ofPage(productsByCategory)
+                .build();
+
+        List<ProductDTO> result = new ArrayList<>();
+        for (Object item : response.getItems()) {
+            ProductDTO productDTO = new ProductDTO();
+            mappers.forEach(m -> m.map(DataHolder.of(item), DataHolder.of(productDTO)));
+            result.add(productDTO);
+        }
+
+        response.setItems(result);
+        return response;
     }
 }

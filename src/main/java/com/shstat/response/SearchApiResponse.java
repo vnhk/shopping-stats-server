@@ -2,6 +2,7 @@ package com.shstat.response;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.domain.Page;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,16 +10,16 @@ import java.util.List;
 
 @Getter
 @Setter
-public class SearchApiResponse<T> extends ApiResponse {
+public class SearchApiResponse extends ApiResponse {
     private Long allFound;
     private Integer page;
     private Integer pageSize;
     private Integer allPages = 0;
     private Integer currentFound;
-    private Collection<T> items;
+    private Collection items;
 
-    public static <T> SearchApiResponseBuilder<T> builder() {
-        return new SearchApiResponseBuilder<>();
+    public static SearchApiResponseBuilder builder() {
+        return new SearchApiResponseBuilder();
     }
 
     public static class SearchApiResponseBuilder<T> {
@@ -59,18 +60,26 @@ public class SearchApiResponse<T> extends ApiResponse {
             return this;
         }
 
-        public SearchApiResponseBuilder items(Collection<T> items) {
+        public SearchApiResponseBuilder items(Collection items) {
             this.items = items;
             this.currentFound = items.size();
             return this;
         }
 
-        public SearchApiResponse<T> build() {
-            return new SearchApiResponse<>(messages, allFound, allPages, page, pageSize, currentFound, items);
+        public SearchApiResponseBuilder ofPage(Page page) {
+            return this.items(page.getContent())
+                    .page(page.getPageable().getPageNumber())
+                    .pageSize(page.getPageable().getPageSize())
+                    .allPages(page.getTotalPages())
+                    .allFound(page.getTotalElements());
+        }
+
+        public SearchApiResponse build() {
+            return new SearchApiResponse(messages, allFound, allPages, page, pageSize, currentFound, items);
         }
     }
 
-    private SearchApiResponse(List<String> messages, Long allFound, Integer allPages, Integer page, Integer pageSize, Integer currentFound, Collection<T> items) {
+    private SearchApiResponse(List<String> messages, Long allFound, Integer allPages, Integer page, Integer pageSize, Integer currentFound, Collection items) {
         super(messages);
         this.allFound = allFound;
         this.allPages = allPages;
