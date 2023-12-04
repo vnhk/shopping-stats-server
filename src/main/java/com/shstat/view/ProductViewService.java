@@ -42,7 +42,7 @@ public class ProductViewService extends ViewBuilder {
         List<Object> result = new ArrayList<>();
         for (Product product : products) {
             ProductDTO productDTO = new ProductDTO();
-            mappersSubSet(Set.of(BaseProductAttributesMapper.class, ProductPriceStatsMapper.class))
+            mappersSubSet(PRODUCT_WITH_DETAILS_AND_PRICE_HISTORY_MAPPERS)
                     .forEach(m -> m.map(DataHolder.of(product), DataHolder.of(productDTO)));
             result.add(productDTO);
         }
