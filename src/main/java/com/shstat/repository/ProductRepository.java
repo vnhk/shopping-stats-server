@@ -23,7 +23,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByNameContainingAndShop(String name, String shop);
 
-    List<Product> findByNameContaining(String name);
+    Page<Product> findByNameContaining(String name, Pageable pageable);
 
     @Query(value = "SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE :category = c")
     Page<Product> findProductsByCategoriesIn(String category, Pageable pageable);

@@ -12,11 +12,14 @@ public abstract class ViewBuilder {
     protected final Set<? extends DTOMapper> mappers;
     protected final Map<Class<? extends DTOMapper>, DTOMapper> mappersMap = new HashMap<>();
 
-    protected ViewBuilder(Collection<? extends DTOMapper<?, ?>> mappers, Set<Class<? extends DTOMapper<?, ?>>> usedMappers) {
-        this.mappers = mappers.stream().filter(e -> usedMappers.contains(e.getClass()))
-                .collect(Collectors.toSet());
+    protected ViewBuilder(Collection<? extends DTOMapper<?, ?>> mappers) {
+        this.mappers = mappers.stream().collect(Collectors.toSet());
         for (DTOMapper mapper : this.mappers) {
             this.mappersMap.put(mapper.getClass(), mapper);
         }
+    }
+
+    protected Set<? extends DTOMapper> mappersSubSet(Set<Class<? extends DTOMapper<?, ?>>> usedMappers) {
+        return mappers.stream().filter(e -> usedMappers.contains(e.getClass())).collect(Collectors.toSet());
     }
 }

@@ -17,10 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class SearchService {
@@ -167,11 +164,20 @@ public class SearchService {
                         """;
     }
 
-    public List<Product> findProducts(String name) {
-        return productRepository.findByNameContaining(name);
+    public Page<Product> findProducts(String name, Pageable pageable) {
+        return productRepository.findByNameContaining(name, pageable);
     }
 
     public Product findProductByProductBasedOnDateAttributesId(Long id) {
         return productRepository.findProductByProductBasedOnDateAttributesId(id);
+    }
+
+    public Page<Product> findById(Long id, Pageable pageable) {
+        Optional<Product> byId = productRepository.findById(id);
+        if (byId.isPresent()) {
+            return new PageImpl(Collections.singletonList(byId), pageable, 1);
+        } else {
+            return new PageImpl(Collections.emptyList(), pageable, 0);
+        }
     }
 }

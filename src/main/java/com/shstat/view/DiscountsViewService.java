@@ -1,4 +1,4 @@
-package com.shstat.summaryview;
+package com.shstat.view;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,7 +28,7 @@ public class DiscountsViewService extends ViewBuilder {
     public DiscountsViewService(SearchService searchService,
                                 List<? extends DTOMapper<Product, ProductDTO>> productMappers,
                                 List<? extends DTOMapper<ProductBasedOnDateAttributes, PriceDTO>> productBasedOnDateAttributesToPrice) {
-        super(getSet(productMappers, productBasedOnDateAttributesToPrice), Set.of(BaseProductAttributesMapper.class, ProductBasedOnDateAttributePriceMapper.class));
+        super(getSet(productMappers, productBasedOnDateAttributesToPrice));
         this.searchService = searchService;
     }
 

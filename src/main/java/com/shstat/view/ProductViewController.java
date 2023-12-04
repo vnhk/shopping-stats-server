@@ -1,4 +1,4 @@
-package com.shstat.summaryview;
+package com.shstat.view;
 
 import com.shstat.response.ApiResponse;
 import org.springframework.data.domain.Pageable;
@@ -31,8 +31,17 @@ public class ProductViewController {
     }
 
     @GetMapping(path = "/product")
-    public ResponseEntity<ApiResponse> findProductContainingName(@RequestParam String name) {
-        return ResponseEntity.ok(productViewService.findProductContainingName(name));
+    public ResponseEntity<ApiResponse> findProduct(@RequestParam(required = false) String name,
+                                                   @RequestParam(required = false) Long id, Pageable pageable) {
+        if (id == null && (name == null || "".equals(name))) {
+            throw new RuntimeException("Id or product name is required!");
+        }
+
+        if (id != null) {
+            return ResponseEntity.ok(productViewService.findById(id, pageable));
+        } else {
+            return ResponseEntity.ok(productViewService.findProductContainingName(name, pageable));
+        }
     }
 
     @GetMapping(path = "/historical-low")
