@@ -243,4 +243,10 @@ public class ProductService {
 
         return findProductBasedOnAttributes(res);
     }
+
+    public ApiResponse refreshMaterializedViews() {
+        productRepository.refreshHistoricalLowPricesTable();
+        //create indexes for category and shop
+        return new ApiResponse(Collections.singletonList("Views refreshed."));
+    }
 }

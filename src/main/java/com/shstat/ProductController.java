@@ -25,6 +25,11 @@ public class ProductController {
         return ResponseEntity.ok(productService.addProducts(products));
     }
 
+    @PostMapping(path = "/refresh-materialized-views")
+    public ResponseEntity<ApiResponse> refreshMaterializedViews() {
+        return ResponseEntity.ok(productService.refreshMaterializedViews());
+    }
+
     @GetMapping(path = "/categories")
     public ResponseEntity<Set<String>> getCategories() {
         Set<String> categories = searchService.findCategories();
