@@ -60,15 +60,19 @@ public class SearchService {
         return productRepository.findCategories();
     }
 
-    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findHistoricalLowProducts(Pageable pageable) {
-        return productRepository.historicalLowPriceProducts(pageable);
+    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findHistoricalLowProducts(Pageable pageable, String category, String shop) {
+        return productRepository.historicalLowPriceProducts(pageable, category, shop);
     }
 
-    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discount) {
+    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discount, String category, String shop) {
         Query query = entityManager.createNativeQuery(findXPercentLowerPriceThanHistoricalLowQuery(false), Object[].class);
         Query countQuery = entityManager.createNativeQuery(findXPercentLowerPriceThanHistoricalLowQuery(true), Long.class);
         countQuery.setParameter("discount", discount);
         query.setParameter("discount", discount);
+        countQuery.setParameter("category", category);
+        query.setParameter("category", category);
+        countQuery.setParameter("shop", shop);
+        query.setParameter("shop", shop);
         int pageNumber = pageable.getPageNumber();
         int pageSize = pageable.getPageSize();
         query.setFirstResult((pageNumber) * pageSize);
@@ -82,7 +86,7 @@ public class SearchService {
         return new PageImpl<>(res, pageable, (Long) countQuery.getResultList().get(0));
     }
 
-    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discount, Integer months) {
+    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discount, Integer months, String category, String shop) {
         LocalDate beginDateForCalculatingAVG = LocalDate.now().minusMonths(months);
 
         Query query = entityManager.createNativeQuery(findXPercentLowerPriceThanHistoricalLowQuery2(false), Object[].class);
@@ -91,6 +95,10 @@ public class SearchService {
         countQuery.setParameter("scrap_date_begin", beginDateForCalculatingAVG.toString());
         query.setParameter("discount", discount);
         query.setParameter("scrap_date_begin", beginDateForCalculatingAVG.toString());
+        countQuery.setParameter("category", category);
+        query.setParameter("category", category);
+        countQuery.setParameter("shop", shop);
+        query.setParameter("shop", shop);
         int pageNumber = pageable.getPageNumber();
         int pageSize = pageable.getPageSize();
         query.setFirstResult((pageNumber) * pageSize);
@@ -126,7 +134,10 @@ public class SearchService {
                 """
                         FROM scrapdb.product_based_on_date_attributes pda
                                  JOIN RankedPrices rp1 ON pda.product_id = rp1.product_id
-                        WHERE pda.price <= :discount * rp1.min_price
+                                 JOIN scrapdb.product p ON p.id = pda.product_id
+                        LEFT JOIN scrapdb.product_categories pc ON pda.product_id = pc.product_id
+                        WHERE (:category IS NULL OR :category = pc.categories)
+                          AND p.shop = COALESCE(:shop, p.shop) AND pda.price <= :discount * rp1.min_price
                           AND pda.scrap_date in
                           (SELECT MAX(scrap_date)
                                  FROM scrapdb.product AS p
@@ -149,7 +160,10 @@ public class SearchService {
                 +
                 """
                         FROM scrapdb.product_based_on_date_attributes pda
-                        WHERE pda.price / :discount <= (
+                        JOIN scrapdb.product p ON p.id = pda.product_id
+                        LEFT JOIN scrapdb.product_categories pc ON pda.product_id = pc.product_id
+                        WHERE (:category IS NULL OR :category = pc.categories)
+                          AND p.shop = COALESCE(:shop, p.shop) AND pda.price / :discount <= (
                             SELECT AVG(price) AS average_price
                                   FROM scrapdb.product_based_on_date_attributes AS pda1
                                   WHERE price <> -1

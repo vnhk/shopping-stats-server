@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -13,6 +14,7 @@ public class ProductDTO {
     private String shop;
     private String offerLink;
     private String imgSrc;
+    private Set<String> categories;
     private PriceDTO minPrice;
     private BigDecimal avgPrice;
     private PriceDTO maxPrice;

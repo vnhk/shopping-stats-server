@@ -9,6 +9,7 @@ import com.shstat.ViewBuilder;
 import com.shstat.dtomappers.BaseProductAttributesMapper;
 import com.shstat.dtomappers.DTOMapper;
 import com.shstat.dtomappers.ProductBasedOnDateAttributePriceMapper;
+import com.shstat.dtomappers.ProductPriceStatsMapper;
 import com.shstat.entity.Product;
 import com.shstat.entity.ProductBasedOnDateAttributes;
 import com.shstat.repository.ProductRepository;
@@ -39,18 +40,21 @@ public class DiscountsViewService extends ViewBuilder {
         return all;
     }
 
-    public SearchApiResponse findHistoricalLowPriceProducts(Pageable pageable) {
-        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findHistoricalLowProducts(pageable);
+    public SearchApiResponse findHistoricalLowPriceProducts(Pageable pageable, String category, String shop) {
+        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findHistoricalLowProducts(pageable,
+                category, shop);
         return buildResponse(pageable, historicalLowProducts);
     }
 
-    public SearchApiResponse findXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discount) {
-        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findXPercentLowerPriceThanHistoricalLow(pageable, discount);
+    public SearchApiResponse findXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discount, String category, String shop) {
+        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findXPercentLowerPriceThanHistoricalLow(pageable, discount,
+                category, shop);
         return buildResponse(pageable, historicalLowProducts);
     }
 
-    public SearchApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discount, Integer months) {
-        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discount, months);
+    public SearchApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discount, Integer months, String category, String shop) {
+        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discount, months,
+                category, shop);
         return buildResponse(pageable, historicalLowProducts);
     }
 
@@ -70,6 +74,7 @@ public class DiscountsViewService extends ViewBuilder {
             Product product = attrs.getProduct();
             ProductDTO productDTO = new ProductDTO();
             mappersMap.get(BaseProductAttributesMapper.class).map(DataHolder.of(product), DataHolder.of(productDTO));
+            mappersMap.get(ProductPriceStatsMapper.class).map(DataHolder.of(product), DataHolder.of(productDTO));
             DataHolder<PriceDTO> priceHolder = DataHolder.of(new PriceDTO());
             mappersMap.get(ProductBasedOnDateAttributePriceMapper.class).map(DataHolder.of(attrs), priceHolder);
             productDTO.setPrices(Collections.singletonList(priceHolder.value));

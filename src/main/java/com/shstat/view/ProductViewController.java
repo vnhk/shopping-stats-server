@@ -45,15 +45,20 @@ public class ProductViewController {
     }
 
     @GetMapping(path = "/historical-low")
-    public ResponseEntity<ApiResponse> findHistoricalLowPriceProducts(Pageable pageable) {
-        return ResponseEntity.ok(discountsViewService.findHistoricalLowPriceProducts(pageable));
+    public ResponseEntity<ApiResponse> findHistoricalLowPriceProducts(Pageable pageable,
+                                                                      @RequestParam(required = false) String category,
+                                                                      @RequestParam(required = false) String shop) {
+        return ResponseEntity.ok(discountsViewService.findHistoricalLowPriceProducts(pageable, category, shop));
     }
 
     @GetMapping(path = "/historical-low-discount")
-    public ResponseEntity<ApiResponse> findXPercentLowerPriceThanHistoricalLow(Pageable pageable, @RequestParam String discount) {
+    public ResponseEntity<ApiResponse> findXPercentLowerPriceThanHistoricalLow(Pageable pageable,
+                                                                               @RequestParam String discount,
+                                                                               @RequestParam(required = false) String category,
+                                                                               @RequestParam(required = false) String shop) {
         if (discount.endsWith("%")) {
             String number = discount.split("%")[0];
-            return ResponseEntity.ok(discountsViewService.findXPercentLowerPriceThanHistoricalLow(pageable, (100 - Double.parseDouble(number)) * 0.01));
+            return ResponseEntity.ok(discountsViewService.findXPercentLowerPriceThanHistoricalLow(pageable, (100 - Double.parseDouble(number)) * 0.01, category, shop));
         }
 
         return new ResponseEntity<>(new ApiResponse(Collections.singletonList("The discount should be a percentage"))
@@ -63,10 +68,12 @@ public class ProductViewController {
     @GetMapping(path = "/discounts-compared-to-avg-in-months")
     public ResponseEntity<ApiResponse> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable,
                                                                                        @RequestParam String discount,
-                                                                                       @RequestParam Integer months) {
+                                                                                       @RequestParam Integer months,
+                                                                                       @RequestParam(required = false) String category,
+                                                                                       @RequestParam(required = false) String shop) {
         if (discount.endsWith("%") && months > 0) {
             String number = discount.split("%")[0];
-            return ResponseEntity.ok(discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, (100 - Double.parseDouble(number)) * 0.01, months));
+            return ResponseEntity.ok(discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, (100 - Double.parseDouble(number)) * 0.01, months, category, shop));
         } else {
             return new ResponseEntity<>(new ApiResponse(Collections.singletonList("The discount should be a percentage.\nThe months must be positive."))
                     , HttpStatus.BAD_REQUEST);

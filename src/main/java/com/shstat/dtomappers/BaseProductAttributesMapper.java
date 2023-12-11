@@ -21,5 +21,6 @@ public class BaseProductAttributesMapper implements DTOMapper<Product, ProductDT
                 .getValue().iterator().next();
         productDTO.value.setOfferLink(offerUrl);
         productDTO.value.setImgSrc(product.value.getImgSrc());
+        productDTO.value.setCategories(product.value.getCategories());
     }
 }

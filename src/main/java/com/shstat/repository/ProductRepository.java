@@ -31,10 +31,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value = "SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE :category = c AND p.shop = :shop")
     Page<Product> findProductsByCategoriesInAndShop(String category, String shop, Pageable pageable);
 
+
+    //build dynamical view after scrap that holds all products historical low
     @Query(nativeQuery = true, value =
             """
                     SELECT pda.id AS id, pda.scrap_date, pda.price
                     FROM scrapdb.product AS p
+                    LEFT JOIN scrapdb.product_categories pc ON p.id = pc.product_id
                     JOIN scrapdb.product_based_on_date_attributes AS pda ON p.id = pda.product_id
                     JOIN (
                         SELECT product_id, MAX(scrap_date) AS max_date
@@ -42,7 +45,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                         WHERE price <> -1
                         GROUP BY product_id
                     ) AS latest_dates ON pda.product_id = latest_dates.product_id AND pda.scrap_date = latest_dates.max_date
-                    WHERE (pda.product_id, pda.price) IN (
+                    WHERE (:category IS NULL OR :category = pc.categories)
+                     AND p.shop = COALESCE(:shop, p.shop) AND (pda.product_id, pda.price)
+                     IN (
                         SELECT product_id, MIN(price) AS min_price
                         FROM scrapdb.product_based_on_date_attributes
                         WHERE price <> -1
@@ -56,7 +61,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                     ORDER BY pda.id;
                     """
     )
-    Page<ProductBasedOnDateAttributesNativeResInterface> historicalLowPriceProducts(Pageable pageable);
+    Page<ProductBasedOnDateAttributesNativeResInterface> historicalLowPriceProducts(Pageable pageable, String category, String shop);
 
     Product findProductByProductBasedOnDateAttributesId(Long id);
 
