@@ -91,7 +91,9 @@ public class ProductService {
                 allMapped.add(mappedProduct);
             } catch (MapperException e) {
                 System.err.println(e.getMessage());
-                messages.add(e.getMessage());
+                if (e.isSendErrorMessage()) {
+                    messages.add(e.getMessage());
+                }
             }
 //            System.out.println("Product " + i + " mapped. " + (products.size() - i) + " products left.");
             i++;
@@ -199,7 +201,7 @@ public class ProductService {
 
         if (product.getId() != null &&
                 productBasedOnDateAttributesRepository.existsByProductAndScrapDate(product, res.getScrapDate())) {
-            throw new MapperException(new StringFormattedMessage("Product %s was already mapped for given date!", product.getName()));
+            throw new MapperException(new StringFormattedMessage("Product %s was already mapped for given date!", product.getName()), false);
         }
 
         return res;
