@@ -12,7 +12,8 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "scrapDate"})})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "scrapDate"})},
+        indexes = {@Index(columnList = "formattedScrapDate"), @Index(columnList = "scrapDate")})
 public class ProductBasedOnDateAttributes {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

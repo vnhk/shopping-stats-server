@@ -10,6 +10,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@Table(indexes = {@Index(columnList = "name")})
 public abstract class ProductAttribute {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

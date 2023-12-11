@@ -12,7 +12,8 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "shop", "productListName", "productListUrl"})})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "shop", "productListName", "productListUrl"})},
+        indexes = {@Index(columnList = "shop"), @Index(columnList = "name")})
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
