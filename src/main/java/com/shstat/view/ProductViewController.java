@@ -55,10 +55,11 @@ public class ProductViewController {
     public ResponseEntity<ApiResponse> findXPercentLowerPriceThanHistoricalLow(Pageable pageable,
                                                                                @RequestParam String discount,
                                                                                @RequestParam(required = false) String category,
+                                                                               @RequestParam(required = false) boolean onlyActualOffers,
                                                                                @RequestParam(required = false) String shop) {
         if (discount.endsWith("%")) {
             String number = discount.split("%")[0];
-            return ResponseEntity.ok(discountsViewService.findXPercentLowerPriceThanHistoricalLow(pageable, (100 - Double.parseDouble(number)) * 0.01, category, shop));
+            return ResponseEntity.ok(discountsViewService.findXPercentLowerPriceThanHistoricalLow(pageable, Double.parseDouble(number), category, shop, onlyActualOffers));
         }
 
         return new ResponseEntity<>(new ApiResponse(Collections.singletonList("The discount should be a percentage"))

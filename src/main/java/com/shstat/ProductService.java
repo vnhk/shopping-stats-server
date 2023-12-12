@@ -246,6 +246,7 @@ public class ProductService {
 
     public ApiResponse refreshMaterializedViews() {
         productRepository.refreshHistoricalLowPricesTable();
+        productRepository.refreshLowerPricesThanHistoricalLowTable();
         //create indexes for category and shop
         return new ApiResponse(Collections.singletonList("Views refreshed."));
     }
