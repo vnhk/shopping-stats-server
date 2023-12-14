@@ -31,6 +31,7 @@ public class ProductController {
     }
 
     @GetMapping(path = "/categories")
+    @CrossOrigin(origins = "*")
     public ResponseEntity<Set<String>> getCategories() {
         Set<String> categories = searchService.findCategories();
         return ResponseEntity.ok(categories);
