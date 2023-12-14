@@ -60,15 +60,21 @@ public class SearchService {
         return productRepository.findCategories();
     }
 
-    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findHistoricalLowProducts(Pageable pageable, String category, String shop) {
-        return productRepository.historicalLowPriceProducts(pageable, category, shop);
+    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findHistoricalLowProducts(Pageable pageable, String category, String shop, String name) {
+        if (!(name == null || name.isBlank() || name.isEmpty())) {
+            name = "%" + name + "%";
+        }
+        return productRepository.historicalLowPriceProducts(pageable, category, shop, name);
     }
 
-    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discount, String category, String shop, boolean onlyActualOffers) {
+    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discount, String category, String shop, boolean onlyActualOffers, String name) {
+        if (!(name == null || name.isBlank() || name.isEmpty())) {
+            name = "%" + name + "%";
+        }
         if (onlyActualOffers) {
-            return productRepository.findActualXPercentLowerPriceThanHistoricalLow(pageable, discount, category, shop);
+            return productRepository.findActualXPercentLowerPriceThanHistoricalLow(pageable, discount, category, shop, name);
         } else {
-            return productRepository.findAllXPercentLowerPriceThanHistoricalLow(pageable, discount, category, shop);
+            return productRepository.findAllXPercentLowerPriceThanHistoricalLow(pageable, discount, category, shop, name);
         }
     }
 
