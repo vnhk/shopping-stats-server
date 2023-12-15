@@ -108,6 +108,39 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Modifying
     @Query(value = """
+            CREATE OR REPLACE TABLE LOWER_THAN_AVG_FOR_LAST_MONTH AS
+                                    WITH RankedPrices AS (SELECT product_id, AVG(price) AS average_price
+                                                          FROM scrapdb.product_based_on_date_attributes AS pda
+                                                          WHERE price <> -1
+                                                            AND MONTH(pda.scrap_date) = MONTH(CURRENT_DATE - INTERVAL 1 MONTH)
+                                                          GROUP BY product_id)
+                                    SELECT DISTINCT pda.id                                                                           AS id,
+                                                    pda.scrap_date                                                                   as scrap_date,
+                                                    pda.price                                                                        as price,
+                                                    rp.average_price                                                                 as avgPrice,
+                                                    p.name                                                                           AS product_name,
+                                                    p.shop                                                                           as shop,
+                                                    pc.categories                                                                    AS category,
+                                                    p.img_src                                                                        AS product_image_src,
+                                                    (IF(pda.price >= rp.average_price, 0, (1 - pda.price / rp.average_price) * 100)) AS discount_in_percent
+                                    FROM scrapdb.product_based_on_date_attributes pda
+                                             JOIN scrapdb.product p ON p.id = pda.product_id
+                                             JOIN RankedPrices rp ON p.id = rp.product_id
+                                             LEFT JOIN scrapdb.product_categories pc ON pda.product_id = pc.product_id
+                                    WHERE scrap_date >= DATE_SUB(CURDATE(), INTERVAL 2 DAY)
+                                      AND scrap_date < CURDATE()
+                                      AND pda.price < rp.average_price
+                                      AND pda.scrap_date in (SELECT MAX(scrap_date)
+                                                             FROM scrapdb.product_based_on_date_attributes AS pda1
+                                                             WHERE price <> -1
+                                                               AND pda.id = pda1.id)
+                                    ORDER BY pda.id;
+            """, nativeQuery = true)
+    @Transactional
+    void refreshLowerThanAVGForLastMonth();
+
+    @Modifying
+    @Query(value = """
             CREATE OR REPLACE TABLE LOWER_PRICES_THAN_HISTORICAL_LOW AS
             WITH RankedPrices AS (SELECT product_id, MIN(price) as min_price
                                   FROM scrapdb.product_based_on_date_attributes pda
@@ -144,6 +177,21 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                         """, nativeQuery = true)
     @Transactional
     void refreshLowerPricesThanHistoricalLowTable();
+
+    @Query(nativeQuery = true, value =
+            """
+                    SELECT DISTINCT id, scrap_date as scrapDate, price
+                    FROM scrapdb.LOWER_THAN_AVG_FOR_X_MONTHS
+                    WHERE category = COALESCE(:category, category)
+                        AND shop = COALESCE(:shop, shop)
+                        AND month_offset = :months
+                        AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
+                        AND UPPER(product_name) LIKE UPPER(COALESCE(:name, product_name))
+                        AND product_image_src is not null AND product_image_src <> '' AND TRIM(product_image_src) <> '' AND LENGTH(product_image_src) >= 10
+                    ORDER BY id;
+                    """
+    )
+    Page<ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name);
 
     interface ProductBasedOnDateAttributesNativeResInterface {
         Long getId();

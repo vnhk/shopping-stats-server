@@ -8,6 +8,9 @@ import com.shstat.repository.ProductBasedOnDateAttributesRepository;
 import com.shstat.repository.ProductRepository;
 import com.shstat.response.AddProductApiResponse;
 import com.shstat.response.ApiResponse;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -27,6 +30,8 @@ public class ProductService {
     private final ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository;
     private static final List<AttrFieldMappingVal<Field>> commonProductProperties;
     private static final List<AttrFieldMappingVal<Field>> productPerDateAttributeProperties;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     static {
         try {
@@ -95,7 +100,6 @@ public class ProductService {
                     messages.add(e.getMessage());
                 }
             }
-//            System.out.println("Product " + i + " mapped. " + (products.size() - i) + " products left.");
             i++;
         }
 
@@ -244,10 +248,51 @@ public class ProductService {
         return findProductBasedOnAttributes(res);
     }
 
+    @Transactional
     public ApiResponse refreshMaterializedViews() {
         productRepository.refreshHistoricalLowPricesTable();
         productRepository.refreshLowerPricesThanHistoricalLowTable();
+        productRepository.refreshLowerThanAVGForLastMonth();
+
+        lowerThanAVGForLastMonth();
+
         //create indexes for category and shop
         return new ApiResponse(Collections.singletonList("Views refreshed."));
+    }
+
+
+    private void lowerThanAVGForLastMonth() {
+        String createTableQuery = "CREATE OR REPLACE TABLE LOWER_THAN_AVG_FOR_X_MONTHS AS";
+        String sqlFor1MonthOffset = getSql(1);
+        String sqlFor3MonthOffset = getSql(3);
+        String sqlFor6MonthOffset = getSql(6);
+        String sqlFor12MonthOffset = getSql(12);
+        entityManager.createNativeQuery(createTableQuery + sqlFor1MonthOffset).executeUpdate();
+        String insertIntoQuery = "INSERT INTO LOWER_THAN_AVG_FOR_X_MONTHS";
+        entityManager.createNativeQuery(insertIntoQuery + sqlFor3MonthOffset).executeUpdate();
+        entityManager.createNativeQuery(insertIntoQuery + sqlFor6MonthOffset).executeUpdate();
+        entityManager.createNativeQuery(insertIntoQuery + sqlFor12MonthOffset).executeUpdate();
+    }
+
+    private static String getSql(int months) {
+        return " WITH RankedPrices AS (SELECT product_id, AVG(price) AS average_price FROM scrapdb.product_based_on_date_attributes AS pda " +
+                " WHERE price <> -1 AND MONTH(pda.scrap_date) = MONTH(CURRENT_DATE - INTERVAL " + months + " MONTH) GROUP BY product_id)" +
+                " SELECT DISTINCT pda.id AS id, pda.scrap_date AS scrap_date, pda.price AS price, rp.average_price AS avgPrice, " + months + " AS month_offset, " +
+                """
+                                p.name AS product_name, p.shop as shop, pc.categories AS category, p.img_src AS product_image_src,
+                                (IF(pda.price >= rp.average_price, 0, (1 - pda.price / rp.average_price) * 100)) AS discount_in_percent
+                        FROM scrapdb.product_based_on_date_attributes pda
+                                JOIN scrapdb.product p ON p.id = pda.product_id
+                                JOIN RankedPrices rp ON p.id = rp.product_id
+                                LEFT JOIN scrapdb.product_categories pc ON pda.product_id = pc.product_id
+                        WHERE scrap_date >= DATE_SUB(CURDATE(), INTERVAL 2 DAY)
+                                AND scrap_date < CURDATE()
+                                AND pda.price < rp.average_price
+                                AND pda.scrap_date in (SELECT MAX(scrap_date)
+                                                        FROM scrapdb.product_based_on_date_attributes AS pda1
+                                                        WHERE price <>-1
+                                                        AND pda.id = pda1.id)
+                                ORDER BY pda.id;
+                        """;
     }
 }

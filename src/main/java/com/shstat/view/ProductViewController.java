@@ -79,14 +79,21 @@ public class ProductViewController {
 
     @GetMapping(path = "/discounts-compared-to-avg-in-months")
     public ResponseEntity<ApiResponse> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable,
-                                                                                       @RequestParam String discount,
+                                                                                       @RequestParam String discountMin,
+                                                                                       @RequestParam String discountMax,
                                                                                        @RequestParam Integer months,
                                                                                        @RequestParam(required = false) String name,
                                                                                        @RequestParam(required = false) String category,
                                                                                        @RequestParam(required = false) String shop) {
-        if (discount.endsWith("%") && months > 0) {
-            String number = discount.split("%")[0];
-            return ResponseEntity.ok(discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, (100 - Double.parseDouble(number)) * 0.01, months, category, shop));
+        if (category != null && StringUtils.isBlank(category.trim())) {
+            category = null;
+        }
+
+        if (discountMin.endsWith("%") && discountMax.endsWith("%")) {
+            String numberMin = discountMin.split("%")[0];
+            String numberMax = discountMax.split("%")[0];
+            return ResponseEntity.ok(discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, Double.parseDouble(numberMin),
+                    Double.parseDouble(numberMax), months, category, shop, name));
         } else {
             return new ResponseEntity<>(new ApiResponse(Collections.singletonList("The discount should be a percentage.\nThe months must be positive."))
                     , HttpStatus.BAD_REQUEST);
