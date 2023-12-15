@@ -58,6 +58,8 @@ public class ProductViewController {
     public ResponseEntity<ApiResponse> findXPercentLowerPriceThanHistoricalLow(Pageable pageable,
                                                                                @RequestParam String discountMin,
                                                                                @RequestParam String discountMax,
+                                                                               @RequestParam(required = false) Integer prevPriceMin,
+                                                                               @RequestParam(required = false) Integer prevPriceMax,
                                                                                @RequestParam(required = false) String category,
                                                                                @RequestParam(required = false) String name,
                                                                                @RequestParam(required = false) boolean onlyActualOffers,
@@ -70,7 +72,7 @@ public class ProductViewController {
             String numberMin = discountMin.split("%")[0];
             String numberMax = discountMax.split("%")[0];
             return ResponseEntity.ok(discountsViewService.findXPercentLowerPriceThanHistoricalLow(pageable, Double.parseDouble(numberMin),
-                    Double.parseDouble(numberMax), category, shop, onlyActualOffers, name));
+                    Double.parseDouble(numberMax), category, shop, onlyActualOffers, name, prevPriceMin, prevPriceMax));
         }
 
         return new ResponseEntity<>(new ApiResponse(Collections.singletonList("The discount should be a percentage"))
