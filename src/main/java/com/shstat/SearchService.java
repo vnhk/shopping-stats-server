@@ -67,14 +67,14 @@ public class SearchService {
         return productRepository.historicalLowPriceProducts(pageable, category, shop, name);
     }
 
-    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discount, String category, String shop, boolean onlyActualOffers, String name) {
+    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discountMin, Double discountMax, String category, String shop, boolean onlyActualOffers, String name) {
         if (!(name == null || name.isBlank() || name.isEmpty())) {
             name = "%" + name + "%";
         }
         if (onlyActualOffers) {
-            return productRepository.findActualXPercentLowerPriceThanHistoricalLow(pageable, discount, category, shop, name);
+            return productRepository.findActualXPercentLowerPriceThanHistoricalLow(pageable, discountMin, discountMax, category, shop, name);
         } else {
-            return productRepository.findAllXPercentLowerPriceThanHistoricalLow(pageable, discount, category, shop, name);
+            return productRepository.findAllXPercentLowerPriceThanHistoricalLow(pageable, discountMin, discountMax, category, shop, name);
         }
     }
 

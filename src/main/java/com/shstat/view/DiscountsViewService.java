@@ -46,8 +46,8 @@ public class DiscountsViewService extends ViewBuilder {
         return buildResponse(pageable, historicalLowProducts);
     }
 
-    public SearchApiResponse findXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discount, String category, String shop, boolean onlyActualOffers, String name) {
-        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findXPercentLowerPriceThanHistoricalLow(pageable, discount,
+    public SearchApiResponse findXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discountMin, Double discountMax, String category, String shop, boolean onlyActualOffers, String name) {
+        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findXPercentLowerPriceThanHistoricalLow(pageable, discountMin, discountMax,
                 category, shop, onlyActualOffers, name);
         return buildResponse(pageable, historicalLowProducts);
     }

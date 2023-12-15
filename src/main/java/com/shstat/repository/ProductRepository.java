@@ -53,12 +53,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                     FROM scrapdb.LOWER_PRICES_THAN_HISTORICAL_LOW
                     WHERE category = COALESCE(:category, category)
                         AND shop = COALESCE(:shop, shop)
-                        AND discount_in_percent >= :discount
+                        AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
                         AND UPPER(product_name) LIKE UPPER(COALESCE(:name, product_name))
+                        AND product_image_src is not null AND product_image_src <> '' AND TRIM(product_image_src) <> '' AND LENGTH(product_image_src) >= 10
                     ORDER BY id;
                     """
     )
-    Page<ProductBasedOnDateAttributesNativeResInterface> findAllXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discount, String category, String shop, String name);
+    Page<ProductBasedOnDateAttributesNativeResInterface> findAllXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discountMin, Double discountMax, String category, String shop, String name);
 
     @Query(nativeQuery = true, value =
             """
@@ -66,14 +67,15 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                     FROM scrapdb.LOWER_PRICES_THAN_HISTORICAL_LOW
                     WHERE category = COALESCE(:category, category)
                         AND shop = COALESCE(:shop, shop)
-                        AND discount_in_percent >= :discount
+                        AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
+                        AND product_image_src is not null AND product_image_src <> '' AND TRIM(product_image_src) <> '' AND LENGTH(product_image_src) >= 10
                         AND scrap_date >= DATE_SUB(CURDATE(), INTERVAL 2 DAY)
                                          AND scrap_date < CURDATE()
                         AND UPPER(product_name) LIKE UPPER(COALESCE(:name, product_name))
                     ORDER BY id;
                     """
     )
-    Page<ProductBasedOnDateAttributesNativeResInterface> findActualXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discount, String category, String shop, String name);
+    Page<ProductBasedOnDateAttributesNativeResInterface> findActualXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discountMin, Double discountMax, String category, String shop, String name);
 
     @Query(value = "SELECT DISTINCT p.categories FROM Product p")
     Set<String> findCategories();
@@ -81,7 +83,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Modifying
     @Query(value = """
             CREATE OR REPLACE TABLE HISTORICAL_LOW_PRICES_TABLE AS
-            SELECT pda.id AS id, pda.scrap_date, pda.price, p.name as product_name, p.shop, pc.categories
+            SELECT pda.id AS id, pda.scrap_date, pda.price, p.name as product_name, p.shop, pc.categories, p.img_src as product_image_src
             FROM scrapdb.product AS p
                      JOIN scrapdb.product_categories pc ON p.id = pc.product_id
                      JOIN scrapdb.product_based_on_date_attributes AS pda ON p.id = pda.product_id
@@ -122,6 +124,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                             rp1.min_price                       AS historical_low_price,
                             (IF(pda.price >= rp1.min_price, 0, (1 - pda.price / rp1.min_price) * 100))   AS discount_in_percent,
                             p.shop                              AS shop,
+                            p.img_src                           AS product_image_src,
                             p.name                              AS product_name,
                             pc.categories                       AS category,
                             pda.product_id                      AS product_id

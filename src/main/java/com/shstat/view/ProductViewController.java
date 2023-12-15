@@ -1,6 +1,7 @@
 package com.shstat.view;
 
 import com.shstat.response.ApiResponse;
+import io.micrometer.common.util.StringUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,19 +48,29 @@ public class ProductViewController {
                                                                       @RequestParam(required = false) String category,
                                                                       @RequestParam(required = false) String name,
                                                                       @RequestParam(required = false) String shop) {
+        if (category != null && StringUtils.isBlank(category.trim())) {
+            category = null;
+        }
         return ResponseEntity.ok(discountsViewService.findHistoricalLowPriceProducts(pageable, category, shop, name));
     }
 
     @GetMapping(path = "/historical-low-discount")
     public ResponseEntity<ApiResponse> findXPercentLowerPriceThanHistoricalLow(Pageable pageable,
-                                                                               @RequestParam String discount,
+                                                                               @RequestParam String discountMin,
+                                                                               @RequestParam String discountMax,
                                                                                @RequestParam(required = false) String category,
                                                                                @RequestParam(required = false) String name,
                                                                                @RequestParam(required = false) boolean onlyActualOffers,
                                                                                @RequestParam(required = false) String shop) {
-        if (discount.endsWith("%")) {
-            String number = discount.split("%")[0];
-            return ResponseEntity.ok(discountsViewService.findXPercentLowerPriceThanHistoricalLow(pageable, Double.parseDouble(number), category, shop, onlyActualOffers, name));
+        if (category != null && StringUtils.isBlank(category.trim())) {
+            category = null;
+        }
+
+        if (discountMin.endsWith("%") && discountMax.endsWith("%")) {
+            String numberMin = discountMin.split("%")[0];
+            String numberMax = discountMax.split("%")[0];
+            return ResponseEntity.ok(discountsViewService.findXPercentLowerPriceThanHistoricalLow(pageable, Double.parseDouble(numberMin),
+                    Double.parseDouble(numberMax), category, shop, onlyActualOffers, name));
         }
 
         return new ResponseEntity<>(new ApiResponse(Collections.singletonList("The discount should be a percentage"))
