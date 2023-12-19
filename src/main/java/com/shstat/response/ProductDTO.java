@@ -18,5 +18,6 @@ public class ProductDTO {
     private PriceDTO minPrice;
     private BigDecimal avgPrice;
     private PriceDTO maxPrice;
+    private Double discount;
     private List<PriceDTO> prices;
 }

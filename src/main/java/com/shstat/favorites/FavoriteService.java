@@ -1,13 +1,11 @@
 package com.shstat.favorites;
 
 import com.shstat.ProductService;
-import com.shstat.entity.Product;
 import com.shstat.response.ApiResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -41,11 +39,18 @@ public class FavoriteService {
             //now - only first rule is supported
             String sql = "";
             for (FavoritesRule rule : rules) {
-                sql = " SELECT DISTINCT p.id as product_id, p.name as product_name, p.shop, pc.categories as category, pda.price, :listName as list_name " +
+                sql = "   WITH RankedPrices AS (SELECT DISTINCT product_id, AVG(price) AS average_price FROM scrapdb.product_based_on_date_attributes AS pda " +
+                        " WHERE price <> -1 AND MONTH(pda.scrap_date) > MONTH(CURRENT_DATE - INTERVAL 3 MONTH) GROUP BY product_id)" +
+                        " SELECT DISTINCT p.id as product_id, p.name as product_name, p.shop, pc.categories as category, pda.price," +
+                        " :listName as list_name, rp.average_price as avg_price, p.img_src as img_src, pda.scrap_date, ptav.value as offer_url, " +
+                        " (IF(pda.price >= rp.average_price, 0, (1 - pda.price / rp.average_price) * 100)) as discount_in_percent " +
                         " FROM scrapdb.product p " +
+                        " JOIN RankedPrices rp on p.id = rp.product_id " +
                         " JOIN scrapdb.product_categories pc on p.id = pc.product_id " +
                         " JOIN scrapdb.product_based_on_date_attributes pda on p.id = pda.product_id " +
-                        " WHERE pda.scrap_date in (SELECT MAX(scrap_date) " +
+                        " JOIN scrapdb.product_list_text_attribute pta on p.id = pta.product_id " +
+                        " JOIN scrapdb.product_list_text_attribute_value ptav on pta.id = ptav.product_list_text_attribute_id " +
+                        " WHERE pta.name = 'Offer Url' AND pda.scrap_date = (SELECT MAX(scrap_date) " +
                         "            FROM scrapdb.product_based_on_date_attributes AS pda1 " +
                         "            WHERE price <> -1 " +
                         "            AND pda.id = pda1.id) " +
@@ -55,14 +60,14 @@ public class FavoriteService {
                         " AND pda.price <> -1 " +
                         " AND pc.categories = COALESCE(:category, pc.categories) " +
                         " AND p.shop = COALESCE(:shop, p.shop) " +
-                        " AND p.id = COALESCE(:product_id, p.id) " +
+                        " AND p.id = COALESCE(:productId, p.id) " +
                         " AND UPPER(p.name) LIKE UPPER(COALESCE(:productName, p.name)) ";
 
                 entityManager.createNativeQuery(createTableQuery + sql)
                         .setParameter("listName", list.getListName())
                         .setParameter("category", rule.getCategory())
                         .setParameter("shop", rule.getShop())
-                        .setParameter("product_id", rule.getProductId())
+                        .setParameter("productId", rule.getProductId())
                         .setParameter("productName", rule.getProductName())
                         .executeUpdate();
                 break;
@@ -76,10 +81,8 @@ public class FavoriteService {
     }
 
 
-    public Page<Product> getFavorites(Pageable pageable, String favoritesListName, String shop, String category) {
-        Page<FavoritesListRepository.ProductProjection> favorites = favoritesListRepository.findFavorites(favoritesListName, shop, category, pageable);
-        List<Product> products = productService.findAllByIds(favorites.getContent().stream().map(FavoritesListRepository.ProductProjection::getId).collect(Collectors.toSet()));
-        return new PageImpl<>(products, pageable, favorites.getTotalElements());
+    public Page<FavoritesListRepository.ProductProjection> getFavorites(Pageable pageable, String favoritesListName, String shop, String category) {
+        return favoritesListRepository.findFavorites(favoritesListName, shop, category, pageable);
     }
 
     public Set<String> getLists() {

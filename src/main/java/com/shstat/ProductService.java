@@ -275,8 +275,8 @@ public class ProductService {
     }
 
     private static String getSql(int months) {
-        return " WITH RankedPrices AS (SELECT product_id, AVG(price) AS average_price FROM scrapdb.product_based_on_date_attributes AS pda " +
-                " WHERE price <> -1 AND MONTH(pda.scrap_date) = MONTH(CURRENT_DATE - INTERVAL " + months + " MONTH) GROUP BY product_id)" +
+        return " WITH RankedPrices AS (SELECT DISTINCT product_id, AVG(price) AS average_price FROM scrapdb.product_based_on_date_attributes AS pda " +
+                " WHERE price <> -1 AND MONTH(pda.scrap_date) > MONTH(CURRENT_DATE - INTERVAL " + months + " MONTH) GROUP BY product_id)" +
                 " SELECT DISTINCT pda.id AS id, pda.scrap_date AS scrap_date, pda.price AS price, rp.average_price AS avgPrice, " + months + " AS month_offset, " +
                 """
                                 p.name AS product_name, p.shop as shop, pc.categories AS category, p.img_src AS product_image_src,
