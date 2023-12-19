@@ -219,7 +219,7 @@ public class ProductService {
         if (product.isPresent()) {
             //update categories
             product.get().setCategories(res.getCategories());
-            if (res.getImgSrc() != null) {
+            if (res.getImgSrc() != null && res.getImgSrc().length() > 10) {
                 //update image src
                 product.get().setImgSrc(res.getImgSrc());
             }
