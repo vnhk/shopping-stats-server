@@ -295,4 +295,8 @@ public class ProductService {
                                 ORDER BY pda.id;
                         """;
     }
+
+    public List<Product> findAllByIds(Collection<Long> ids) {
+        return productRepository.findAllById(ids);
+    }
 }
