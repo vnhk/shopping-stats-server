@@ -20,19 +20,19 @@ public class FavoritesViewService extends ViewBuilder {
     private final FavoriteService favoriteService;
 
     public FavoritesViewService(FavoriteService favoriteService,
-                                List<? extends DTOMapper<FavoritesListRepository.ProductProjection, ProductDTO>> productMappers) {
+                                List<? extends DTOMapper<FavoriteProduct, ProductDTO>> productMappers) {
         super(productMappers);
         this.favoriteService = favoriteService;
     }
 
     public SearchApiResponse favoriteService(Pageable pageable, String favoritesListName, String category, String shop) {
-        Page<FavoritesListRepository.ProductProjection> favorites = favoriteService.getFavorites(pageable, favoritesListName, shop, category);
+        Page<FavoriteProduct> favorites = favoriteService.getFavorites(pageable, favoritesListName, shop, category);
         return findProductGetResponse(favorites, pageable);
     }
 
-    private SearchApiResponse findProductGetResponse(Page<FavoritesListRepository.ProductProjection> products, Pageable pageable) {
+    private SearchApiResponse findProductGetResponse(Page<FavoriteProduct> products, Pageable pageable) {
         List<Object> result = new ArrayList<>();
-        for (FavoritesListRepository.ProductProjection product : products) {
+        for (FavoriteProduct product : products) {
             ProductDTO productDTO = new ProductDTO();
             mappersSubSet(Collections.singleton(FavoritesBasicMapper.class))
                     .forEach(m -> m.map(DataHolder.of(product), DataHolder.of(productDTO)));

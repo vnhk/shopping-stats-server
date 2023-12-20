@@ -4,14 +4,14 @@ import com.shstat.ProductService;
 import com.shstat.response.ApiResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,30 +19,34 @@ public class FavoriteService {
     @PersistenceContext
     private EntityManager entityManager;
     private final FavoritesListRepository favoritesListRepository;
+    private final FavoriteProductsRepository favoriteProductsRepository;
     private final ProductService productService;
 
-    public FavoriteService(FavoritesListRepository favoritesListRepository, ProductService productService) {
+    public FavoriteService(FavoritesListRepository favoritesListRepository,
+                           FavoriteProductsRepository favoriteProductsRepository,
+                           ProductService productService) {
         this.favoritesListRepository = favoritesListRepository;
+        this.favoriteProductsRepository = favoriteProductsRepository;
         this.productService = productService;
     }
 
     @Transactional
     public ApiResponse refreshTableForFavorites() {
-        String createTableQuery = "CREATE OR REPLACE TABLE FAVORITES_TABLE_VIEW AS ";
-        String insertIntoQuery = "INSERT INTO FAVORITES_TABLE_VIEW ";
-
+        favoriteProductsRepository.deleteAll();
         List<FavoritesList> lists = favoritesListRepository.findAll();
         for (FavoritesList list : lists) {
             Set<FavoritesRule> rules = list.getFavoritesRules();
-            //more than one rule will be connected with AND or OR but hardcoded...
-            //in the future
-            //now - only first rule is supported
-            String sql = "";
+            boolean firstRule = true;
+            Set<FavoriteProduct> intersectSetForRules = new HashSet<>();
             for (FavoritesRule rule : rules) {
-                sql = "   WITH RankedPrices AS (SELECT DISTINCT product_id, AVG(price) AS average_price FROM scrapdb.product_based_on_date_attributes AS pda " +
+                Set<FavoriteProduct> toBeRemoved = new HashSet<>();
+                String productName = rule.getProductName();
+                String productNameSQL = buildProductNameSQL(productName);
+
+                String sql = "   WITH RankedPrices AS (SELECT DISTINCT product_id, AVG(price) AS average_price FROM scrapdb.product_based_on_date_attributes AS pda " +
                         " WHERE price <> -1 AND MONTH(pda.scrap_date) > MONTH(CURRENT_DATE - INTERVAL 3 MONTH) GROUP BY product_id)" +
                         " SELECT DISTINCT p.id as product_id, p.name as product_name, p.shop, pc.categories as category, pda.price," +
-                        " :listName as list_name, rp.average_price as avg_price, p.img_src as img_src, pda.scrap_date, ptav.value as offer_url, " +
+                        " :listName as list_name, rp.average_price as avg_price, p.img_src, pda.scrap_date, ptav.value as offer_url, " +
                         " (IF(pda.price >= rp.average_price, 0, (1 - pda.price / rp.average_price) * 100)) as discount_in_percent " +
                         " FROM scrapdb.product p " +
                         " JOIN RankedPrices rp on p.id = rp.product_id " +
@@ -54,34 +58,103 @@ public class FavoriteService {
                         "            FROM scrapdb.product_based_on_date_attributes AS pda1 " +
                         "            WHERE price <> -1 " +
                         "            AND pda.id = pda1.id) " +
-                        (rule.isOnlyActive() ?
-                                "            AND scrap_date >= DATE_SUB(CURDATE(), INTERVAL 2 DAY) " +
-                                        "    AND scrap_date < CURDATE()" : "") +
+                        (
+                                rule.isOnlyActive() ?
+                                        "            AND scrap_date >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) " +
+                                                "    AND scrap_date < CURDATE()" : ""
+                        ) +
                         " AND pda.price <> -1 " +
-                        " AND pc.categories = COALESCE(:category, pc.categories) " +
-                        " AND p.shop = COALESCE(:shop, p.shop) " +
+                        (
+                                rule.getCategory() == null ? "" :
+                                        " AND pc.categories in :category "
+                        ) +
+                        (
+                                rule.getShop() == null ? "" :
+                                        " AND p.shop in :shop "
+                        )
+                        +
                         " AND p.id = COALESCE(:productId, p.id) " +
-                        " AND UPPER(p.name) LIKE UPPER(COALESCE(:productName, p.name)) ";
+                        " AND ( " + productNameSQL + " )";
 
-                entityManager.createNativeQuery(createTableQuery + sql)
+                Query query = entityManager.createNativeQuery(sql)
                         .setParameter("listName", list.getListName())
-                        .setParameter("category", rule.getCategory())
-                        .setParameter("shop", rule.getShop())
-                        .setParameter("productId", rule.getProductId())
-                        .setParameter("productName", rule.getProductName())
-                        .executeUpdate();
-                break;
+                        .setParameter("productId", rule.getProductId());
+                if (rule.getCategory() != null) {
+                    query = query.setParameter("category", getSplit(rule.getCategory()));
+                }
+                if (rule.getShop() != null) {
+                    query = query.setParameter("shop", getSplit(rule.getShop()));
+                }
+
+                if (productName != null) {
+                    String[] productNames = productName.split(";");
+                    int names = productNames.length;
+
+                    for (int i = 0; i < names; i++) {
+                        query = query.setParameter("name" + i, productNames[i]);
+                    }
+                }
+
+                Set<FavoriteProduct> resultList = map(query.getResultList());
+                if (firstRule) {
+                    intersectSetForRules.addAll(resultList);
+                } else {
+                    for (FavoriteProduct o : intersectSetForRules) {
+                        if (!resultList.contains(o)) {
+                            toBeRemoved.add(o);
+                        }
+                    }
+
+                    intersectSetForRules.removeAll(toBeRemoved);
+                }
+                firstRule = false;
             }
+            List<FavoriteProduct> favoriteProducts = favoriteProductsRepository.saveAll(intersectSetForRules);
+
             //now - only first list is supported...
             //todo - support for many lists
             break;
         }
 
+
         return new ApiResponse(Collections.singletonList("Views refreshed."));
     }
 
+    private List<String> getSplit(String param) {
+        return Arrays.stream(param.split(";")).collect(Collectors.toList());
+    }
 
-    public Page<FavoritesListRepository.ProductProjection> getFavorites(Pageable pageable, String favoritesListName, String shop, String category) {
+    private String buildProductNameSQL(String productName) {
+        if (productName == null) {
+            return "1=1";
+        }
+
+        String[] productNames = productName.split(";");
+        String format = " UPPER(p.name) LIKE UPPER(COALESCE(:%s, p.name)) ";
+        StringBuilder res = new StringBuilder();
+
+        int i = 0;
+        for (; i < productNames.length - 1; i++) {
+            res.append(String.format(format, "name" + i)).append(" OR ");
+        }
+
+        return (res + String.format(format, "name" + i)).trim();
+    }
+
+    private Set<FavoriteProduct> map(List<Object[]> res) {
+        Set<FavoriteProduct> favoriteProducts = new HashSet<>();
+        for (Object[] item : res) {
+            FavoriteProduct favoriteProduct = new FavoriteProduct(null, (Long) item[0],
+                    (String) item[1], (String) item[2], (String) item[3], (BigDecimal) item[4],
+                    (String) item[5], (BigDecimal) item[6], (String) item[7], (Date) item[8], (String) item[9], ((BigDecimal) item[10]));
+            favoriteProducts.add(favoriteProduct);
+        }
+
+        return favoriteProducts;
+    }
+
+
+    public Page<FavoriteProduct> getFavorites(Pageable pageable, String favoritesListName, String shop, String category) {
         return favoritesListRepository.findFavorites(favoritesListName, shop, category, pageable);
     }
 
