@@ -110,10 +110,6 @@ public class FavoriteService {
                 firstRule = false;
             }
             List<FavoriteProduct> favoriteProducts = favoriteProductsRepository.saveAll(intersectSetForRules);
-
-            //now - only first list is supported...
-            //todo - support for many lists
-            break;
         }
 
 
