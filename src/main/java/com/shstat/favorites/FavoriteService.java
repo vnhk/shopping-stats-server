@@ -71,6 +71,14 @@ public class FavoriteService {
                         (
                                 rule.getShop() == null ? "" :
                                         " AND p.shop in :shop "
+                        ) +
+                        (
+                                rule.getPriceMin() == null ? "" :
+                                        " AND pda.price >= :priceMin "
+                        ) +
+                        (
+                                rule.getPriceMax() == null ? "" :
+                                        " AND pda.price <= :priceMax "
                         )
                         +
                         " AND p.id = COALESCE(:productId, p.id) " +
@@ -84,6 +92,12 @@ public class FavoriteService {
                 }
                 if (rule.getShop() != null) {
                     query = query.setParameter("shop", getSplit(rule.getShop()));
+                }
+                if (rule.getPriceMin() != null) {
+                    query = query.setParameter("priceMin", rule.getPriceMin());
+                }
+                if (rule.getPriceMax() != null) {
+                    query = query.setParameter("priceMax", rule.getPriceMax());
                 }
 
                 if (productName != null) {
