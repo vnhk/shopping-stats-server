@@ -21,6 +21,7 @@ public class FavoritesList {
     @NotNull
     @Size(min = 3, max = 300)
     private String listName;
+    private boolean disabled;
     @ManyToOne
     @JoinColumn(name = "product_email_notification_id")
     private ProductEmailNotification productEmailNotification;

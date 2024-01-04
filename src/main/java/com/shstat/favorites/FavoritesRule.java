@@ -26,6 +26,7 @@ public class FavoritesRule {
     private BigDecimal priceMax;
     private String category;
     private boolean onlyActive;
+    private boolean disabled;
     @ManyToOne
     @JoinColumn(name = "favorites_list_id")
     private FavoritesList favoritesList;

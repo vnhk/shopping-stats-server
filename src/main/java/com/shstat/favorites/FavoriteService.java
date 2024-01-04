@@ -35,10 +35,16 @@ public class FavoriteService {
         favoriteProductsRepository.deleteAll();
         List<FavoritesList> lists = favoritesListRepository.findAll();
         for (FavoritesList list : lists) {
+            if (list.isDisabled()) {
+                continue;
+            }
             Set<FavoritesRule> rules = list.getFavoritesRules();
             boolean firstRule = true;
             Set<FavoriteProduct> intersectSetForRules = new HashSet<>();
             for (FavoritesRule rule : rules) {
+                if (rule.isDisabled()) {
+                    continue;
+                }
                 Set<FavoriteProduct> toBeRemoved = new HashSet<>();
                 String productName = rule.getProductName();
                 String productNameSQL = buildProductNameSQL(productName);
