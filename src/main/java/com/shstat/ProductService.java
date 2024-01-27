@@ -97,8 +97,11 @@ public class ProductService {
 
     @JmsListener(destination = SAVE_PRODUCT_QUEUE)
     protected void addProductsListener(List<Map<String, Object>> products) {
-        ApiResponse apiResponse = addProducts(products);
-        System.out.println(apiResponse.getMessages());
+        for (int i = 0; i < products.size(); i += 5) {
+            List<Map<String, Object>> partialList = products.subList(i, 5);
+            ApiResponse apiResponse = addProducts(partialList);
+            System.out.println(apiResponse.getMessages());
+        }
     }
 
     public ApiResponse addProducts(List<Map<String, Object>> products) {
