@@ -18,7 +18,7 @@ public abstract class ProductAttribute {
     @NotNull
     @Size(min = 3, max = 300)
     protected String name;
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id")
     protected Product product;
 }

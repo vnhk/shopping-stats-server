@@ -23,6 +23,6 @@ public class ProductEmailNotification {
     private BigDecimal priceMax;
     private Double discount;
 
-    @OneToMany(mappedBy = "productEmailNotification")
+    @OneToMany(mappedBy = "productEmailNotification", fetch = FetchType.EAGER)
     private Set<FavoritesList> favoritesLists = new HashSet<>();
 }

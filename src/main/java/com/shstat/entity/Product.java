@@ -29,7 +29,7 @@ public class Product {
     private String imgSrc;
     @NotNull
     private String productListUrl;
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> categories = new HashSet<>();
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER, mappedBy = "product")
     private Set<ProductAttribute> attributes = new HashSet<>();

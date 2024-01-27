@@ -18,7 +18,7 @@ public class ProductBasedOnDateAttributes {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, optional = false)
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id")
     private Product product;
     @NotNull

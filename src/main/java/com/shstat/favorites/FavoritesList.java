@@ -25,6 +25,6 @@ public class FavoritesList {
     @ManyToOne
     @JoinColumn(name = "product_email_notification_id")
     private ProductEmailNotification productEmailNotification;
-    @OneToMany(mappedBy = "favoritesList")
+    @OneToMany(mappedBy = "favoritesList", fetch = FetchType.EAGER)
     private Set<FavoritesRule> favoritesRules = new HashSet<>();
 }
