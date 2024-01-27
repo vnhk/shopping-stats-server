@@ -1,5 +1,6 @@
 package com.shstat;
 
+import com.google.common.collect.Lists;
 import com.shstat.entity.Product;
 import com.shstat.entity.ProductAttribute;
 import com.shstat.entity.ProductBasedOnDateAttributes;
@@ -97,9 +98,9 @@ public class ProductService {
 
     @JmsListener(destination = SAVE_PRODUCT_QUEUE)
     protected void addProductsListener(List<Map<String, Object>> products) {
-        for (int i = 0; i < products.size(); i += 5) {
-            List<Map<String, Object>> partialList = products.subList(i, 5);
-            ApiResponse apiResponse = addProducts(partialList);
+        List<List<Map<String, Object>>> partition = Lists.partition(products, 5);
+        for (List<Map<String, Object>> p : partition) {
+            ApiResponse apiResponse = addProducts(p);
             System.out.println(apiResponse.getMessages());
         }
     }

@@ -3,6 +3,7 @@ package com.shstat;
 import jakarta.jms.ConnectionFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQPrefetchPolicy;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -24,6 +25,8 @@ public class ShoppingStatsServerApplication {
 		ActiveMQPrefetchPolicy policy = new ActiveMQPrefetchPolicy();
 		policy.setQueuePrefetch(1);
 		factory.setPrefetchPolicy(policy);
+		factory.setTrustAllPackages(true);
+
 		return factory;
 	}
 }
