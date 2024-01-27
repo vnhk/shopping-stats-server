@@ -33,7 +33,7 @@ public class Product {
     private Set<String> categories = new HashSet<>();
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER, mappedBy = "product")
     private Set<ProductAttribute> attributes = new HashSet<>();
-    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "product")
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "product", fetch = FetchType.EAGER)
     private Set<ProductBasedOnDateAttributes> productBasedOnDateAttributes = new HashSet<>();
 
     public void addAttribute(ProductAttribute productAttribute) {
