@@ -14,6 +14,9 @@ import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.annotation.JmsListener;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -32,6 +35,9 @@ public class ProductService {
     private static final List<AttrFieldMappingVal<Field>> productPerDateAttributeProperties;
     @PersistenceContext
     private EntityManager entityManager;
+    private static final String SAVE_PRODUCT_QUEUE = "SAVE_PRODUCT_QUEUE";
+    @Autowired
+    private JmsTemplate queue;
 
     static {
         try {
@@ -85,9 +91,19 @@ public class ProductService {
         this.productBasedOnDateAttributesRepository = productBasedOnDateAttributesRepository;
     }
 
+    public void addProductsAsync(List<Map<String, Object>> products) {
+        queue.convertAndSend(SAVE_PRODUCT_QUEUE, products);
+    }
+
+    @JmsListener(destination = SAVE_PRODUCT_QUEUE)
+    protected void addProductsListener(List<Map<String, Object>> products) {
+        ApiResponse apiResponse = addProducts(products);
+        System.out.println(apiResponse.getMessages());
+    }
+
     public ApiResponse addProducts(List<Map<String, Object>> products) {
-        List<Product> allMapped = new ArrayList<>();
-        List<String> messages = new ArrayList<>();
+        List<Product> allMapped = new LinkedList<>();
+        List<String> messages = new LinkedList<>();
         int i = 1;
         for (Map<String, Object> product : products) {
             try {
@@ -115,7 +131,7 @@ public class ProductService {
             String key = attrs.getKey();
             Object value = attrs.getValue();
             if (value instanceof Date) {
-                throw new RuntimeException("Not implemented for: " + attrs.toString());
+                throw new RuntimeException("Not implemented for: " + attrs);
             } else if (value instanceof String) {
                 Optional<ProductListTextAttribute> attrOpt = findProductAttr(product, key, ProductListTextAttribute.class);
                 if (attrOpt.isEmpty()) {

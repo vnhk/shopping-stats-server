@@ -4,6 +4,7 @@ import com.shstat.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +24,12 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<ApiResponse> addProducts(@RequestBody List<Map<String, Object>> products) {
         return ResponseEntity.ok(productService.addProducts(products));
+    }
+
+    @PostMapping(path = "/async")
+    public ResponseEntity<ApiResponse> addProductsAsync(@RequestBody List<Map<String, Object>> products) {
+        productService.addProductsAsync(products);
+        return ResponseEntity.ok().body(new ApiResponse(Collections.singletonList("Async processing in progress...")));
     }
 
     @PostMapping(path = "/refresh-materialized-views")
