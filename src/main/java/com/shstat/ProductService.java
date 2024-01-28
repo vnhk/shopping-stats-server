@@ -115,7 +115,7 @@ public class ProductService {
                 mappedProduct = productRepository.save(mappedProduct);
                 allMapped.add(mappedProduct);
             } catch (MapperException e) {
-                System.err.println(e.getMessage());
+//                System.err.println(e.getMessage());
                 if (e.isSendErrorMessage()) {
                     messages.add(e.getMessage());
                 }
