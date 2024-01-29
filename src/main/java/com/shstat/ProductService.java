@@ -11,13 +11,9 @@ import com.shstat.response.AddProductApiResponse;
 import com.shstat.response.ApiResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.annotation.JmsListener;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -36,9 +32,6 @@ public class ProductService {
     private static final List<AttrFieldMappingVal<Field>> productPerDateAttributeProperties;
     @PersistenceContext
     private EntityManager entityManager;
-    private static final String SAVE_PRODUCT_QUEUE = "SAVE_PRODUCT_QUEUE";
-    @Autowired
-    private JmsTemplate queue;
 
     static {
         try {
@@ -92,13 +85,8 @@ public class ProductService {
         this.productBasedOnDateAttributesRepository = productBasedOnDateAttributesRepository;
     }
 
-    public void addProductsAsync(List<Map<String, Object>> products) {
-        queue.convertAndSend(SAVE_PRODUCT_QUEUE, products);
-    }
-
-    @JmsListener(destination = SAVE_PRODUCT_QUEUE)
-    protected void addProductsListener(List<Map<String, Object>> products) {
-        List<List<Map<String, Object>>> partition = Lists.partition(products, 5);
+    public void addProductsByPartitions(List<Map<String, Object>> products) {
+        List<List<Map<String, Object>>> partition = Lists.partition(products, 50);
         for (List<Map<String, Object>> p : partition) {
             ApiResponse apiResponse = addProducts(p);
             System.out.println(apiResponse.getMessages());
@@ -268,20 +256,7 @@ public class ProductService {
         return findProductBasedOnAttributes(res);
     }
 
-    @Transactional
-    public ApiResponse refreshMaterializedViews() {
-        productRepository.refreshHistoricalLowPricesTable();
-        productRepository.refreshLowerPricesThanHistoricalLowTable();
-        productRepository.refreshLowerThanAVGForLastMonth();
-
-        lowerThanAVGForLastMonth();
-
-        //create indexes for category and shop
-        return new ApiResponse(Collections.singletonList("Views refreshed."));
-    }
-
-
-    private void lowerThanAVGForLastMonth() {
+    public void lowerThanAVGForLastMonth() {
         String createTableQuery = "CREATE OR REPLACE TABLE LOWER_THAN_AVG_FOR_X_MONTHS AS";
         String sqlFor1MonthOffset = getSql(1);
         String sqlFor3MonthOffset = getSql(3);
@@ -314,9 +289,5 @@ public class ProductService {
                                                         AND pda.id = pda1.id)
                                 ORDER BY pda.id;
                         """;
-    }
-
-    public List<Product> findAllByIds(Collection<Long> ids) {
-        return productRepository.findAllById(ids);
     }
 }

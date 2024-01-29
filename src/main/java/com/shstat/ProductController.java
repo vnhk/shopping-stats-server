@@ -1,10 +1,11 @@
 package com.shstat;
 
+import com.shstat.queue.AddProductsQueueParam;
+import com.shstat.queue.QueueService;
 import com.shstat.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,10 +16,12 @@ public class ProductController {
 
     private final ProductService productService;
     private final SearchService searchService;
+    private final QueueService queueService;
 
-    public ProductController(ProductService productService, SearchService searchService) {
+    public ProductController(ProductService productService, SearchService searchService, QueueService queueService) {
         this.productService = productService;
         this.searchService = searchService;
+        this.queueService = queueService;
     }
 
     @PostMapping
@@ -27,14 +30,13 @@ public class ProductController {
     }
 
     @PostMapping(path = "/async")
-    public ResponseEntity<ApiResponse> addProductsAsync(@RequestBody List<Map<String, Object>> products) {
-        productService.addProductsAsync(products);
-        return ResponseEntity.ok().body(new ApiResponse(Collections.singletonList("Async processing in progress...")));
+    public ResponseEntity<ApiResponse> addProductsAsync(@RequestBody AddProductsQueueParam products) {
+        return ResponseEntity.ok().body(queueService.addProductsAsync(products));
     }
 
     @PostMapping(path = "/refresh-materialized-views")
     public ResponseEntity<ApiResponse> refreshMaterializedViews() {
-        return ResponseEntity.ok(productService.refreshMaterializedViews());
+        return ResponseEntity.ok(queueService.refreshMaterializedViews());
     }
 
     @GetMapping(path = "/categories")
