@@ -1,5 +1,6 @@
 package com.shstat.favorites;
 
+import com.shstat.queue.QueueService;
 import com.shstat.response.ApiResponse;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.data.domain.Pageable;
@@ -14,15 +15,17 @@ import java.util.Set;
 public class FavoriteController {
     private final FavoriteService favoriteService;
     private final FavoritesViewService favoritesViewService;
+    private final QueueService queueService;
 
-    public FavoriteController(FavoriteService favoriteService, FavoritesViewService favoritesViewService) {
+    public FavoriteController(FavoriteService favoriteService, FavoritesViewService favoritesViewService, QueueService queueService) {
         this.favoriteService = favoriteService;
         this.favoritesViewService = favoritesViewService;
+        this.queueService = queueService;
     }
 
     @PostMapping(path = "/refresh-materialized-views")
     public ResponseEntity<ApiResponse> refreshMaterializedViews() {
-        return ResponseEntity.ok(favoriteService.refreshTableForFavorites());
+        return ResponseEntity.ok(queueService.refreshTableForFavorites());
     }
 
     @GetMapping

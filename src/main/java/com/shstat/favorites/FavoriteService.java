@@ -1,7 +1,5 @@
 package com.shstat.favorites;
 
-import com.shstat.ProductService;
-import com.shstat.response.ApiResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -20,18 +18,15 @@ public class FavoriteService {
     private EntityManager entityManager;
     private final FavoritesListRepository favoritesListRepository;
     private final FavoriteProductsRepository favoriteProductsRepository;
-    private final ProductService productService;
 
     public FavoriteService(FavoritesListRepository favoritesListRepository,
-                           FavoriteProductsRepository favoriteProductsRepository,
-                           ProductService productService) {
+                           FavoriteProductsRepository favoriteProductsRepository) {
         this.favoritesListRepository = favoritesListRepository;
         this.favoriteProductsRepository = favoriteProductsRepository;
-        this.productService = productService;
     }
 
     @Transactional
-    public ApiResponse refreshTableForFavorites() {
+    public void refreshTableForFavorites() {
         favoriteProductsRepository.deleteAll();
         List<FavoritesList> lists = favoritesListRepository.findAll();
         for (FavoritesList list : lists) {
@@ -131,9 +126,6 @@ public class FavoriteService {
             }
             List<FavoriteProduct> favoriteProducts = favoriteProductsRepository.saveAll(intersectSetForRules);
         }
-
-
-        return new ApiResponse(Collections.singletonList("Views refreshed."));
     }
 
     private List<String> getSplit(String param) {
