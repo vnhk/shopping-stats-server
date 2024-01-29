@@ -3,6 +3,8 @@ package com.shstat.queue;
 import com.shstat.ProductService;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
+
 @Service
 public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
     private final ProductService productService;
@@ -12,7 +14,7 @@ public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
     }
 
     @Override
-    public void run(Object param) {
+    public void run(Serializable param) {
         productService.addProductsByPartitions((AddProductsQueueParam) param);
     }
 }

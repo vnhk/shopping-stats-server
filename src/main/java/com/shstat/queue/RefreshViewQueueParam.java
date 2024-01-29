@@ -1,4 +1,6 @@
 package com.shstat.queue;
 
-public class RefreshViewQueueParam {
+import java.io.Serializable;
+
+public class RefreshViewQueueParam implements Serializable {
 }

@@ -96,19 +96,16 @@ public class ProductService {
     public ApiResponse addProducts(List<Map<String, Object>> products) {
         List<Product> allMapped = new LinkedList<>();
         List<String> messages = new LinkedList<>();
-        int i = 1;
         for (Map<String, Object> product : products) {
             try {
                 Product mappedProduct = mapProduct(product);
                 mappedProduct = productRepository.save(mappedProduct);
                 allMapped.add(mappedProduct);
             } catch (MapperException e) {
-//                System.err.println(e.getMessage());
-                if (e.isSendErrorMessage()) {
+                if (e.isSendErrorMessage() && e.getMessage() != null && !e.getMessage().isEmpty()) {
                     messages.add(e.getMessage());
                 }
             }
-            i++;
         }
 
         return new AddProductApiResponse(messages, allMapped.size(), products.size());
@@ -173,19 +170,6 @@ public class ProductService {
         }
 
         return product;
-    }
-
-    private static <T> Optional<T> findProductAttr(Product product, String key, Object value, Class<T> productAttrClass) {
-        return (Optional<T>) product.getAttributes().stream().filter(e -> e.getName().equals(key))
-                .filter(e -> e.getClass().isAssignableFrom(productAttrClass))
-                .filter(e -> {
-                    try {
-                        return e.getClass().getDeclaredMethod("getValue").invoke(e)
-                                .equals(value);
-                    } catch (Exception ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }).findFirst();
     }
 
     private static <T> Optional<T> findProductAttr(Product product, String key, Class<T> productAttrClass) {

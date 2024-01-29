@@ -4,6 +4,8 @@ import com.shstat.ProductService;
 import com.shstat.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
+
 @Service
 public class RefreshViewQueue extends AbstractQueue<RefreshViewQueueParam> {
     private final ProductService productService;
@@ -15,7 +17,7 @@ public class RefreshViewQueue extends AbstractQueue<RefreshViewQueueParam> {
     }
 
     @Override
-    public void run(Object object) {
+    public void run(Serializable object) {
         productRepository.refreshHistoricalLowPricesTable();
         productRepository.refreshLowerPricesThanHistoricalLowTable();
         productRepository.refreshLowerThanAVGForLastMonth();

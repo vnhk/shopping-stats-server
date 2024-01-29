@@ -1,4 +1,6 @@
 package com.shstat.queue;
 
-public class RefreshFavoritesViewsQueueParam {
+import java.io.Serializable;
+
+public class RefreshFavoritesViewsQueueParam implements Serializable {
 }

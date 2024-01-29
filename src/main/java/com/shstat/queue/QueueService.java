@@ -6,6 +6,7 @@ import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
 
@@ -33,19 +34,12 @@ public class QueueService {
         return new ApiResponse(Collections.singletonList("Views refreshing in progress..."));
     }
 
-    public ApiResponse refreshFavoritesViews() {
-        queue.convertAndSend(PRODUCT_PROCESSING_QUEUE, new RefreshViewQueueParam(), PRODUCT_PROCESSING_QUEUE);
-        //create indexes for category and shop
-        return new ApiResponse(Collections.singletonList("Views refreshing in progress..."));
-    }
-
-
     @JmsListener(destination = PRODUCT_PROCESSING_QUEUE)
     public void productProcessingQueue(ActiveMQObjectMessage message) throws JMSException {
         for (AbstractQueue<?> queueProcessor : queueProcessors) {
             Object object = message.getObject();
             if (queueProcessor.supports(object.getClass())) {
-                queueProcessor.run(object);
+                queueProcessor.run((Serializable) object);
             }
         }
     }
