@@ -94,6 +94,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                            WHERE price <> -1
                            GROUP BY product_id) AS latest_dates
                           ON pda.product_id = latest_dates.product_id AND pda.scrap_date = latest_dates.max_date
+                          AND pda.scrap_date >= DATE_SUB(CURDATE(), INTERVAL 2 DAY)
+                          AND pda.scrap_date < CURDATE()
             WHERE (pda.product_id, pda.price)
                 IN (SELECT product_id, MIN(price) AS min_price
                     FROM scrapdb.product_based_on_date_attributes
@@ -174,6 +176,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                    FROM scrapdb.product AS p
                             JOIN scrapdb.product_based_on_date_attributes AS pda ON p.id = pda.product_id
                    WHERE price <> -1
+                     AND scrap_date >= DATE_SUB(CURDATE(), INTERVAL 2 DAY)
+                     AND scrap_date < CURDATE()
                      AND rp1.product_id = pda.product_id)
             ORDER BY pda.id;
                         """, nativeQuery = true)
