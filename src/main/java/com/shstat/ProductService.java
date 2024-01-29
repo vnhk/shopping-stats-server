@@ -89,7 +89,9 @@ public class ProductService {
         List<List<Map<String, Object>>> partition = Lists.partition(products, 50);
         for (List<Map<String, Object>> p : partition) {
             ApiResponse apiResponse = addProducts(p);
-            System.out.println(apiResponse.getMessages());
+            if (apiResponse.getMessages() != null && !apiResponse.getMessages().isEmpty()) {
+                System.out.println(apiResponse.getMessages());
+            }
         }
     }
 
@@ -240,7 +242,7 @@ public class ProductService {
         return findProductBasedOnAttributes(res);
     }
 
-    public void lowerThanAVGForLastMonth() {
+    public void lowerThanAVGForLastXMonths() {
         String createTableQuery = "CREATE OR REPLACE TABLE LOWER_THAN_AVG_FOR_X_MONTHS AS";
         String sqlFor1MonthOffset = getSql(1);
         String sqlFor3MonthOffset = getSql(3);

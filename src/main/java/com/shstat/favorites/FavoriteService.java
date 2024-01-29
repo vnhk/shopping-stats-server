@@ -3,7 +3,6 @@ package com.shstat.favorites;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,6 @@ public class FavoriteService {
         this.favoriteProductsRepository = favoriteProductsRepository;
     }
 
-    @Transactional
     public void refreshTableForFavorites() {
         favoriteProductsRepository.deleteAll();
         List<FavoritesList> lists = favoritesListRepository.findAll();

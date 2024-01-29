@@ -105,7 +105,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                                       GROUP BY product_id)
             ORDER BY pda.id;
             """, nativeQuery = true)
-    @Transactional
     void refreshHistoricalLowPricesTable();
 
     @Modifying
@@ -138,7 +137,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                                                AND pda.id = pda1.id)
                                     ORDER BY pda.id;
             """, nativeQuery = true)
-    @Transactional
     void refreshLowerThanAVGForLastMonth();
 
     @Modifying
@@ -177,7 +175,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                      AND rp1.product_id = pda.product_id)
             ORDER BY pda.id;
                         """, nativeQuery = true)
-    @Transactional
     void refreshLowerPricesThanHistoricalLowTable();
 
     @Query(nativeQuery = true, value =

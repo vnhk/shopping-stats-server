@@ -29,7 +29,9 @@ public class QueueService {
     }
 
     public ApiResponse refreshMaterializedViews() {
-        queue.convertAndSend(PRODUCT_PROCESSING_QUEUE, new RefreshViewQueueParam(), PRODUCT_PROCESSING_QUEUE);
+        for (String viewName : RefreshViewQueue.views) {
+            queue.convertAndSend(PRODUCT_PROCESSING_QUEUE, new RefreshViewQueueParam(viewName), PRODUCT_PROCESSING_QUEUE);
+        }
         //create indexes for category and shop
         return new ApiResponse(Collections.singletonList("Views refreshing in progress..."));
     }
