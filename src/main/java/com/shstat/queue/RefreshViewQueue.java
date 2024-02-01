@@ -42,9 +42,9 @@ public class RefreshViewQueue extends AbstractQueue<RefreshViewQueueParam> {
             case lowerThanHistoricalLowPrices:
                 productRepository.refreshLowerPricesThanHistoricalLowTable();
                 break;
-            case lowerThanAvgForLastMonth:
-                productRepository.refreshLowerThanAVGForLastMonth();
-                break;
+//            case lowerThanAvgForLastMonth:
+//                productRepository.refreshLowerThanAVGForLastMonth();
+//                break;
             case lowerThanAvgForLastXMonths:
                 productService.lowerThanAVGForLastXMonths();
                 break;

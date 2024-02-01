@@ -27,9 +27,10 @@ import static com.shstat.AttrMapper.mappingError;
 @Service
 public class ProductService {
     private final ProductRepository productRepository;
+    private final ActualProductService actualProductService;
     private final ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository;
-    private static final List<AttrFieldMappingVal<Field>> commonProductProperties;
-    private static final List<AttrFieldMappingVal<Field>> productPerDateAttributeProperties;
+    public static final List<AttrFieldMappingVal<Field>> commonProductProperties;
+    public static final List<AttrFieldMappingVal<Field>> productPerDateAttributeProperties;
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -80,8 +81,11 @@ public class ProductService {
         }
     }
 
-    public ProductService(ProductRepository productRepository, ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository) {
+    public ProductService(ProductRepository productRepository,
+                          ActualProductService actualProductService,
+                          ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository) {
         this.productRepository = productRepository;
+        this.actualProductService = actualProductService;
         this.productBasedOnDateAttributesRepository = productBasedOnDateAttributesRepository;
     }
 
@@ -102,6 +106,7 @@ public class ProductService {
             try {
                 Product mappedProduct = mapProduct(product);
                 mappedProduct = productRepository.save(mappedProduct);
+                actualProductService.updateActualProducts(product, mappedProduct);
                 allMapped.add(mappedProduct);
             } catch (MapperException e) {
                 if (e.isSendErrorMessage() && e.getMessage() != null && !e.getMessage().isEmpty()) {
@@ -112,6 +117,7 @@ public class ProductService {
 
         return new AddProductApiResponse(messages, allMapped.size(), products.size());
     }
+
 
     private Product mapProduct(Map<String, Object> productToMap) {
         Product product = mapProductCommonAttr(productToMap);

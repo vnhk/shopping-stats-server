@@ -23,15 +23,25 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                                                            String productListName,
                                                                            String productListUrl);
 
-    List<Product> findByNameContainingAndShop(String name, String shop);
-
     Page<Product> findByNameContaining(String name, Pageable pageable);
+
+    @Query(nativeQuery = true, value =
+            """
+                    SELECT DISTINCT id, scrap_date as scrapDate, price
+                    FROM scrapdb.LOWER_THAN_AVG_FOR_X_MONTHS
+                    WHERE category = COALESCE(:category, category)
+                        AND shop = COALESCE(:shop, shop)
+                        AND month_offset = :months
+                        AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
+                        AND UPPER(product_name) LIKE UPPER(COALESCE(:name, product_name))
+                        AND product_image_src is not null AND product_image_src <> '' AND TRIM(product_image_src) <> '' AND LENGTH(product_image_src) >= 10
+                    ORDER BY id;
+                    """
+    )
+    Page<ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name);
 
     @Query(value = "SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE :category = c")
     Page<Product> findProductsByCategoriesIn(String category, Pageable pageable);
-
-    @Query(value = "SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE :category = c AND p.shop = :shop")
-    Page<Product> findProductsByCategoriesInAndShop(String category, String shop, Pageable pageable);
 
     @Query(nativeQuery = true, value =
             """
@@ -46,6 +56,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<ProductBasedOnDateAttributesNativeResInterface> historicalLowPriceProducts(Pageable pageable, String category, String shop, String name);
 
     Product findProductByProductBasedOnDateAttributesId(Long id);
+
+    @Query(value = "SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE :category = c AND p.shop = :shop")
+    Page<Product> findProductsByCategoriesInAndShop(String category, String shop, Pageable pageable);
 
     @Query(nativeQuery = true, value =
             """
@@ -183,21 +196,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                         """, nativeQuery = true)
     @Transactional
     void refreshLowerPricesThanHistoricalLowTable();
-
-    @Query(nativeQuery = true, value =
-            """
-                    SELECT DISTINCT id, scrap_date as scrapDate, price
-                    FROM scrapdb.LOWER_THAN_AVG_FOR_X_MONTHS
-                    WHERE category = COALESCE(:category, category)
-                        AND shop = COALESCE(:shop, shop)
-                        AND month_offset = :months
-                        AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
-                        AND UPPER(product_name) LIKE UPPER(COALESCE(:name, product_name))
-                        AND product_image_src is not null AND product_image_src <> '' AND TRIM(product_image_src) <> '' AND LENGTH(product_image_src) >= 10
-                    ORDER BY id;
-                    """
-    )
-    Page<ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name);
 
     interface ProductBasedOnDateAttributesNativeResInterface {
         Long getId();
