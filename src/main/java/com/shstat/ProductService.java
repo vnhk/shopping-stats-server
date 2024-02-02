@@ -105,9 +105,10 @@ public class ProductService {
         List<String> messages = new LinkedList<>();
         for (Map<String, Object> product : products) {
             try {
+                Object date = product.get("Date");
                 Product mappedProduct = mapProduct(product);
                 mappedProduct = productRepository.save(mappedProduct);
-                actualProductService.updateActualProducts(product, mappedProduct);
+                actualProductService.updateActualProducts(date, mappedProduct);
                 allMapped.add(mappedProduct);
             } catch (MapperException e) {
                 if (e.isSendErrorMessage() && e.getMessage() != null && !e.getMessage().isEmpty()) {
