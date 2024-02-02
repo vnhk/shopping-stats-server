@@ -11,6 +11,7 @@ import com.shstat.response.AddProductApiResponse;
 import com.shstat.response.ApiResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -248,6 +249,7 @@ public class ProductService {
         return findProductBasedOnAttributes(res);
     }
 
+    @Transactional
     public void lowerThanAVGForLastXMonths() {
         String createTableQuery = "CREATE OR REPLACE TABLE LOWER_THAN_AVG_FOR_X_MONTHS AS";
         String sqlFor1MonthOffset = getSql(1);
@@ -272,13 +274,8 @@ public class ProductService {
                                 JOIN scrapdb.product p ON p.id = pda.product_id
                                 JOIN RankedPrices rp ON p.id = rp.product_id
                                 LEFT JOIN scrapdb.product_categories pc ON pda.product_id = pc.product_id
-                        WHERE scrap_date >= DATE_SUB(CURDATE(), INTERVAL 2 DAY)
-                                AND scrap_date < CURDATE()
-                                AND pda.price < rp.average_price
-                                AND pda.scrap_date in (SELECT MAX(scrap_date)
-                                                        FROM scrapdb.product_based_on_date_attributes AS pda1
-                                                        WHERE price <>-1
-                                                        AND pda.id = pda1.id)
+                                JOIN scrapdb.actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date
+                        WHERE pda.price < rp.average_price
                                 ORDER BY pda.id;
                         """;
     }

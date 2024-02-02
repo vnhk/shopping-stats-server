@@ -119,6 +119,40 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Modifying
     @Query(value = """
+            CREATE OR REPLACE TABLE LOWER_PRICES_THAN_HISTORICAL_LOW AS
+            WITH RankedPrices AS (SELECT product_id, MIN(price) as min_price
+                                  FROM scrapdb.product_based_on_date_attributes pda
+                                  WHERE (product_id, price) NOT IN
+                                        (SELECT product_id, MIN(price)
+                                         FROM scrapdb.product_based_on_date_attributes pda
+                                         WHERE pda.price <> -1
+                                         GROUP BY product_id)
+                                    AND pda.price <> -1
+                                  GROUP BY product_id)
+            SELECT DISTINCT pda.id                              AS id,
+                            pda.scrap_date                      AS scrap_date,
+                            pda.price                           AS price,
+                            rp1.min_price                       AS historical_low_price,
+                            (IF(pda.price >= rp1.min_price, 0, (1 - pda.price / rp1.min_price) * 100))   AS discount_in_percent,
+                            p.shop                              AS shop,
+                            p.img_src                           AS product_image_src,
+                            p.name                              AS product_name,
+                            pc.categories                       AS category,
+                            pda.product_id                      AS product_id
+            FROM scrapdb.product_based_on_date_attributes pda
+                     JOIN RankedPrices rp1 ON pda.product_id = rp1.product_id
+                     JOIN scrapdb.product p ON p.id = pda.product_id
+                     LEFT JOIN scrapdb.product_categories pc ON pda.product_id = pc.product_id
+                     JOIN scrapdb.actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date
+            WHERE pda.price > 0
+              AND pda.price <= rp1.min_price
+            ORDER BY pda.id;
+                        """, nativeQuery = true)
+    @Transactional
+    void refreshLowerPricesThanHistoricalLowTable();
+
+    @Modifying
+    @Query(value = """
             CREATE OR REPLACE TABLE LOWER_THAN_AVG_FOR_LAST_MONTH AS
                                     WITH RankedPrices AS (SELECT product_id, AVG(price) AS average_price
                                                           FROM scrapdb.product_based_on_date_attributes AS pda
@@ -149,47 +183,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             """, nativeQuery = true)
     @Transactional
     void refreshLowerThanAVGForLastMonth();
-
-    @Modifying
-    @Query(value = """
-            CREATE OR REPLACE TABLE LOWER_PRICES_THAN_HISTORICAL_LOW AS
-            WITH RankedPrices AS (SELECT product_id, MIN(price) as min_price
-                                  FROM scrapdb.product_based_on_date_attributes pda
-                                  WHERE (product_id, price) NOT IN
-                                        (SELECT product_id, MIN(price)
-                                         FROM scrapdb.product_based_on_date_attributes pda
-                                         WHERE pda.price <> -1
-                                         GROUP BY product_id)
-                                    AND pda.price <> -1
-                                  GROUP BY product_id)
-            SELECT DISTINCT pda.id                              AS id,
-                            pda.scrap_date                      AS scrap_date,
-                            pda.price                           AS price,
-                            rp1.min_price                       AS historical_low_price,
-                            (IF(pda.price >= rp1.min_price, 0, (1 - pda.price / rp1.min_price) * 100))   AS discount_in_percent,
-                            p.shop                              AS shop,
-                            p.img_src                           AS product_image_src,
-                            p.name                              AS product_name,
-                            pc.categories                       AS category,
-                            pda.product_id                      AS product_id
-            FROM scrapdb.product_based_on_date_attributes pda
-                     JOIN RankedPrices rp1 ON pda.product_id = rp1.product_id
-                     JOIN scrapdb.product p ON p.id = pda.product_id
-                     LEFT JOIN scrapdb.product_categories pc ON pda.product_id = pc.product_id
-            WHERE pda.price <> 0
-              AND pda.price <= rp1.min_price
-              AND pda.scrap_date in
-                  (SELECT MAX(scrap_date)
-                   FROM scrapdb.product AS p
-                            JOIN scrapdb.product_based_on_date_attributes AS pda ON p.id = pda.product_id
-                   WHERE price <> -1
-                     AND scrap_date >= DATE_SUB(CURDATE(), INTERVAL 2 DAY)
-                     AND scrap_date < CURDATE()
-                     AND rp1.product_id = pda.product_id)
-            ORDER BY pda.id;
-                        """, nativeQuery = true)
-    @Transactional
-    void refreshLowerPricesThanHistoricalLowTable();
 
     interface ProductBasedOnDateAttributesNativeResInterface {
         Long getId();
