@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface ProductStatsRepository extends JpaRepository<ProductStats, Long> {
     Optional<ProductStats> findByProductId(Long productId);
 
-    @Query(nativeQuery = true, value = "SELECT COUNT(pda.price) FROM scrapdb.product_based_on_date_attributes pda" +
+    @Query(nativeQuery = true, value = "SELECT COUNT(pda.id) FROM scrapdb.product_based_on_date_attributes pda" +
             " WHERE pda.product_id =:productId AND pda.price > 0 AND pda.scrap_date >= DATE_SUB(CURTIME(), INTERVAL :monthOffset MONTH)")
     Long countAllPricesForXMonths(Integer monthOffset, @NotNull Long productId);
 
