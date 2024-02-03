@@ -38,8 +38,8 @@ public class RefreshViewQueue extends AbstractQueue<RefreshViewQueueParam> {
         RefreshViewQueueParam param = (RefreshViewQueueParam) object;
 //        log.info("Refreshing product {} view started...", param.getViewName());
         switch (param.getViewName()) {
-//            case historicalLowPrices:
-//                productRepository.refreshHistoricalLowPricesTable();
+            case historicalLowPrices:
+                productRepository.refreshHistoricalLowPricesTable();
 //                break;
 //            case lowerThanHistoricalLowPrices:
 //                productRepository.refreshLowerPricesThanHistoricalLowTable();

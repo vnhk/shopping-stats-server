@@ -50,8 +50,8 @@ public class SearchService {
         }
     }
 
-    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name) {
-        return productRepository.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin, discountMax, months, category, shop, name);
+    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name, Integer prevPriceMin, Integer prevPriceMax) {
+        return productRepository.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin, discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
     }
 
     public Page<Product> findProducts(String name, Pageable pageable) {

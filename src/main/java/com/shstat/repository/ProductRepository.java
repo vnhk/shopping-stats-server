@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -32,13 +31,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                     WHERE category = COALESCE(:category, category)
                         AND shop = COALESCE(:shop, shop)
                         AND month_offset = :months
+                        AND avgPrice >= :prevPriceMin AND avgPrice <= :prevPriceMax
                         AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
                         AND UPPER(product_name) LIKE UPPER(COALESCE(:name, product_name))
                         AND product_image_src is not null AND product_image_src <> '' AND TRIM(product_image_src) <> '' AND LENGTH(product_image_src) >= 10
                     ORDER BY id;
                     """
     )
-    Page<ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name);
+    Page<ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name, Integer prevPriceMin, Integer prevPriceMax);
 
     @Query(value = "SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE :category = c")
     Page<Product> findProductsByCategoriesIn(String category, Pageable pageable);
@@ -103,15 +103,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                      JOIN scrapdb.product_categories pc ON p.id = pc.product_id
                      JOIN scrapdb.product_based_on_date_attributes AS pda ON p.id = pda.product_id
                      JOIN scrapdb.actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date
-            WHERE (pda.product_id, pda.price)
-                IN (SELECT product_id, MIN(price) AS min_price
-                    FROM scrapdb.product_based_on_date_attributes
-                    WHERE price <> -1
-                    GROUP BY product_id)
-              AND (pda.product_id, pda.price) NOT IN (SELECT product_id, MAX(price) AS max_price
-                                                      FROM scrapdb.product_based_on_date_attributes
-                                                      WHERE price <> -1
-                                                      GROUP BY product_id)
+                     JOIN scrapdb.product_stats ps ON ps.product_id = pda.product_id AND ps.historical_low = pda.price
             ORDER BY pda.id;
             """, nativeQuery = true)
     @Transactional

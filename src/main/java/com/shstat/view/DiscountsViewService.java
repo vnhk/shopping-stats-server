@@ -53,9 +53,9 @@ public class DiscountsViewService extends ViewBuilder {
         return buildResponse(pageable, historicalLowProducts);
     }
 
-    public SearchApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name) {
+    public SearchApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name, Integer prevPriceMin, Integer prevPriceMax) {
         Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin,
-                discountMax, months, category, shop, name);
+                discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
         return buildResponse(pageable, historicalLowProducts);
     }
 
