@@ -4,8 +4,8 @@ INSERT INTO scrapdb.actual_product (id, product_id, scrap_date) (SELECT NEXTVAL(
                                     FROM scrapdb.product_based_on_date_attributes pda
                                     WHERE pda.scrap_date IN (SELECT MAX(pdaIn.scrap_date)
                                                              FROM scrapdb.product_based_on_date_attributes pdaIn
-                                                             WHERE pdaIn.scrap_date >= DATE_SUB(CURTIME(), INTERVAL :offset DAY)
-                                                               AND pdaIn.scrap_date < CURTIME()
+                                                             WHERE pdaIn.scrap_date >= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL :offset DAY)
+                                                               AND pdaIn.scrap_date < CURRENT_TIMESTAMP()
                                                                AND pda.product_id = pdaIn.product_id)
                                       AND pda.price > 0)
 

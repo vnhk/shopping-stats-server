@@ -84,8 +84,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                         AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
                         AND historical_low_price >= COALESCE(:prevPriceMin ,historical_low_price) AND historical_low_price <= COALESCE(:prevPriceMax ,historical_low_price)
                         AND product_image_src is not null AND product_image_src <> '' AND TRIM(product_image_src) <> '' AND LENGTH(product_image_src) >= 10
-                        AND scrap_date >= DATE_SUB(CURTIME(), INTERVAL 2 DAY)
-                                         AND scrap_date < CURTIME()
+                        AND scrap_date >= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 2 DAY)
+                                         AND scrap_date < CURRENT_TIMESTAMP()
                         AND UPPER(product_name) LIKE UPPER(COALESCE(:name, product_name))
                     ORDER BY id;
                     """
@@ -172,8 +172,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                              JOIN scrapdb.product p ON p.id = pda.product_id
                                              JOIN RankedPrices rp ON p.id = rp.product_id
                                              LEFT JOIN scrapdb.product_categories pc ON pda.product_id = pc.product_id
-                                    WHERE scrap_date >= DATE_SUB(CURTIME(), INTERVAL 2 DAY)
-                                      AND scrap_date < CURTIME()
+                                    WHERE scrap_date >= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 2 DAY)
+                                      AND scrap_date < CURRENT_TIMESTAMP()
                                       AND pda.price < rp.average_price
                                       AND pda.scrap_date in (SELECT MAX(scrap_date)
                                                              FROM scrapdb.product_based_on_date_attributes AS pda1

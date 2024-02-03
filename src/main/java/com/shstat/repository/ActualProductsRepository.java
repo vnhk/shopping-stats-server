@@ -16,8 +16,8 @@ public interface ActualProductsRepository extends JpaRepository<ActualProduct, L
     @Modifying
     @Query(value = """
             DELETE FROM scrapdb.actual_product
-            WHERE scrap_date < DATE_SUB(CURTIME(), INTERVAL :offset DAY)
-            OR scrap_date > CURTIME()
+            WHERE scrap_date < DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL :offset DAY)
+            OR scrap_date > CURRENT_TIMESTAMP()
                    """, nativeQuery = true)
     @Transactional
     void deleteNotActualProducts(Integer offset);

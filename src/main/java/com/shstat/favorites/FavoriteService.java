@@ -59,8 +59,8 @@ public class FavoriteService {
                         "            AND pda.id = pda1.id) " +
                         (
                                 rule.isOnlyActive() ?
-                                        "            AND scrap_date >= DATE_SUB(CURTIME(), INTERVAL 1 DAY) " +
-                                                "    AND scrap_date < CURTIME()" : ""
+                                        "            AND scrap_date >= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY) " +
+                                                "    AND scrap_date < CURRENT_TIMESTAMP()" : ""
                         ) +
                         " AND pda.price <> -1 " +
                         (
