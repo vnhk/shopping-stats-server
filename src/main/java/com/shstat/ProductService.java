@@ -258,19 +258,20 @@ public class ProductService {
     public void lowerThanAVGForLastXMonths() {
         String createTableQuery = "CREATE OR REPLACE TABLE LOWER_THAN_AVG_FOR_X_MONTHS AS";
         String sqlFor1MonthOffset = getSql(1);
+        String sqlFor2MonthOffset = getSql(2);
         String sqlFor3MonthOffset = getSql(3);
         String sqlFor6MonthOffset = getSql(6);
         String sqlFor12MonthOffset = getSql(12);
         entityManager.createNativeQuery(createTableQuery + sqlFor1MonthOffset).executeUpdate();
         String insertIntoQuery = "INSERT INTO LOWER_THAN_AVG_FOR_X_MONTHS";
+        entityManager.createNativeQuery(insertIntoQuery + sqlFor2MonthOffset).executeUpdate();
         entityManager.createNativeQuery(insertIntoQuery + sqlFor3MonthOffset).executeUpdate();
         entityManager.createNativeQuery(insertIntoQuery + sqlFor6MonthOffset).executeUpdate();
         entityManager.createNativeQuery(insertIntoQuery + sqlFor12MonthOffset).executeUpdate();
     }
 
     private static String getSql(int months) {
-        return " WITH RankedPrices AS (SELECT DISTINCT product_id, AVG(price) AS average_price FROM scrapdb.product_based_on_date_attributes AS pda " +
-                " WHERE price <> -1 AND MONTH(pda.scrap_date) > MONTH(CURRENT_DATE - INTERVAL " + months + " MONTH) GROUP BY product_id)" +
+        return " WITH RankedPrices AS (SELECT DISTINCT product_id, avg" + months + "month AS average_price FROM scrapdb.product_stats) " +
                 " SELECT DISTINCT pda.id AS id, pda.scrap_date AS scrap_date, pda.price AS price, rp.average_price AS avgPrice, " + months + " AS month_offset, " +
                 """
                                 p.name AS product_name, p.shop as shop, pc.categories AS category, p.img_src AS product_image_src,
