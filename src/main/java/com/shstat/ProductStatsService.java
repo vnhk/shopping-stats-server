@@ -31,7 +31,13 @@ public class ProductStatsService {
                 .get().mapper.map(priceObj);
         Long id = mappedProduct.getId();
         Optional<ProductStats> byProductId = productStatsRepository.findByProductId(id);
-        if (byProductId.isPresent() && price.compareTo(BigDecimal.ZERO) > 0) {
+        if (byProductId.isEmpty()) {
+            ProductStats productStats = new ProductStats();
+            productStats.setProductId(id);
+            byProductId = Optional.of(productStats);
+        }
+
+        if (price.compareTo(BigDecimal.ZERO) > 0) {
             updateHistoricalLow(byProductId.get(), price);
             updateAvgWholeHistory(byProductId.get(), price);
             updateAvgLast1Month(byProductId.get(), price);
