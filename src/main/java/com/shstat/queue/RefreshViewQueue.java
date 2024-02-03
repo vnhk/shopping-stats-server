@@ -33,22 +33,24 @@ public class RefreshViewQueue extends AbstractQueue<RefreshViewQueueParam> {
 
     @Override
     protected void process(Serializable object) {
+        log.info("Currently no views are refreshed!");
+
         RefreshViewQueueParam param = (RefreshViewQueueParam) object;
-        log.info("Refreshing product {} view started...", param.getViewName());
-        switch (param.getViewName()) {
-            case historicalLowPrices:
-                productRepository.refreshHistoricalLowPricesTable();
-                break;
+//        log.info("Refreshing product {} view started...", param.getViewName());
+//        switch (param.getViewName()) {
+//            case historicalLowPrices:
+//                productRepository.refreshHistoricalLowPricesTable();
+//                break;
 //            case lowerThanHistoricalLowPrices:
 //                productRepository.refreshLowerPricesThanHistoricalLowTable();
 //                break;
 //            case lowerThanAvgForLastMonth:
 //                productRepository.refreshLowerThanAVGForLastMonth();
 //                break;
-            case lowerThanAvgForLastXMonths:
-                productService.lowerThanAVGForLastXMonths();
-                break;
-        }
-        log.info("Refreshing product {} view completed...", param.getViewName());
+//            case lowerThanAvgForLastXMonths:
+//                productService.lowerThanAVGForLastXMonths();
+//                break;
+//        }
+//        log.info("Refreshing product {} view completed...", param.getViewName());
     }
 }

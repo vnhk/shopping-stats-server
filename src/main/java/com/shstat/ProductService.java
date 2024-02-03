@@ -29,6 +29,7 @@ import static com.shstat.AttrMapper.mappingError;
 public class ProductService {
     private final ProductRepository productRepository;
     private final ActualProductService actualProductService;
+    private final ProductStatsService productStatsService;
     private final ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository;
     public static final List<AttrFieldMappingVal<Field>> commonProductProperties;
     public static final List<AttrFieldMappingVal<Field>> productPerDateAttributeProperties;
@@ -84,9 +85,10 @@ public class ProductService {
 
     public ProductService(ProductRepository productRepository,
                           ActualProductService actualProductService,
-                          ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository) {
+                          ProductStatsService productStatsService, ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository) {
         this.productRepository = productRepository;
         this.actualProductService = actualProductService;
+        this.productStatsService = productStatsService;
         this.productBasedOnDateAttributesRepository = productBasedOnDateAttributesRepository;
     }
 
@@ -106,9 +108,11 @@ public class ProductService {
         for (Map<String, Object> product : products) {
             try {
                 Object date = product.get("Date");
+                Object price = product.get("Price");
                 Product mappedProduct = mapProduct(product);
                 mappedProduct = productRepository.save(mappedProduct);
                 actualProductService.updateActualProducts(date, mappedProduct);
+                productStatsService.updateProductStats(mappedProduct, price);
                 allMapped.add(mappedProduct);
             } catch (MapperException e) {
                 if (e.isSendErrorMessage() && e.getMessage() != null && !e.getMessage().isEmpty()) {
