@@ -102,6 +102,7 @@ public class ProductService {
         }
     }
 
+    @Transactional
     public ApiResponse addProducts(List<Map<String, Object>> products) {
         List<Product> allMapped = new LinkedList<>();
         List<String> messages = new LinkedList<>();
