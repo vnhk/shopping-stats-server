@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Optional;
 
 import static com.shstat.ProductService.productPerDateAttributeProperties;
@@ -102,7 +103,7 @@ public class ProductStatsService {
             return createAvgForXMonth(productId, offset);
         } else {
             Long amountOfPrices = productStatsRepository.countAllPricesForXMonths(offset, productId); //previous avg was created for amountOfPrices - 1
-            avg = avg.add(price).divide(BigDecimal.valueOf(amountOfPrices));
+            avg = avg.add(price).divide(BigDecimal.valueOf(amountOfPrices), 2, RoundingMode.HALF_UP);
             return avg;
         }
     }
