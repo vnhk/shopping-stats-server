@@ -64,7 +64,11 @@ public class ProductService {
                                 if (val.toString().isBlank()) {
                                     return BigDecimal.valueOf(-1);
                                 }
-                                return BigDecimal.valueOf(Double.parseDouble(val.toString()));
+                                BigDecimal price = BigDecimal.valueOf(Double.parseDouble(val.toString()));
+                                if (price.compareTo(BigDecimal.valueOf(90000)) > 0) {
+                                    return mappingError("Price");
+                                }
+                                return price;
                             }),
                     AttrFieldMappingVal.of("Date", ProductBasedOnDateAttributes.class.getDeclaredField("scrapDate"),
                             (val) -> {
@@ -145,11 +149,11 @@ public class ProductService {
                     attrOpt.get().getValue().add((String) value);
                 }
             } else if (value instanceof LocalDate) {
-                throw new RuntimeException("Not implemented for: " + attrs.toString());
+                throw new RuntimeException("Not implemented for: " + attrs);
             } else if (value instanceof LocalDateTime) {
-                throw new RuntimeException("Not implemented for: " + attrs.toString());
+                throw new RuntimeException("Not implemented for: " + attrs);
             } else if (value instanceof Number) {
-                throw new RuntimeException("Not implemented for: " + attrs.toString());
+                throw new RuntimeException("Not implemented for: " + attrs);
             } else if (value instanceof List<?>) {
                 List<?> list = (List<?>) value;
                 if (!list.isEmpty() && list.get(0) instanceof String) {
@@ -160,7 +164,7 @@ public class ProductService {
                         attrOpt.get().getValue().addAll((List<String>) value);
                     }
                 } else if (!list.isEmpty() && list.get(0) instanceof Number) {
-                    throw new RuntimeException("Not implemented for: " + attrs.toString());
+                    throw new RuntimeException("Not implemented for: " + attrs);
                 }
             } else if (value instanceof String[]) {
                 Optional<ProductListTextAttribute> attrOpt = findProductAttr(product, key, ProductListTextAttribute.class);
