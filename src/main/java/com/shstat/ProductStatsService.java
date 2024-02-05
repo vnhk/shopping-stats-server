@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Optional;
 
 import static com.shstat.ProductService.productPerDateAttributeProperties;
@@ -87,25 +86,29 @@ public class ProductStatsService {
     }
 
     private BigDecimal findHistoricalLowForMonths(Long productId, BigDecimal historicalLow, int offset, BigDecimal price) {
-        if (historicalLow == null || historicalLow.equals(BigDecimal.ZERO)) {
-            return createHistoricalLowForXMonth(productId, offset);
-        } else {
-            if (price.compareTo(historicalLow) < 0) {
-                return price;
-            } else {
-                return historicalLow;
-            }
-        }
+//        if (historicalLow == null || historicalLow.equals(BigDecimal.ZERO)) {
+        return createHistoricalLowForXMonth(productId, offset);
+//        } else {
+//            if (price.compareTo(historicalLow) < 0) {
+//                return price;
+//            } else {
+//                return historicalLow;
+//            }
+//        }
     }
 
     private BigDecimal calculateAvgForMonths(@NotNull Long productId, BigDecimal avg, int offset, BigDecimal price) {
-        if (avg == null || avg.equals(BigDecimal.ZERO)) {
-            return createAvgForXMonth(productId, offset);
-        } else {
-            Long amountOfPrices = productStatsRepository.countAllPricesForXMonths(offset, productId); //previous avg was created for amountOfPrices - 1
-            avg = avg.add(price).divide(BigDecimal.valueOf(amountOfPrices), 2, RoundingMode.HALF_UP);
-            return avg;
-        }
+        //It doesnt make sense to update previous AVG, because if avg is for 1 month it can't be updated after 1 month....
+        //to make it work in that way the stat should have start and end date fex:
+        //- 2 month avg: start [01.01) - end (01.03) and price should be updated only in this range if after then create new avg for next 2 month
+        //but it also has low sense.... beacuse avg in that case will be for 1 day... so the best idea is to calculate it EVERY TIME.....
+//        if (avg == null || avg.equals(BigDecimal.ZERO)) {
+        return createAvgForXMonth(productId, offset);
+//        } else {
+//            Long amountOfPrices = productStatsRepository.countAllPricesForXMonths(offset, productId); //previous avg was created for amountOfPrices - 1
+//            avg = avg.add(price).divide(BigDecimal.valueOf(amountOfPrices), 2, RoundingMode.HALF_UP);
+//            return avg;
+//        }
     }
 
     private BigDecimal createHistoricalLowForXMonth(Long productId, int offset) {
