@@ -286,7 +286,7 @@ public class ProductService {
                                 JOIN RankedPrices rp ON p.id = rp.product_id
                                 LEFT JOIN scrapdb.product_categories pc ON pda.product_id = pc.product_id
                                 JOIN scrapdb.actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date
-                        WHERE pda.price < rp.average_price
+                        WHERE pda.price < rp.average_price AND pda.price > 0
                                 ORDER BY pda.id;
                         """;
     }
