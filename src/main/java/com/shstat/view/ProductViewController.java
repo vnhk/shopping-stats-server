@@ -31,7 +31,8 @@ public class ProductViewController {
 
     @GetMapping(path = "/product")
     public ResponseEntity<ApiResponse> findProduct(@RequestParam(required = false) String name,
-                                                   @RequestParam(required = false) Long id, Pageable pageable) {
+                                                   @RequestParam(required = false) Long id,
+                                                   Pageable pageable) {
         if (id == null && (name == null || "".equals(name))) {
             throw new RuntimeException("Id or product name is required!");
         }

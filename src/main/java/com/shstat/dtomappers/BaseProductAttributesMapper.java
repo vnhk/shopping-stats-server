@@ -13,6 +13,7 @@ import java.util.Set;
 public class BaseProductAttributesMapper implements DTOMapper<Product, ProductDTO> {
     @Override
     public void map(DataHolder<Product> product, DataHolder<ProductDTO> productDTO) {
+        productDTO.value.setId(product.value.getId());
         productDTO.value.setName(product.value.getName());
         productDTO.value.setShop(product.value.getShop());
         Set<ProductAttribute> attributes = product.value.getAttributes();

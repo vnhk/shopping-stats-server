@@ -64,10 +64,7 @@ public class SearchService {
 
     public Page<Product> findById(Long id, Pageable pageable) {
         Optional<Product> byId = productRepository.findById(id);
-        if (byId.isPresent()) {
-            return new PageImpl(Collections.singletonList(byId), pageable, 1);
-        } else {
-            return new PageImpl(Collections.emptyList(), pageable, 0);
-        }
+        return byId.map(product -> new PageImpl(Collections.singletonList(product), pageable, 1)).orElseGet(() ->
+                new PageImpl(Collections.emptyList(), pageable, 0));
     }
 }

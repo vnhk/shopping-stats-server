@@ -10,6 +10,7 @@ import java.util.Set;
 @Getter
 @Setter
 public class ProductDTO {
+    private Long id;
     private String name;
     private String shop;
     private String offerLink;
