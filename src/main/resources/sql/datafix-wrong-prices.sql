@@ -19,10 +19,8 @@ WHERE id in (SELECT pda.id
 DELETE
 FROM product_based_on_date_attributes
 WHERE id in (SELECT pda.id
-             FROM product_based_on_date_attributes pda
-             WHERE pda.price >= 5 * (SELECT st.avg_whole_history
-                                     FROM product_stats st
-                                     WHERE pda.product_id = st.product_id));
+             FROM product_based_on_date_attributes pda JOIN product_stats st on st.product_id = pda.product_id
+             WHERE pda.price >= 5 * st.avg_whole_history);
 
 DELETE
 FROM product_stats
