@@ -22,7 +22,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                                                            String productListName,
                                                                            String productListUrl);
 
-    Page<Product> findByNameContaining(String name, Pageable pageable);
+    @Query(value = """
+            SELECT DISTINCT p FROM Product p JOIN ActualProduct ap ON ap.productId = p.id
+                JOIN ProductBasedOnDateAttributes pda ON pda.product = p 
+                WHERE pda.scrapDate = (SELECT MAX(pda1.scrapDate) FROM ProductBasedOnDateAttributes pda1 WHERE pda1.product = p)
+                AND pda.price > 0
+                AND p.name LIKE %:name%
+            """)
+    Page<Product> findWithName(String name, Pageable pageable);
 
     @Query(nativeQuery = true, value =
             """

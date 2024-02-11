@@ -55,7 +55,7 @@ public class SearchService {
     }
 
     public Page<Product> findProducts(String name, Pageable pageable) {
-        return productRepository.findByNameContaining(name, pageable);
+        return productRepository.findWithName(name, pageable);
     }
 
     public Product findProductByProductBasedOnDateAttributesId(Long id) {
