@@ -1,19 +1,22 @@
 package com.bervan.shstat.entity;
 
+import com.bervan.history.model.AbstractBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "shop", "productListName", "productListUrl"})},
         indexes = {@Index(columnList = "shop"), @Index(columnList = "name")})
-public class Product {
+public class Product implements AbstractBaseEntity<UUID> {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
     @NotNull
     @Size(min = 3, max = 300)
     private String name;
@@ -32,11 +35,11 @@ public class Product {
     @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "product", fetch = FetchType.EAGER)
     private Set<ProductBasedOnDateAttributes> productBasedOnDateAttributes = new HashSet<>();
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -112,5 +115,15 @@ public class Product {
     public void addAttribute(ProductBasedOnDateAttributes perDateAttributes) {
         this.productBasedOnDateAttributes.add(perDateAttributes);
         perDateAttributes.setProduct(this);
+    }
+
+    @Override
+    public LocalDateTime getModificationDate() {
+        return null;
+    }
+
+    @Override
+    public void setModificationDate(LocalDateTime modificationDate) {
+
     }
 }

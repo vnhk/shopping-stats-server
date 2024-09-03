@@ -2,6 +2,7 @@ package com.bervan.shstat.entity;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -24,6 +25,16 @@ public class ProductListTextAttribute extends ProductAttribute {
     }
 
     public ProductListTextAttribute() {
+
+    }
+
+    @Override
+    public LocalDateTime getModificationDate() {
+        return null;
+    }
+
+    @Override
+    public void setModificationDate(LocalDateTime modificationDate) {
 
     }
 }

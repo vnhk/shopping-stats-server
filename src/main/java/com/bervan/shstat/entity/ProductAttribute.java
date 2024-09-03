@@ -1,16 +1,19 @@
 package com.bervan.shstat.entity;
 
+import com.bervan.history.model.AbstractBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.util.UUID;
+
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Entity
 @Table(indexes = {@Index(columnList = "name")})
-public abstract class ProductAttribute {
+public abstract class ProductAttribute implements AbstractBaseEntity<UUID> {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    protected Long id;
+    @GeneratedValue
+    protected UUID id;
     @NotNull
     @Size(min = 3, max = 300)
     protected String name;
@@ -18,11 +21,11 @@ public abstract class ProductAttribute {
     @JoinColumn(name = "product_id")
     protected Product product;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

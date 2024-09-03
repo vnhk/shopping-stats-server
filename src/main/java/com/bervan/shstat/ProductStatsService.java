@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ProductStatsService {
@@ -27,7 +28,7 @@ public class ProductStatsService {
 
         BigDecimal price = (BigDecimal) ProductService.productPerDateAttributeProperties.stream().filter(e -> e.attr.equals("Price")).findFirst()
                 .get().mapper.map(priceObj);
-        Long id = mappedProduct.getId();
+        UUID id = mappedProduct.getId();
         Optional<ProductStats> byProductId = productStatsRepository.findByProductId(id);
         if (byProductId.isEmpty()) {
             ProductStats productStats = new ProductStats();
@@ -83,7 +84,7 @@ public class ProductStatsService {
         productStats.setAvg1Month(calculateAvgForMonths(productStats.getProductId(), avg, 1, price));
     }
 
-    private BigDecimal findHistoricalLowForMonths(Long productId, BigDecimal historicalLow, int offset, BigDecimal price) {
+    private BigDecimal findHistoricalLowForMonths(UUID productId, BigDecimal historicalLow, int offset, BigDecimal price) {
 //        if (historicalLow == null || historicalLow.equals(BigDecimal.ZERO)) {
         return createHistoricalLowForXMonth(productId, offset);
 //        } else {
@@ -95,7 +96,7 @@ public class ProductStatsService {
 //        }
     }
 
-    private BigDecimal calculateAvgForMonths(@NotNull Long productId, BigDecimal avg, int offset, BigDecimal price) {
+    private BigDecimal calculateAvgForMonths(@NotNull UUID productId, BigDecimal avg, int offset, BigDecimal price) {
         //It doesnt make sense to update previous AVG, because if avg is for 1 month it can't be updated after 1 month....
         //to make it work in that way the stat should have start and end date fex:
         //- 2 month avg: start [01.01) - end (01.03) and price should be updated only in this range if after then create new avg for next 2 month
@@ -109,11 +110,11 @@ public class ProductStatsService {
 //        }
     }
 
-    private BigDecimal createHistoricalLowForXMonth(Long productId, int offset) {
+    private BigDecimal createHistoricalLowForXMonth(UUID productId, int offset) {
         return productStatsRepository.findHistoricalLowForXMonths(offset, productId);
     }
 
-    private BigDecimal createAvgForXMonth(Long productId, int offset) {
+    private BigDecimal createAvgForXMonth(UUID productId, int offset) {
         return productStatsRepository.calculateAvgForXMonths(offset, productId);
     }
 }

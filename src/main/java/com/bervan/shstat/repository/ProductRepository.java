@@ -1,11 +1,11 @@
 package com.bervan.shstat.repository;
 
+import com.bervan.history.model.BaseRepository;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -14,9 +14,10 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends BaseRepository<Product, UUID> {
     Optional<Product> findByNameAndShopAndProductListNameAndProductListUrl(String name,
                                                                            String shop,
                                                                            String productListName,
@@ -62,7 +63,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     )
     Page<ProductBasedOnDateAttributesNativeResInterface> historicalLowPriceProducts(Pageable pageable, String category, String shop, String name);
 
-    Product findProductByProductBasedOnDateAttributesId(Long id);
+    Product findProductByProductBasedOnDateAttributesId(UUID id);
 
     @Query(value = "SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE :category = c AND p.shop = :shop")
     Page<Product> findProductsByCategoriesInAndShop(String category, String shop, Pageable pageable);
@@ -184,7 +185,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     void refreshLowerThanAVGForLastMonth();
 
     interface ProductBasedOnDateAttributesNativeResInterface {
-        Long getId();
+        UUID getId();
 
         Date getScrapDate();
 
@@ -192,18 +193,18 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     }
 
     class ProductBasedOnDateAttributesNativeRes implements ProductBasedOnDateAttributesNativeResInterface {
-        Long id;
+        UUID id;
         Date scrapDate;
         BigDecimal price;
 
-        public ProductBasedOnDateAttributesNativeRes(Long id, Date scrapDate, BigDecimal price) {
+        public ProductBasedOnDateAttributesNativeRes(UUID id, Date scrapDate, BigDecimal price) {
             this.id = id;
             this.scrapDate = scrapDate;
             this.price = price;
         }
 
         @Override
-        public Long getId() {
+        public UUID getId() {
             return id;
         }
 

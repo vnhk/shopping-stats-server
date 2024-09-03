@@ -150,7 +150,7 @@ public class FavoriteService {
     private Set<FavoriteProduct> map(List<Object[]> res) {
         Set<FavoriteProduct> favoriteProducts = new HashSet<>();
         for (Object[] item : res) {
-            FavoriteProduct favoriteProduct = new FavoriteProduct(null, (Long) item[0],
+            FavoriteProduct favoriteProduct = new FavoriteProduct(null, (UUID) item[0],
                     (String) item[1], (String) item[2], (String) item[3], (BigDecimal) item[4],
                     (String) item[5], (BigDecimal) item[6], (String) item[7], (Date) item[8], (String) item[9], ((BigDecimal) item[10]));
             favoriteProducts.add(favoriteProduct);

@@ -1,19 +1,22 @@
 package com.bervan.shstat.entity;
 
+import com.bervan.history.model.AbstractBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "scrapDate"})},
         indexes = {@Index(columnList = "formattedScrapDate"), @Index(columnList = "scrapDate")})
-public class ProductBasedOnDateAttributes {
+public class ProductBasedOnDateAttributes implements AbstractBaseEntity<UUID> {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
     @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id")
     private Product product;
@@ -35,11 +38,11 @@ public class ProductBasedOnDateAttributes {
         this.formattedScrapDate = formattedScrapDate;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -73,5 +76,15 @@ public class ProductBasedOnDateAttributes {
 
     public void setScrapDate(Date scrapDate) {
         this.scrapDate = scrapDate;
+    }
+
+    @Override
+    public LocalDateTime getModificationDate() {
+        return null;
+    }
+
+    @Override
+    public void setModificationDate(LocalDateTime modificationDate) {
+
     }
 }

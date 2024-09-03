@@ -1,19 +1,22 @@
 package com.bervan.shstat.favorites;
 
+import com.bervan.history.model.AbstractBaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
-public class FavoriteProduct {
+public class FavoriteProduct implements AbstractBaseEntity<UUID> {
     @Id
     @GeneratedValue
-    private Long id;
-    private Long productId;
+    private UUID id;
+    private UUID productId;
     private String productName;
     private String shop;
     private String category;
@@ -21,7 +24,7 @@ public class FavoriteProduct {
     private String listName;
     private BigDecimal avgPrice;
 
-    public FavoriteProduct(Long id, Long productId, String productName, String shop, String category, BigDecimal price, String listName, BigDecimal avgPrice, String imgSrc, Date scrapDate, String offerUrl, BigDecimal discountInPercent) {
+    public FavoriteProduct(UUID id, UUID productId, String productName, String shop, String category, BigDecimal price, String listName, BigDecimal avgPrice, String imgSrc, Date scrapDate, String offerUrl, BigDecimal discountInPercent) {
         this.id = id;
         this.productId = productId;
         this.productName = productName;
@@ -36,19 +39,23 @@ public class FavoriteProduct {
         this.discountInPercent = discountInPercent;
     }
 
-    public Long getId() {
+    public FavoriteProduct() {
+
+    }
+
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public Long getProductId() {
+    public UUID getProductId() {
         return productId;
     }
 
-    public void setProductId(Long productId) {
+    public void setProductId(UUID productId) {
         this.productId = productId;
     }
 
@@ -154,5 +161,15 @@ public class FavoriteProduct {
     @Override
     public int hashCode() {
         return Objects.hash(productId, productName, shop, category, price, listName, avgPrice, imgSrc, scrapDate, offerUrl, discountInPercent);
+    }
+
+    @Override
+    public LocalDateTime getModificationDate() {
+        return null;
+    }
+
+    @Override
+    public void setModificationDate(LocalDateTime modificationDate) {
+
     }
 }

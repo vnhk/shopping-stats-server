@@ -1,17 +1,20 @@
 package com.bervan.shstat.entity;
 
+import com.bervan.history.model.AbstractBaseEntity;
 import com.bervan.shstat.favorites.FavoritesList;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
-public class ProductEmailNotification {
+public class ProductEmailNotification implements AbstractBaseEntity<UUID> {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
 
     private String bodyTemplate;
 
@@ -19,11 +22,11 @@ public class ProductEmailNotification {
     private BigDecimal priceMax;
     private Double discount;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -69,4 +72,14 @@ public class ProductEmailNotification {
 
     @OneToMany(mappedBy = "productEmailNotification", fetch = FetchType.EAGER)
     private Set<FavoritesList> favoritesLists = new HashSet<>();
+
+    @Override
+    public LocalDateTime getModificationDate() {
+        return null;
+    }
+
+    @Override
+    public void setModificationDate(LocalDateTime modificationDate) {
+
+    }
 }

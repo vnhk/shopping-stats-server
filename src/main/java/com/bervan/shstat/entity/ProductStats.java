@@ -1,18 +1,21 @@
 package com.bervan.shstat.entity;
 
+import com.bervan.history.model.AbstractBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"productId"})})
-public class ProductStats {
+public class ProductStats implements AbstractBaseEntity<UUID> {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
     @NotNull
-    private Long productId;
+    private UUID productId;
     private BigDecimal avgWholeHistory;
     private BigDecimal avg1Month;
     private BigDecimal avg2Month;
@@ -21,19 +24,19 @@ public class ProductStats {
     private BigDecimal avg12Month;
     private BigDecimal historicalLow;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public Long getProductId() {
+    public UUID getProductId() {
         return productId;
     }
 
-    public void setProductId(Long productId) {
+    public void setProductId(UUID productId) {
         this.productId = productId;
     }
 
@@ -91,5 +94,15 @@ public class ProductStats {
 
     public void setHistoricalLow(BigDecimal historicalLow) {
         this.historicalLow = historicalLow;
+    }
+
+    @Override
+    public LocalDateTime getModificationDate() {
+        return null;
+    }
+
+    @Override
+    public void setModificationDate(LocalDateTime modificationDate) {
+
     }
 }

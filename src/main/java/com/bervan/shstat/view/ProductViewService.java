@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class ProductViewService extends ViewBuilder {
@@ -28,7 +29,7 @@ public class ProductViewService extends ViewBuilder {
         this.searchService = searchService;
     }
 
-    public SearchApiResponse findById(Long id, Pageable pageable) {
+    public SearchApiResponse findById(UUID id, Pageable pageable) {
         Page<Product> products = searchService.findById(id, pageable);
         return findProductGetResponse(products, pageable);
     }

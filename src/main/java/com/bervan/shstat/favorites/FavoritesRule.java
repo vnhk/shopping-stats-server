@@ -1,21 +1,24 @@
 package com.bervan.shstat.favorites;
 
+import com.bervan.history.model.AbstractBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"ruleName"})})
-public class FavoritesRule {
+public class FavoritesRule implements AbstractBaseEntity<UUID> {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
     @NotNull
     @Size(min = 3, max = 300)
     private String ruleName;
-    private Long productId;
+    private UUID productId;
     private String shop;
     private String productName;
     private BigDecimal priceMin;
@@ -27,11 +30,11 @@ public class FavoritesRule {
     @JoinColumn(name = "favorites_list_id")
     private FavoritesList favoritesList;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -43,11 +46,11 @@ public class FavoritesRule {
         this.ruleName = ruleName;
     }
 
-    public Long getProductId() {
+    public UUID getProductId() {
         return productId;
     }
 
-    public void setProductId(Long productId) {
+    public void setProductId(UUID productId) {
         this.productId = productId;
     }
 
@@ -113,5 +116,15 @@ public class FavoritesRule {
 
     public void setFavoritesList(FavoritesList favoritesList) {
         this.favoritesList = favoritesList;
+    }
+
+    @Override
+    public LocalDateTime getModificationDate() {
+        return null;
+    }
+
+    @Override
+    public void setModificationDate(LocalDateTime modificationDate) {
+
     }
 }
