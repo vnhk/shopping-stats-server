@@ -6,16 +6,15 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"productId"})})
-public class ProductStats implements AbstractBaseEntity<UUID> {
+public class ProductStats implements AbstractBaseEntity<Long> {
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long id;
     @NotNull
-    private UUID productId;
+    private Long productId;
     private BigDecimal avgWholeHistory;
     private BigDecimal avg1Month;
     private BigDecimal avg2Month;
@@ -24,19 +23,19 @@ public class ProductStats implements AbstractBaseEntity<UUID> {
     private BigDecimal avg12Month;
     private BigDecimal historicalLow;
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public UUID getProductId() {
+    public Long getProductId() {
         return productId;
     }
 
-    public void setProductId(UUID productId) {
+    public void setProductId(Long productId) {
         this.productId = productId;
     }
 

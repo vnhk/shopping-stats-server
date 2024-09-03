@@ -8,13 +8,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
-public class ProductEmailNotification implements AbstractBaseEntity<UUID> {
+public class ProductEmailNotification implements AbstractBaseEntity<Long> {
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String bodyTemplate;
 
@@ -22,11 +21,11 @@ public class ProductEmailNotification implements AbstractBaseEntity<UUID> {
     private BigDecimal priceMax;
     private Double discount;
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

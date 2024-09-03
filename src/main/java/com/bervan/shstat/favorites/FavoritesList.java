@@ -9,14 +9,13 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"listName"})})
-public class FavoritesList implements AbstractBaseEntity<UUID> {
+public class FavoritesList implements AbstractBaseEntity<Long> {
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @NotNull
     @Size(min = 3, max = 300)
@@ -28,11 +27,11 @@ public class FavoritesList implements AbstractBaseEntity<UUID> {
     @OneToMany(mappedBy = "favoritesList", fetch = FetchType.EAGER)
     private Set<FavoritesRule> favoritesRules = new HashSet<>();
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

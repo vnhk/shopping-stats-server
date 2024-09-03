@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 @Service
 public class SearchService {
@@ -59,11 +58,11 @@ public class SearchService {
         return productRepository.findWithName(name, pageable);
     }
 
-    public Product findProductByProductBasedOnDateAttributesId(UUID id) {
+    public Product findProductByProductBasedOnDateAttributesId(Long id) {
         return productRepository.findProductByProductBasedOnDateAttributesId(id);
     }
 
-    public Page<Product> findById(UUID id, Pageable pageable) {
+    public Page<Product> findById(Long id, Pageable pageable) {
         Optional<Product> byId = productRepository.findById(id);
         return byId.map(product -> new PageImpl(Collections.singletonList(product), pageable, 1)).orElseGet(() ->
                 new PageImpl(Collections.emptyList(), pageable, 0));

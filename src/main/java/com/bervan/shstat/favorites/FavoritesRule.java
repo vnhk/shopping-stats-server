@@ -7,18 +7,17 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"ruleName"})})
-public class FavoritesRule implements AbstractBaseEntity<UUID> {
+public class FavoritesRule implements AbstractBaseEntity<Long> {
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     @NotNull
     @Size(min = 3, max = 300)
     private String ruleName;
-    private UUID productId;
+    private Long productId;
     private String shop;
     private String productName;
     private BigDecimal priceMin;
@@ -30,11 +29,11 @@ public class FavoritesRule implements AbstractBaseEntity<UUID> {
     @JoinColumn(name = "favorites_list_id")
     private FavoritesList favoritesList;
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -46,11 +45,11 @@ public class FavoritesRule implements AbstractBaseEntity<UUID> {
         this.ruleName = ruleName;
     }
 
-    public UUID getProductId() {
+    public Long getProductId() {
         return productId;
     }
 
-    public void setProductId(UUID productId) {
+    public void setProductId(Long productId) {
         this.productId = productId;
     }
 

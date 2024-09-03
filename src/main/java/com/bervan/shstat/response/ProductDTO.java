@@ -3,10 +3,9 @@ package com.bervan.shstat.response;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 public class ProductDTO {
-    private UUID id;
+    private Long id;
     private String name;
     private String shop;
     private String offerLink;
@@ -18,11 +17,11 @@ public class ProductDTO {
     private Double discount;
     private List<PriceDTO> prices;
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

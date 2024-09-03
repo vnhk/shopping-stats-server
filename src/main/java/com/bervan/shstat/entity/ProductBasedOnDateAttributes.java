@@ -8,15 +8,14 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "scrapDate"})},
         indexes = {@Index(columnList = "formattedScrapDate"), @Index(columnList = "scrapDate")})
-public class ProductBasedOnDateAttributes implements AbstractBaseEntity<UUID> {
+public class ProductBasedOnDateAttributes implements AbstractBaseEntity<Long> {
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
     @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id")
     private Product product;
@@ -38,11 +37,11 @@ public class ProductBasedOnDateAttributes implements AbstractBaseEntity<UUID> {
         this.formattedScrapDate = formattedScrapDate;
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

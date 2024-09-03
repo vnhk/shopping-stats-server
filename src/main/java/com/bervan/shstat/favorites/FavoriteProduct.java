@@ -9,14 +9,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
-import java.util.UUID;
 
 @Entity
-public class FavoriteProduct implements AbstractBaseEntity<UUID> {
+public class FavoriteProduct  implements AbstractBaseEntity<Long> {
     @Id
     @GeneratedValue
-    private UUID id;
-    private UUID productId;
+    private Long id;
+    private Long productId;
     private String productName;
     private String shop;
     private String category;
@@ -24,7 +23,7 @@ public class FavoriteProduct implements AbstractBaseEntity<UUID> {
     private String listName;
     private BigDecimal avgPrice;
 
-    public FavoriteProduct(UUID id, UUID productId, String productName, String shop, String category, BigDecimal price, String listName, BigDecimal avgPrice, String imgSrc, Date scrapDate, String offerUrl, BigDecimal discountInPercent) {
+    public FavoriteProduct(Long id, Long productId, String productName, String shop, String category, BigDecimal price, String listName, BigDecimal avgPrice, String imgSrc, Date scrapDate, String offerUrl, BigDecimal discountInPercent) {
         this.id = id;
         this.productId = productId;
         this.productName = productName;
@@ -43,19 +42,19 @@ public class FavoriteProduct implements AbstractBaseEntity<UUID> {
 
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public UUID getProductId() {
+    public Long getProductId() {
         return productId;
     }
 
-    public void setProductId(UUID productId) {
+    public void setProductId(Long productId) {
         this.productId = productId;
     }
 

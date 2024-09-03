@@ -6,32 +6,31 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"productId", "scrapDate"})})
-public class ActualProduct implements AbstractBaseEntity<UUID> {
+public class ActualProduct implements AbstractBaseEntity<Long> {
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long id;
     @NotNull
-    private UUID productId;
+    private Long productId;
     @NotNull
     private Date scrapDate;
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public UUID getProductId() {
+    public Long getProductId() {
         return productId;
     }
 
-    public void setProductId(UUID productId) {
+    public void setProductId(Long productId) {
         this.productId = productId;
     }
 

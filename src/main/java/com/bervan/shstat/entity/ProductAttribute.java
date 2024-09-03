@@ -5,15 +5,13 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import java.util.UUID;
-
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Entity
 @Table(indexes = {@Index(columnList = "name")})
-public abstract class ProductAttribute implements AbstractBaseEntity<UUID> {
+public abstract class ProductAttribute implements AbstractBaseEntity<Long> {
     @Id
-    @GeneratedValue
-    protected UUID id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    protected Long id;
     @NotNull
     @Size(min = 3, max = 300)
     protected String name;
@@ -21,11 +19,11 @@ public abstract class ProductAttribute implements AbstractBaseEntity<UUID> {
     @JoinColumn(name = "product_id")
     protected Product product;
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

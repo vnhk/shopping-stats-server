@@ -8,15 +8,14 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "shop", "productListName", "productListUrl"})},
         indexes = {@Index(columnList = "shop"), @Index(columnList = "name")})
-public class Product implements AbstractBaseEntity<UUID> {
+public class Product  implements AbstractBaseEntity<Long> {
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     @NotNull
     @Size(min = 3, max = 300)
     private String name;
@@ -35,11 +34,11 @@ public class Product implements AbstractBaseEntity<UUID> {
     @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "product", fetch = FetchType.EAGER)
     private Set<ProductBasedOnDateAttributes> productBasedOnDateAttributes = new HashSet<>();
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

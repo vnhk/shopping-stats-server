@@ -6,6 +6,7 @@ import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -14,10 +15,9 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 @Repository
-public interface ProductRepository extends BaseRepository<Product, UUID> {
+public interface ProductRepository extends BaseRepository<Product, Long> {
     Optional<Product> findByNameAndShopAndProductListNameAndProductListUrl(String name,
                                                                            String shop,
                                                                            String productListName,
@@ -63,7 +63,7 @@ public interface ProductRepository extends BaseRepository<Product, UUID> {
     )
     Page<ProductBasedOnDateAttributesNativeResInterface> historicalLowPriceProducts(Pageable pageable, String category, String shop, String name);
 
-    Product findProductByProductBasedOnDateAttributesId(UUID id);
+    Product findProductByProductBasedOnDateAttributesId(Long id);
 
     @Query(value = "SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE :category = c AND p.shop = :shop")
     Page<Product> findProductsByCategoriesInAndShop(String category, String shop, Pageable pageable);
@@ -185,7 +185,7 @@ public interface ProductRepository extends BaseRepository<Product, UUID> {
     void refreshLowerThanAVGForLastMonth();
 
     interface ProductBasedOnDateAttributesNativeResInterface {
-        UUID getId();
+        Long getId();
 
         Date getScrapDate();
 
@@ -193,18 +193,18 @@ public interface ProductRepository extends BaseRepository<Product, UUID> {
     }
 
     class ProductBasedOnDateAttributesNativeRes implements ProductBasedOnDateAttributesNativeResInterface {
-        UUID id;
+        Long id;
         Date scrapDate;
         BigDecimal price;
 
-        public ProductBasedOnDateAttributesNativeRes(UUID id, Date scrapDate, BigDecimal price) {
+        public ProductBasedOnDateAttributesNativeRes(Long id, Date scrapDate, BigDecimal price) {
             this.id = id;
             this.scrapDate = scrapDate;
             this.price = price;
         }
 
         @Override
-        public UUID getId() {
+        public Long getId() {
             return id;
         }
 
