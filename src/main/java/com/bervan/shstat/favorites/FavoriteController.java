@@ -23,9 +23,8 @@ public class FavoriteController {
         this.queueService = queueService;
     }
 
-    @PostMapping(path = "/refresh-materialized-views")
-    public ResponseEntity<ApiResponse> refreshMaterializedViews() {
-        return ResponseEntity.ok(queueService.refreshTableForFavorites());
+    public ApiResponse refreshMaterializedViews() {
+        return queueService.refreshTableForFavorites();
     }
 
     @GetMapping

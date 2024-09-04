@@ -34,9 +34,8 @@ public class ProductController {
         return ResponseEntity.ok().body(queueService.addProductsAsync(products));
     }
 
-    @PostMapping(path = "/refresh-materialized-views")
-    public ResponseEntity<ApiResponse> refreshMaterializedViews() {
-        return ResponseEntity.ok(queueService.refreshMaterializedViews());
+    public ApiResponse refreshMaterializedViews() {
+        return queueService.refreshMaterializedViews();
     }
 
     @GetMapping(path = "/categories")
