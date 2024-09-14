@@ -18,7 +18,7 @@ public class ShopSchedulerTasks {
         this.log = log;
     }
 
-    @Scheduled(cron = "0 0 3 * * *")
+//    @Scheduled(cron = "0 0 3 * * *")
     public void refreshView() {
         try {
             productController.refreshMaterializedViews();
@@ -27,7 +27,7 @@ public class ShopSchedulerTasks {
         }
     }
 
-    @Scheduled(cron = "0 0 * * * *")
+//    @Scheduled(cron = "0 0 * * * *")
     public void refreshFavorites() throws InterruptedException {
         Thread.sleep(15000 + RandomUtil.getPositiveInt() % 15000);
         try {
