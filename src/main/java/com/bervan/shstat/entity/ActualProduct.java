@@ -11,7 +11,7 @@ import java.util.Date;
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"productId", "scrapDate"})})
 public class ActualProduct implements AbstractBaseEntity<Long> {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue
     private Long id;
     @NotNull
     private Long productId;

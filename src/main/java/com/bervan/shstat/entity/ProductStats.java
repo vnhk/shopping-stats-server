@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"productId"})})
 public class ProductStats implements AbstractBaseEntity<Long> {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue
     private Long id;
     @NotNull
     private Long productId;
