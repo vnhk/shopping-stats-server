@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Set;
 
 
-@RestController
-@RequestMapping(path = "/favorites")
+//@RestController
+//@RequestMapping(path = "/favorites")
 public class FavoriteController {
     private final FavoriteService favoriteService;
     private final FavoritesViewService favoritesViewService;

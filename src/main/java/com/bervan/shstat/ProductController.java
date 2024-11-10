@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@RestController
-@RequestMapping(path = "/products")
+//@RestController
+//@RequestMapping(path = "/products")
 public class ProductController {
 
     private final ProductService productService;

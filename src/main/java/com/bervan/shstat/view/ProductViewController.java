@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 
-@RestController
-@RequestMapping(path = "/summary-view/products")
-@CrossOrigin(origins = "*")
+//@RestController
+//@RequestMapping(path = "/summary-view/products")
+//@CrossOrigin(origins = "*")
 public class ProductViewController {
     private final ProductViewService productViewService;
     private final DiscountsViewService discountsViewService;
