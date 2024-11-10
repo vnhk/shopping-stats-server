@@ -3,10 +3,8 @@ package com.bervan.shstat;
 import ch.qos.logback.core.testUtil.RandomUtil;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.favorites.FavoriteController;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 
-@Service
+//@Service
 public class ShopSchedulerTasks {
     private final FavoriteController favoriteController;
     private final ProductController productController;
