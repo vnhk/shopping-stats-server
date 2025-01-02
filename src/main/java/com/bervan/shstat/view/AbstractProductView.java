@@ -2,7 +2,7 @@ package com.bervan.shstat.view;
 
 import com.bervan.common.AbstractPageView;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.shstat.SearchService;
+import com.bervan.shstat.ProductSearchService;
 import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
@@ -10,7 +10,6 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import org.springframework.data.domain.Pageable;
@@ -22,15 +21,15 @@ import java.util.Set;
 public abstract class AbstractProductView extends AbstractPageView {
     public static final String ROUTE_NAME = "/shopping/products";
     private final ProductViewService productViewService;
-    private final SearchService searchService;
+    private final ProductSearchService productSearchService;
     private final BervanLogger log;
 
-    public AbstractProductView(ProductViewService productViewService, SearchService searchService, BervanLogger log) {
+    public AbstractProductView(ProductViewService productViewService, ProductSearchService productSearchService, BervanLogger log) {
         super();
         this.productViewService = productViewService;
-        this.searchService = searchService;
+        this.productSearchService = productSearchService;
         this.log = log;
-        Set<String> categories = this.searchService.findCategories();
+        Set<String> categories = this.productSearchService.findCategories();
         ComboBox<String> categoryDropdown = new ComboBox<>("Category:");
         categoryDropdown.setItems(categories);
 

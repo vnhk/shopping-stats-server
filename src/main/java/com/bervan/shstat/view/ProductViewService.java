@@ -1,7 +1,7 @@
 package com.bervan.shstat.view;
 
 import com.bervan.shstat.DataHolder;
-import com.bervan.shstat.SearchService;
+import com.bervan.shstat.ProductSearchService;
 import com.bervan.shstat.ViewBuilder;
 import com.bervan.shstat.dtomappers.BaseProductAttributesMapper;
 import com.bervan.shstat.dtomappers.DTOMapper;
@@ -20,21 +20,21 @@ import java.util.Set;
 
 @Service
 public class ProductViewService extends ViewBuilder {
-    private final SearchService searchService;
+    private final ProductSearchService productSearchService;
 
-    public ProductViewService(SearchService searchService,
+    public ProductViewService(ProductSearchService productSearchService,
                               List<? extends DTOMapper<Product, ProductDTO>> productMappers) {
         super(productMappers);
-        this.searchService = searchService;
+        this.productSearchService = productSearchService;
     }
 
     public SearchApiResponse findById(Long id, Pageable pageable) {
-        Page<Product> products = searchService.findById(id, pageable);
+        Page<Product> products = productSearchService.findById(id, pageable);
         return findProductGetResponse(products, pageable);
     }
 
     public SearchApiResponse findProductContainingName(String name, Pageable pageable) {
-        Page<Product> products = searchService.findProducts(name, pageable);
+        Page<Product> products = productSearchService.findProducts(name, pageable);
         return findProductGetResponse(products, pageable);
     }
 
@@ -51,7 +51,7 @@ public class ProductViewService extends ViewBuilder {
     }
 
     public SearchApiResponse findProductsByCategory(String category, String shop, Pageable pageable) {
-        Page<Product> productsByCategory = searchService.findProductsByCategory(category, shop, pageable);
+        Page<Product> productsByCategory = productSearchService.findProductsByCategory(category, shop, pageable);
         SearchApiResponse response = SearchApiResponse.builder()
                 .ofPage(productsByCategory)
                 .build();

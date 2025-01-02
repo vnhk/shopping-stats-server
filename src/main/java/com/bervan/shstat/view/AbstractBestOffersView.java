@@ -2,7 +2,7 @@ package com.bervan.shstat.view;
 
 import com.bervan.common.AbstractPageView;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.shstat.SearchService;
+import com.bervan.shstat.ProductSearchService;
 import com.bervan.shstat.response.ApiResponse;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
@@ -24,15 +24,15 @@ import java.util.Set;
 public abstract class AbstractBestOffersView extends AbstractPageView {
     public static final String ROUTE_NAME = "/shopping/best-offers";
     private final DiscountsViewService discountsViewService;
-    private final SearchService searchService;
+    private final ProductSearchService productSearchService;
     private final BervanLogger log;
 
-    public AbstractBestOffersView(DiscountsViewService discountsViewService, SearchService searchService, BervanLogger log) {
+    public AbstractBestOffersView(DiscountsViewService discountsViewService, ProductSearchService productSearchService, BervanLogger log) {
         super();
         this.discountsViewService = discountsViewService;
-        this.searchService = searchService;
+        this.productSearchService = productSearchService;
         this.log = log;
-        Set<String> categories = this.searchService.findCategories();
+        Set<String> categories = this.productSearchService.findCategories();
         ComboBox<String> categoryDropdown = new ComboBox<>("Category:");
         categoryDropdown.setItems(categories);
 

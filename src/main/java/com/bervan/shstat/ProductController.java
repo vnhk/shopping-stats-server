@@ -15,12 +15,12 @@ import java.util.Set;
 public class ProductController {
 
     private final ProductService productService;
-    private final SearchService searchService;
+    private final ProductSearchService productSearchService;
     private final QueueService queueService;
 
-    public ProductController(ProductService productService, SearchService searchService, QueueService queueService) {
+    public ProductController(ProductService productService, ProductSearchService productSearchService, QueueService queueService) {
         this.productService = productService;
-        this.searchService = searchService;
+        this.productSearchService = productSearchService;
         this.queueService = queueService;
     }
 
@@ -41,7 +41,7 @@ public class ProductController {
     @GetMapping(path = "/categories")
     @CrossOrigin(origins = "*")
     public ResponseEntity<Set<String>> getCategories() {
-        Set<String> categories = searchService.findCategories();
+        Set<String> categories = productSearchService.findCategories();
         return ResponseEntity.ok(categories);
     }
 }

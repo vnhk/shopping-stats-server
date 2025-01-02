@@ -1,7 +1,7 @@
 package com.bervan.shstat.view;
 
 import com.bervan.shstat.DataHolder;
-import com.bervan.shstat.SearchService;
+import com.bervan.shstat.ProductSearchService;
 import com.bervan.shstat.ViewBuilder;
 import com.bervan.shstat.dtomappers.BaseProductAttributesMapper;
 import com.bervan.shstat.dtomappers.DTOMapper;
@@ -24,13 +24,13 @@ import java.util.*;
 
 @Service
 public class DiscountsViewService extends ViewBuilder {
-    private final SearchService searchService;
+    private final ProductSearchService productSearchService;
 
-    public DiscountsViewService(SearchService searchService,
+    public DiscountsViewService(ProductSearchService productSearchService,
                                 List<? extends DTOMapper<Product, ProductDTO>> productMappers,
                                 List<? extends DTOMapper<ProductBasedOnDateAttributes, PriceDTO>> productBasedOnDateAttributesToPrice) {
         super(getSet(productMappers, productBasedOnDateAttributesToPrice));
-        this.searchService = searchService;
+        this.productSearchService = productSearchService;
     }
 
     private static Set getSet(List<? extends DTOMapper<Product, ProductDTO>> productMappers,
@@ -41,20 +41,20 @@ public class DiscountsViewService extends ViewBuilder {
     }
 
     public SearchApiResponse findHistoricalLowPriceProducts(Pageable pageable, String category, String shop, String name) {
-        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findHistoricalLowProducts(pageable,
+        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = productSearchService.findHistoricalLowProducts(pageable,
                 category, shop, name);
         return buildResponse(pageable, historicalLowProducts);
     }
 
     public SearchApiResponse findXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discountMin, Double discountMax, String category, String shop,
                                                                      boolean onlyActualOffers, String name, Integer prevPriceMin, Integer prevPriceMax) {
-        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findXPercentLowerPriceThanHistoricalLow(pageable, discountMin, discountMax,
+        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = productSearchService.findXPercentLowerPriceThanHistoricalLow(pageable, discountMin, discountMax,
                 category, shop, onlyActualOffers, name, prevPriceMin, prevPriceMax);
         return buildResponse(pageable, historicalLowProducts);
     }
 
     public SearchApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name, Integer prevPriceMin, Integer prevPriceMax) {
-        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = searchService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin,
+        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = productSearchService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin,
                 discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
         return buildResponse(pageable, historicalLowProducts);
     }
@@ -97,7 +97,7 @@ public class DiscountsViewService extends ViewBuilder {
             for (ProductRepository.ProductBasedOnDateAttributesNativeResInterface productBasedOnDateAttributesNativeRe : historicalLowProducts) {
                 String val = mapper.writeValueAsString(productBasedOnDateAttributesNativeRe);
                 ProductBasedOnDateAttributes productBasedOnDateAttributes = mapper.readValue(val, ProductBasedOnDateAttributes.class);
-                Product product = searchService.findProductByProductBasedOnDateAttributesId(productBasedOnDateAttributes.getId());
+                Product product = productSearchService.findProductByProductBasedOnDateAttributesId(productBasedOnDateAttributes.getId());
                 if (product == null) {
                     throw new RuntimeException("Could not find product based on product attributes id!");
                 }
