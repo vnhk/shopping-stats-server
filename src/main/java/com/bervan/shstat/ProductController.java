@@ -1,7 +1,6 @@
 package com.bervan.shstat;
 
 import com.bervan.shstat.queue.AddProductsQueueParam;
-import com.bervan.shstat.queue.QueueService;
 import com.bervan.shstat.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,26 +15,15 @@ public class ProductController {
 
     private final ProductService productService;
     private final ProductSearchService productSearchService;
-    private final QueueService queueService;
 
-    public ProductController(ProductService productService, ProductSearchService productSearchService, QueueService queueService) {
+    public ProductController(ProductService productService, ProductSearchService productSearchService) {
         this.productService = productService;
         this.productSearchService = productSearchService;
-        this.queueService = queueService;
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse> addProducts(@RequestBody List<Map<String, Object>> products) {
         return ResponseEntity.ok(productService.addProducts(products));
-    }
-
-    @PostMapping(path = "/async")
-    public ResponseEntity<ApiResponse> addProductsAsync(@RequestBody AddProductsQueueParam products) {
-        return ResponseEntity.ok().body(queueService.addProductsAsync(products));
-    }
-
-    public ApiResponse refreshMaterializedViews() {
-        return queueService.refreshMaterializedViews();
     }
 
     @GetMapping(path = "/categories")

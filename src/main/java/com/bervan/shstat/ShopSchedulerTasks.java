@@ -19,7 +19,7 @@ public class ShopSchedulerTasks {
 //    @Scheduled(cron = "0 0 3 * * *")
     public void refreshView() {
         try {
-            productController.refreshMaterializedViews();
+//            productController.refreshMaterializedViews();
         } catch (Exception e) {
             log.error("RefreshingViews: FAILED!", e);
         }
@@ -29,7 +29,7 @@ public class ShopSchedulerTasks {
     public void refreshFavorites() throws InterruptedException {
         Thread.sleep(15000 + RandomUtil.getPositiveInt() % 15000);
         try {
-            favoriteController.refreshMaterializedViews();
+//            favoriteController.refreshMaterializedViews();
         } catch (Exception e) {
             log.error("RefreshingViews: FAILED!", e);
         }
