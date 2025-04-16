@@ -1,5 +1,6 @@
 package com.bervan.shstat.queue;
 
+import com.bervan.common.service.ApiKeyService;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.favorites.FavoriteService;
 import org.springframework.stereotype.Service;
@@ -10,8 +11,8 @@ import java.io.Serializable;
 public class RefreshFavoritesViewsQueue extends AbstractQueue<RefreshFavoritesViewsQueueParam> {
     private final FavoriteService favoriteService;
 
-    public RefreshFavoritesViewsQueue(BervanLogger log, FavoriteService favoriteService) {
-        super(log);
+    public RefreshFavoritesViewsQueue(BervanLogger log, FavoriteService favoriteService, ApiKeyService apiKeyService) {
+        super(log, apiKeyService);
         this.favoriteService = favoriteService;
     }
 

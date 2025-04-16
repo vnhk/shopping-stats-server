@@ -1,5 +1,6 @@
 package com.bervan.shstat.queue;
 
+import com.bervan.common.service.ApiKeyService;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.ProductService;
 import com.bervan.shstat.repository.ProductRepository;
@@ -25,8 +26,8 @@ public class RefreshViewQueue extends AbstractQueue<RefreshViewQueueParam> {
                     lowerThanAvgForLastXMonths
             );
 
-    public RefreshViewQueue(ProductService productService, ProductRepository productRepository, BervanLogger log) {
-        super(log);
+    public RefreshViewQueue(ProductService productService, ProductRepository productRepository, BervanLogger log, ApiKeyService apiKeyService) {
+        super(log, apiKeyService);
         this.productService = productService;
         this.productRepository = productRepository;
     }

@@ -1,35 +1,50 @@
 package com.bervan.shstat;
 
-import com.bervan.shstat.queue.AddProductsQueueParam;
+import com.bervan.common.service.ApiKeyService;
+import com.bervan.shstat.queue.*;
 import com.bervan.shstat.response.ApiResponse;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-//@RestController
-//@RequestMapping(path = "/products")
+@RestController
+@RequestMapping(path = "/products")
+@PermitAll
 public class ProductController {
 
     private final ProductService productService;
-    private final ProductSearchService productSearchService;
+    private final ProductSearchService searchService;
+    private final QueueService queueService;
+    private final ApiKeyService apiKeyService;
+//    @Value("${api.keys}")
+//    private List<String> API_KEYS = new ArrayList<>();
 
-    public ProductController(ProductService productService, ProductSearchService productSearchService) {
+    public ProductController(ProductService productService, ProductSearchService searchService, QueueService queueService, ApiKeyService apiKeyService) {
         this.productService = productService;
-        this.productSearchService = productSearchService;
+        this.searchService = searchService;
+        this.queueService = queueService;
+        this.apiKeyService = apiKeyService;
     }
 
-    @PostMapping
-    public ResponseEntity<ApiResponse> addProducts(@RequestBody List<Map<String, Object>> products) {
-        return ResponseEntity.ok(productService.addProducts(products));
+    @PostMapping(path = "/async")
+    public ResponseEntity<ApiResponse> addProductsAsync(@RequestBody AddProductsQueueRequest request) {
+        if (apiKeyService.getUserByAPIKey(request.getApiKey()) == null) {
+            return ResponseEntity.badRequest().body(new ApiResponse(Collections.singletonList("NO_API_KEY")));
+        }
+        return ResponseEntity.ok().body(queueService.sendProductMessage(new QueueMessage(AddProductsQueueParam.class, request)));
+    }
+
+    @PostMapping(path = "/refresh-materialized-views")
+    public ResponseEntity<ApiResponse> refreshMaterializedViews() {
+        return ResponseEntity.ok().body(queueService.sendProductMessage(new QueueMessage(RefreshViewQueueParam.class, null)));
     }
 
     @GetMapping(path = "/categories")
     @CrossOrigin(origins = "*")
     public ResponseEntity<Set<String>> getCategories() {
-        Set<String> categories = productSearchService.findCategories();
+        Set<String> categories = searchService.findCategories();
         return ResponseEntity.ok(categories);
     }
 }

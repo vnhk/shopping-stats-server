@@ -1,6 +1,7 @@
 package com.bervan.shstat.queue;
 
 
+import com.bervan.common.service.ApiKeyService;
 import com.bervan.core.model.BervanLogger;
 
 import java.io.Serializable;
@@ -9,9 +10,11 @@ import java.util.Date;
 
 public abstract class AbstractQueue<T extends Serializable> {
     protected final BervanLogger log;
+    protected final ApiKeyService apiKeyService;
 
-    protected AbstractQueue(BervanLogger log) {
+    protected AbstractQueue(BervanLogger log, ApiKeyService apiKeyService) {
         this.log = log;
+        this.apiKeyService = apiKeyService;
     }
 
     public final void run(Serializable param) {

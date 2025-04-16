@@ -1,14 +1,15 @@
 package com.bervan.shstat;
 
-import com.bervan.shstat.repository.ProductBasedOnDateAttributesRepository;
-import com.bervan.shstat.repository.ProductRepository;
-import com.google.common.collect.Lists;
+import com.bervan.common.user.User;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductAttribute;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.entity.ProductListTextAttribute;
+import com.bervan.shstat.repository.ProductBasedOnDateAttributesRepository;
+import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.response.AddProductApiResponse;
 import com.bervan.shstat.response.ApiResponse;
+import com.google.common.collect.Lists;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -94,10 +95,10 @@ public class ProductService {
         this.productBasedOnDateAttributesRepository = productBasedOnDateAttributesRepository;
     }
 
-    public void addProductsByPartitions(List<Map<String, Object>> products) {
+    public void addProductsByPartitions(List<Map<String, Object>> products, User userByAPIKey) {
         List<List<Map<String, Object>>> partition = Lists.partition(products, 50);
         for (List<Map<String, Object>> p : partition) {
-            ApiResponse apiResponse = addProducts(p);
+            ApiResponse apiResponse = addProducts(p, userByAPIKey);
             if (apiResponse.getMessages() != null && !apiResponse.getMessages().isEmpty()) {
                 System.out.println(apiResponse.getMessages());
             }
@@ -105,7 +106,7 @@ public class ProductService {
     }
 
     @Transactional
-    public ApiResponse addProducts(List<Map<String, Object>> products) {
+    public ApiResponse addProducts(List<Map<String, Object>> products, User userByAPIKey) {
         List<Product> allMapped = new LinkedList<>();
         List<String> messages = new LinkedList<>();
         for (Map<String, Object> product : products) {
@@ -113,6 +114,7 @@ public class ProductService {
                 Object date = product.get("Date");
                 Object price = product.get("Price");
                 Product mappedProduct = mapProduct(product);
+                mappedProduct.getOwners().add(userByAPIKey);
                 mappedProduct = productRepository.save(mappedProduct);
                 actualProductService.updateActualProducts(date, mappedProduct);
                 productStatsService.updateProductStats(mappedProduct, price);

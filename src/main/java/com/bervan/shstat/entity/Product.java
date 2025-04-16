@@ -1,6 +1,6 @@
 package com.bervan.shstat.entity;
 
-import com.bervan.history.model.AbstractBaseEntity;
+import com.bervan.common.model.BervanBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -12,7 +12,8 @@ import java.util.Set;
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "shop", "productListName", "productListUrl"})},
         indexes = {@Index(columnList = "shop"), @Index(columnList = "name")})
-public class Product  implements AbstractBaseEntity<Long> {
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public class Product extends BervanBaseEntity<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -36,6 +37,19 @@ public class Product  implements AbstractBaseEntity<Long> {
 
     public Long getId() {
         return id;
+    }
+
+
+    private Boolean deleted = false;
+
+    @Override
+    public Boolean isDeleted() {
+        return deleted;
+    }
+
+    @Override
+    public void setDeleted(Boolean value) {
+        this.deleted = value;
     }
 
     public void setId(Long id) {

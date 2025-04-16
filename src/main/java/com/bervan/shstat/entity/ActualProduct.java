@@ -1,5 +1,6 @@
 package com.bervan.shstat.entity;
 
+import com.bervan.common.model.BervanBaseEntity;
 import com.bervan.history.model.AbstractBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -9,7 +10,8 @@ import java.util.Date;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"productId", "scrapDate"})})
-public class ActualProduct implements AbstractBaseEntity<Long> {
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public class ActualProduct extends BervanBaseEntity<Long> {
     @Id
     @GeneratedValue
     private Long id;
@@ -17,6 +19,18 @@ public class ActualProduct implements AbstractBaseEntity<Long> {
     private Long productId;
     @NotNull
     private Date scrapDate;
+    private Boolean deleted = false;
+
+    @Override
+    public Boolean isDeleted() {
+        return deleted;
+    }
+
+    @Override
+    public void setDeleted(Boolean value) {
+        this.deleted = value;
+    }
+
 
     public Long getId() {
         return id;

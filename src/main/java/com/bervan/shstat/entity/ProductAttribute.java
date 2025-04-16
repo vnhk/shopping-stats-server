@@ -1,5 +1,6 @@
 package com.bervan.shstat.entity;
 
+import com.bervan.common.model.BervanBaseEntity;
 import com.bervan.history.model.AbstractBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -8,7 +9,7 @@ import jakarta.validation.constraints.Size;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Entity
 @Table(indexes = {@Index(columnList = "name")})
-public abstract class ProductAttribute implements AbstractBaseEntity<Long> {
+public abstract class ProductAttribute extends BervanBaseEntity<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     protected Long id;
@@ -18,6 +19,18 @@ public abstract class ProductAttribute implements AbstractBaseEntity<Long> {
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id")
     protected Product product;
+    private Boolean deleted = false;
+
+
+    @Override
+    public Boolean isDeleted() {
+        return deleted;
+    }
+
+    @Override
+    public void setDeleted(Boolean value) {
+        this.deleted = value;
+    }
 
     public Long getId() {
         return id;

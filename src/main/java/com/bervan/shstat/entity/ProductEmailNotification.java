@@ -1,5 +1,6 @@
 package com.bervan.shstat.entity;
 
+import com.bervan.common.model.BervanBaseEntity;
 import com.bervan.history.model.AbstractBaseEntity;
 import com.bervan.shstat.favorites.FavoritesList;
 import jakarta.persistence.*;
@@ -10,16 +11,30 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-public class ProductEmailNotification implements AbstractBaseEntity<Long> {
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public class ProductEmailNotification extends BervanBaseEntity<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String bodyTemplate;
 
+
+    private String bodyTemplate;
     private BigDecimal priceMin;
     private BigDecimal priceMax;
     private Double discount;
+    private Boolean deleted = false;
+
+    @Override
+    public Boolean isDeleted() {
+        return deleted;
+    }
+
+    @Override
+    public void setDeleted(Boolean value) {
+        this.deleted = value;
+    }
+
 
     public Long getId() {
         return id;

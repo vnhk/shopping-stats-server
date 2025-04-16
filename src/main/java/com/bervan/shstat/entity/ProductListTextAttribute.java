@@ -7,6 +7,7 @@ import java.util.Set;
 
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "name"})})
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class ProductListTextAttribute extends ProductAttribute {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> value;
@@ -27,6 +28,7 @@ public class ProductListTextAttribute extends ProductAttribute {
     public ProductListTextAttribute() {
 
     }
+
 
     @Override
     public LocalDateTime getModificationDate() {
