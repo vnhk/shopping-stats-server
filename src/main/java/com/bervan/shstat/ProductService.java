@@ -114,7 +114,7 @@ public class ProductService {
                 Object date = product.get("Date");
                 Object price = product.get("Price");
                 Product mappedProduct = mapProduct(product);
-                mappedProduct.getOwners().add(userByAPIKey);
+                mappedProduct.addOwner(userByAPIKey);
                 mappedProduct = productRepository.save(mappedProduct);
                 actualProductService.updateActualProducts(date, mappedProduct);
                 productStatsService.updateProductStats(mappedProduct, price);

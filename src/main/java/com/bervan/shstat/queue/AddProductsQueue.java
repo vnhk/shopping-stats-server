@@ -6,6 +6,7 @@ import com.bervan.shstat.ProductService;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,8 +22,8 @@ public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
     @Override
     protected void process(Serializable param) {
         log.info("Processing products started...");
-        AddProductsQueueRequest data = (AddProductsQueueRequest) param;
-        productService.addProductsByPartitions((List<Map<String, Object>>) data.getAddProductsQueueParam(), apiKeyService.getUserByAPIKey(data.getApiKey()));
+        LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>) param;
+        productService.addProductsByPartitions((List<Map<String, Object>>) data.get("addProductsQueueParam"), apiKeyService.getUserByAPIKey(data.get("apiKey").toString()));
         log.info("Processing products completed...");
     }
 }
