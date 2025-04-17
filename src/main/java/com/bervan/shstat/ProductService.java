@@ -1,6 +1,7 @@
 package com.bervan.shstat;
 
 import com.bervan.common.user.User;
+import com.bervan.common.user.UserRepository;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductAttribute;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
@@ -29,6 +30,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ActualProductService actualProductService;
     private final ProductStatsService productStatsService;
+    private final UserRepository userRepository;
     private final ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository;
     public static final List<AttrFieldMappingVal<Field>> commonProductProperties;
     public static final List<AttrFieldMappingVal<Field>> productPerDateAttributeProperties;
@@ -88,17 +90,18 @@ public class ProductService {
 
     public ProductService(ProductRepository productRepository,
                           ActualProductService actualProductService,
-                          ProductStatsService productStatsService, ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository) {
+                          ProductStatsService productStatsService, UserRepository userRepository, ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository) {
         this.productRepository = productRepository;
         this.actualProductService = actualProductService;
         this.productStatsService = productStatsService;
+        this.userRepository = userRepository;
         this.productBasedOnDateAttributesRepository = productBasedOnDateAttributesRepository;
     }
 
-    public void addProductsByPartitions(List<Map<String, Object>> products, User userByAPIKey) {
+    public void addProductsByPartitions(List<Map<String, Object>> products) {
         List<List<Map<String, Object>>> partition = Lists.partition(products, 50);
         for (List<Map<String, Object>> p : partition) {
-            ApiResponse apiResponse = addProducts(p, userByAPIKey);
+            ApiResponse apiResponse = addProducts(p);
             if (apiResponse.getMessages() != null && !apiResponse.getMessages().isEmpty()) {
                 System.out.println(apiResponse.getMessages());
             }
@@ -106,7 +109,7 @@ public class ProductService {
     }
 
     @Transactional
-    public ApiResponse addProducts(List<Map<String, Object>> products, User userByAPIKey) {
+    public ApiResponse addProducts(List<Map<String, Object>> products) {
         List<Product> allMapped = new LinkedList<>();
         List<String> messages = new LinkedList<>();
         for (Map<String, Object> product : products) {
@@ -114,10 +117,11 @@ public class ProductService {
                 Object date = product.get("Date");
                 Object price = product.get("Price");
                 Product mappedProduct = mapProduct(product);
-                mappedProduct.addOwner(userByAPIKey);
+                User commonUser = userRepository.findByUsername("COMMON_USER").get();
+                mappedProduct.addOwner(commonUser);
                 mappedProduct = productRepository.save(mappedProduct);
-                actualProductService.updateActualProducts(date, mappedProduct);
-                productStatsService.updateProductStats(mappedProduct, price);
+                actualProductService.updateActualProducts(date, mappedProduct, commonUser);
+                productStatsService.updateProductStats(mappedProduct, price, commonUser);
                 allMapped.add(mappedProduct);
             } catch (MapperException e) {
                 if (e.isSendErrorMessage() && e.getMessage() != null && !e.getMessage().isEmpty()) {
@@ -276,16 +280,16 @@ public class ProductService {
     }
 
     private static String getSql(int months) {
-        return " WITH RankedPrices AS (SELECT DISTINCT product_id, avg" + months + "month AS average_price FROM scrapdb.product_stats) " +
+        return " WITH RankedPrices AS (SELECT DISTINCT product_id, avg" + months + "month AS average_price FROM product_stats) " +
                 " SELECT DISTINCT pda.id AS id, pda.scrap_date AS scrap_date, pda.price AS price, rp.average_price AS avgPrice, " + months + " AS month_offset, " +
                 """
                                 p.name AS product_name, p.shop as shop, pc.categories AS category, p.img_src AS product_image_src,
                                 (IF(pda.price >= rp.average_price, 0, (1 - pda.price / rp.average_price) * 100)) AS discount_in_percent
-                        FROM scrapdb.product_based_on_date_attributes pda
-                                JOIN scrapdb.product p ON p.id = pda.product_id
+                        FROM product_based_on_date_attributes pda
+                                JOIN product p ON p.id = pda.product_id
                                 JOIN RankedPrices rp ON p.id = rp.product_id
-                                LEFT JOIN scrapdb.product_categories pc ON pda.product_id = pc.product_id
-                                JOIN scrapdb.actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date
+                                LEFT JOIN product_categories pc ON pda.product_id = pc.product_id
+                                JOIN actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date
                         WHERE pda.price < rp.average_price AND pda.price > 0
                                 ORDER BY pda.id;
                         """;

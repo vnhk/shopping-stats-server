@@ -34,7 +34,7 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
     @Query(nativeQuery = true, value =
             """
                     SELECT DISTINCT id, scrap_date as scrapDate, price
-                    FROM scrapdb.LOWER_THAN_AVG_FOR_X_MONTHS
+                    FROM LOWER_THAN_AVG_FOR_X_MONTHS
                     WHERE category = COALESCE(:category, category)
                         AND shop = COALESCE(:shop, shop)
                         AND month_offset = :months
@@ -53,7 +53,7 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
     @Query(nativeQuery = true, value =
             """
                     SELECT id, scrap_date, price
-                    FROM scrapdb.HISTORICAL_LOW_PRICES_TABLE
+                    FROM HISTORICAL_LOW_PRICES_TABLE
                     WHERE categories = COALESCE(:category, categories)
                         AND shop = COALESCE(:shop, shop)
                         AND UPPER(product_name) LIKE UPPER(COALESCE(:name, product_name))
@@ -70,7 +70,7 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
     @Query(nativeQuery = true, value =
             """
                     SELECT DISTINCT id, scrap_date as scrapDate, price
-                    FROM scrapdb.LOWER_PRICES_THAN_HISTORICAL_LOW
+                    FROM LOWER_PRICES_THAN_HISTORICAL_LOW
                     WHERE category = COALESCE(:category, category)
                         AND shop = COALESCE(:shop, shop)
                         AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
@@ -85,7 +85,7 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
     @Query(nativeQuery = true, value =
             """
                     SELECT DISTINCT id, scrap_date as scrapDate, price
-                    FROM scrapdb.LOWER_PRICES_THAN_HISTORICAL_LOW
+                    FROM LOWER_PRICES_THAN_HISTORICAL_LOW
                     WHERE category = COALESCE(:category, category)
                         AND shop = COALESCE(:shop, shop)
                         AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
@@ -106,11 +106,11 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
     @Query(value = """
             CREATE OR REPLACE TABLE HISTORICAL_LOW_PRICES_TABLE AS
             SELECT pda.id AS id, pda.scrap_date, pda.price, p.name as product_name, p.shop, pc.categories, p.img_src as product_image_src
-            FROM scrapdb.product AS p
-                     JOIN scrapdb.product_categories pc ON p.id = pc.product_id
-                     JOIN scrapdb.product_based_on_date_attributes AS pda ON p.id = pda.product_id
-                     JOIN scrapdb.actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date
-                     JOIN scrapdb.product_stats ps ON ps.product_id = pda.product_id AND ps.historical_low = pda.price
+            FROM product AS p
+                     JOIN product_categories pc ON p.id = pc.product_id
+                     JOIN product_based_on_date_attributes AS pda ON p.id = pda.product_id
+                     JOIN actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date
+                     JOIN product_stats ps ON ps.product_id = pda.product_id AND ps.historical_low = pda.price
             ORDER BY pda.id;
             """, nativeQuery = true)
     @Transactional
@@ -120,10 +120,10 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
     @Query(value = """
             CREATE OR REPLACE TABLE LOWER_PRICES_THAN_HISTORICAL_LOW AS
             WITH RankedPrices AS (SELECT product_id, MIN(price) as min_price
-                                  FROM scrapdb.product_based_on_date_attributes pda
+                                  FROM product_based_on_date_attributes pda
                                   WHERE (product_id, price) NOT IN
                                         (SELECT product_id, MIN(price)
-                                         FROM scrapdb.product_based_on_date_attributes pda
+                                         FROM product_based_on_date_attributes pda
                                          WHERE pda.price <> -1
                                          GROUP BY product_id)
                                     AND pda.price <> -1
@@ -138,11 +138,11 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
                             p.name                              AS product_name,
                             pc.categories                       AS category,
                             pda.product_id                      AS product_id
-            FROM scrapdb.product_based_on_date_attributes pda
+            FROM product_based_on_date_attributes pda
                      JOIN RankedPrices rp1 ON pda.product_id = rp1.product_id
-                     JOIN scrapdb.product p ON p.id = pda.product_id
-                     LEFT JOIN scrapdb.product_categories pc ON pda.product_id = pc.product_id
-                     JOIN scrapdb.actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date
+                     JOIN product p ON p.id = pda.product_id
+                     LEFT JOIN product_categories pc ON pda.product_id = pc.product_id
+                     JOIN actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date
             WHERE pda.price > 0
               AND pda.price <= rp1.min_price
             ORDER BY pda.id;
@@ -154,7 +154,7 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
     @Query(value = """
             CREATE OR REPLACE TABLE LOWER_THAN_AVG_FOR_LAST_MONTH AS
                                     WITH RankedPrices AS (SELECT product_id, AVG(price) AS average_price
-                                                          FROM scrapdb.product_based_on_date_attributes AS pda
+                                                          FROM product_based_on_date_attributes AS pda
                                                           WHERE price <> -1
                                                             AND MONTH(pda.scrap_date) = MONTH(CURRENT_DATE - INTERVAL 1 MONTH)
                                                           GROUP BY product_id)
@@ -167,15 +167,15 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
                                                     pc.categories                                                                    AS category,
                                                     p.img_src                                                                        AS product_image_src,
                                                     (IF(pda.price >= rp.average_price, 0, (1 - pda.price / rp.average_price) * 100)) AS discount_in_percent
-                                    FROM scrapdb.product_based_on_date_attributes pda
-                                             JOIN scrapdb.product p ON p.id = pda.product_id
+                                    FROM product_based_on_date_attributes pda
+                                             JOIN product p ON p.id = pda.product_id
                                              JOIN RankedPrices rp ON p.id = rp.product_id
-                                             LEFT JOIN scrapdb.product_categories pc ON pda.product_id = pc.product_id
+                                             LEFT JOIN product_categories pc ON pda.product_id = pc.product_id
                                     WHERE scrap_date >= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 2 DAY)
                                       AND scrap_date < CURRENT_TIMESTAMP()
                                       AND pda.price < rp.average_price
                                       AND pda.scrap_date in (SELECT MAX(scrap_date)
-                                                             FROM scrapdb.product_based_on_date_attributes AS pda1
+                                                             FROM product_based_on_date_attributes AS pda1
                                                              WHERE price <> -1
                                                                AND pda.id = pda1.id)
                                     ORDER BY pda.id;

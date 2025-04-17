@@ -10,6 +10,7 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import org.springframework.data.domain.Pageable;
@@ -44,19 +45,43 @@ public abstract class AbstractProductView extends AbstractPageView {
         searchButton.addClickListener(buttonClickEvent -> {
             SearchApiResponse products = getProductList(categoryDropdown.getValue(), shopDropdown.getValue(), Pageable.ofSize(500));
             productsLayout.removeAll();
+
+            FlexLayout tileContainer = new FlexLayout();
+            tileContainer.setJustifyContentMode(FlexLayout.JustifyContentMode.START);
+            tileContainer.getStyle().set("display", "flex");
+            tileContainer.getStyle().set("flex-wrap", "wrap");
+            tileContainer.getStyle().set("gap", "1rem");
+            tileContainer.setWidthFull();
+
             for (Object item : products.getItems()) {
                 ProductDTO productDTO = ((ProductDTO) item);
 
-                VerticalLayout productLayout = new VerticalLayout();
+                VerticalLayout productCard = new VerticalLayout();
+                productCard.setWidth("200px");
+                productCard.getStyle().set("border", "1px solid #ccc");
+                productCard.getStyle().set("border-radius", "8px");
+                productCard.getStyle().set("padding", "10px");
+                productCard.getStyle().set("box-shadow", "0 2px 5px rgba(0,0,0,0.1)");
+                productCard.getStyle().set("background-color", "#fff");
+                productCard.getStyle().set("text-align", "center");
+
                 Image image = new Image(productDTO.getImgSrc() == null ? "" : productDTO.getImgSrc(), "No image :(");
+                image.setWidth("150px");
+                image.setHeight("150px");
+                image.getStyle().set("object-fit", "contain");
+
+                Text nameText = new Text(productDTO.getName());
                 List<PriceDTO> prices = productDTO.getPrices();
                 Text priceText = new Text("No price");
-                if (prices != null && prices.size() > 0) {
-                    priceText = new Text("Price:" + prices.get(0).getPrice());
+                if (prices != null && !prices.isEmpty()) {
+                    priceText = new Text("Price: " + prices.get(0).getPrice() + " zł");
                 }
-                productLayout.add(image, new Text(productDTO.getName()), priceText);
-                productsLayout.add(productLayout);
+
+                productCard.add(image, nameText, priceText);
+                tileContainer.add(productCard);
             }
+
+            productsLayout.add(tileContainer);
         });
 
         add(shopDropdown, categoryDropdown, name, searchButton, productsLayout);

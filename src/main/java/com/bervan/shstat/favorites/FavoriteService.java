@@ -42,19 +42,19 @@ public class FavoriteService {
                 String productName = rule.getProductName();
                 String productNameSQL = buildProductNameSQL(productName);
 
-                String sql = "   WITH RankedPrices AS (SELECT DISTINCT product_id, AVG(price) AS average_price FROM scrapdb.product_based_on_date_attributes AS pda " +
+                String sql = "   WITH RankedPrices AS (SELECT DISTINCT product_id, AVG(price) AS average_price FROM product_based_on_date_attributes AS pda " +
                         " WHERE price <> -1 AND MONTH(pda.scrap_date) > MONTH(CURRENT_DATE - INTERVAL 3 MONTH) GROUP BY product_id)" +
                         " SELECT DISTINCT p.id as product_id, p.name as product_name, p.shop, pc.categories as category, pda.price," +
                         " :listName as list_name, rp.average_price as avg_price, p.img_src, pda.scrap_date, ptav.value as offer_url, " +
                         " (IF(pda.price >= rp.average_price, 0, (1 - pda.price / rp.average_price) * 100)) as discount_in_percent " +
-                        " FROM scrapdb.product p " +
+                        " FROM product p " +
                         " JOIN RankedPrices rp on p.id = rp.product_id " +
-                        " JOIN scrapdb.product_categories pc on p.id = pc.product_id " +
-                        " JOIN scrapdb.product_based_on_date_attributes pda on p.id = pda.product_id " +
-                        " JOIN scrapdb.product_list_text_attribute pta on p.id = pta.product_id " +
-                        " JOIN scrapdb.product_list_text_attribute_value ptav on pta.id = ptav.product_list_text_attribute_id " +
+                        " JOIN product_categories pc on p.id = pc.product_id " +
+                        " JOIN product_based_on_date_attributes pda on p.id = pda.product_id " +
+                        " JOIN product_list_text_attribute pta on p.id = pta.product_id " +
+                        " JOIN product_list_text_attribute_value ptav on pta.id = ptav.product_list_text_attribute_id " +
                         " WHERE pta.name = 'Offer Url' AND pda.scrap_date = (SELECT MAX(scrap_date) " +
-                        "            FROM scrapdb.product_based_on_date_attributes AS pda1 " +
+                        "            FROM product_based_on_date_attributes AS pda1 " +
                         "            WHERE price <> -1 " +
                         "            AND pda.id = pda1.id) " +
                         (

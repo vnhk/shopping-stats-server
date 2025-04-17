@@ -1,9 +1,10 @@
 package com.bervan.shstat;
 
-import com.bervan.shstat.repository.ActualProductsRepository;
-import com.bervan.shstat.repository.ProductStatsRepository;
+import com.bervan.common.user.User;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductStats;
+import com.bervan.shstat.repository.ActualProductsRepository;
+import com.bervan.shstat.repository.ProductStatsRepository;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,7 @@ public class ProductStatsService {
         this.actualProductsRepository = actualProductsRepository;
     }
 
-    public void updateProductStats(Product mappedProduct, Object priceObj) {
+    public void updateProductStats(Product mappedProduct, Object priceObj, User commonUser) {
         if (actualProductsRepository.findByProductId(mappedProduct.getId()).isEmpty()) {
             return;
         }
@@ -44,6 +45,9 @@ public class ProductStatsService {
             updateAvgLast6Month(byProductId.get(), price);
             updateAvgLast12Month(byProductId.get(), price);
 
+            if (byProductId.get().getOwners().contains(commonUser)) {
+                byProductId.get().addOwner(commonUser);
+            }
             productStatsRepository.save(byProductId.get());
         }
     }

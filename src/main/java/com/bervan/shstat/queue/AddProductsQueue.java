@@ -23,7 +23,7 @@ public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
     protected void process(Serializable param) {
         log.info("Processing products started...");
         LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>) param;
-        productService.addProductsByPartitions((List<Map<String, Object>>) data.get("addProductsQueueParam"), apiKeyService.getUserByAPIKey(data.get("apiKey").toString()));
+        productService.addProductsByPartitions((List<Map<String, Object>>) data.get("addProductsQueueParam"));
         log.info("Processing products completed...");
     }
 }
