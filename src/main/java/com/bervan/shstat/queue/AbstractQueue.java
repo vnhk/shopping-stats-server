@@ -10,11 +10,13 @@ import java.util.Date;
 
 public abstract class AbstractQueue<T extends Serializable> {
     protected final BervanLogger log;
+    protected String supports;
     protected final ApiKeyService apiKeyService;
 
-    protected AbstractQueue(BervanLogger log, ApiKeyService apiKeyService) {
+    protected AbstractQueue(BervanLogger log, ApiKeyService apiKeyService, String supports) {
         this.log = log;
         this.apiKeyService = apiKeyService;
+        this.supports = supports;
     }
 
     public final void run(Serializable param) {
@@ -31,8 +33,7 @@ public abstract class AbstractQueue<T extends Serializable> {
         return (endDate.getTime() - startDate.getTime()) / 1000;
     }
 
-    public boolean supports(Class<?> checkClass) {
-        return (((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]).equals(checkClass);
+    public boolean supports(String paramSupports) {
+        return supports.equals(paramSupports);
     }
 }

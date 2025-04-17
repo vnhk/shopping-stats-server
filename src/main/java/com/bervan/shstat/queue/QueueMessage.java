@@ -3,28 +3,40 @@ package com.bervan.shstat.queue;
 import java.io.Serializable;
 
 public class QueueMessage implements Serializable {
-    private Class<?> aClass;
+    private String supportClassName;
     private Serializable body;
+    private String apiKey;
 
-    public QueueMessage(Class<?> aClass, Serializable body) {
-        this.aClass = aClass;
+    public QueueMessage(String supportClassName, Serializable body, String apiKey) {
+        this.supportClassName = supportClassName;
         this.body = body;
+        this.apiKey = apiKey;
     }
 
-    public void setaClass(Class<?> aClass) {
-        this.aClass = aClass;
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
 
     public void setBody(Serializable body) {
         this.body = body;
     }
 
-    public Class<?> getaClass() {
-        return aClass;
-    }
 
     public Serializable getBody() {
         return body;
+    }
+
+    public void setSupportClassName(String supportClassName) {
+        this.supportClassName = supportClassName;
+    }
+
+    public String getSupportClassName() {
+        return supportClassName;
     }
 }
 

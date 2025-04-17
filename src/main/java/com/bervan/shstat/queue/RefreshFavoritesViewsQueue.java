@@ -12,7 +12,7 @@ public class RefreshFavoritesViewsQueue extends AbstractQueue<RefreshFavoritesVi
     private final FavoriteService favoriteService;
 
     public RefreshFavoritesViewsQueue(BervanLogger log, FavoriteService favoriteService, ApiKeyService apiKeyService) {
-        super(log, apiKeyService);
+        super(log, apiKeyService, "RefreshFavoritesViewsQueueParam");
         this.favoriteService = favoriteService;
     }
 

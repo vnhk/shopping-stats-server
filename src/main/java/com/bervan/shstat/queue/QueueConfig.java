@@ -39,7 +39,7 @@ public class QueueConfig {
     @Bean
     public DefaultJackson2JavaTypeMapper trustedClassMapper() {
         DefaultJackson2JavaTypeMapper typeMapper = new DefaultJackson2JavaTypeMapper();
-        typeMapper.setTrustedPackages("com.bervan.shstat.queue");
+        typeMapper.setTrustedPackages("com.bervan.shstat.queue", "com.bervan.shopwebscraper.save");
         return typeMapper;
     }
 

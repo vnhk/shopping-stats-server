@@ -15,15 +15,20 @@ public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
     private final ProductService productService;
 
     public AddProductsQueue(BervanLogger log, ProductService productService, ApiKeyService apiKeyService) {
-        super(log, apiKeyService);
+        super(log, apiKeyService, "AddProductsQueueParam");
         this.productService = productService;
     }
 
     @Override
     protected void process(Serializable param) {
         log.info("Processing products started...");
-        LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>) param;
-        productService.addProductsByPartitions((List<Map<String, Object>>) data.get("addProductsQueueParam"));
+        if (param instanceof List<?> list) {
+            productService.addProductsByPartitions((List<Map<String, Object>>) param);
+        } else {
+            LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>) param;
+            productService.addProductsByPartitions((List<Map<String, Object>>) data.get("addProductsQueueParam"));
+        }
+
         log.info("Processing products completed...");
     }
 }

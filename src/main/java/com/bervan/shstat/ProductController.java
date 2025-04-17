@@ -1,13 +1,17 @@
 package com.bervan.shstat;
 
 import com.bervan.common.service.ApiKeyService;
-import com.bervan.shstat.queue.*;
+import com.bervan.shstat.queue.AddProductsQueueParam;
+import com.bervan.shstat.queue.AddProductsQueueRequest;
+import com.bervan.shstat.queue.QueueMessage;
+import com.bervan.shstat.queue.QueueService;
 import com.bervan.shstat.response.ApiResponse;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Set;
 
 @RestController
 @RequestMapping(path = "/products")
@@ -33,13 +37,13 @@ public class ProductController {
         if (apiKeyService.getUserByAPIKey(request.getApiKey()) == null) {
             return ResponseEntity.badRequest().body(new ApiResponse(Collections.singletonList("NO_API_KEY")));
         }
-        return ResponseEntity.ok().body(queueService.sendProductMessage(new QueueMessage(AddProductsQueueParam.class, request)));
+        return ResponseEntity.ok().body(queueService.sendProductMessage(new QueueMessage("AddProductsQueueParam", request.getAddProductsQueueParam(), request.getApiKey())));
     }
 
-    @PostMapping(path = "/refresh-materialized-views")
-    public ResponseEntity<ApiResponse> refreshMaterializedViews() {
-        return ResponseEntity.ok().body(queueService.sendProductMessage(new QueueMessage(RefreshViewQueueParam.class, null)));
-    }
+//    @PostMapping(path = "/refresh-materialized-views")
+//    public ResponseEntity<ApiResponse> refreshMaterializedViews() {
+//        return ResponseEntity.ok().body(queueService.sendProductMessage(new QueueMessage(RefreshViewQueueParam.class, null)));
+//    }
 
     @GetMapping(path = "/categories")
     @CrossOrigin(origins = "*")

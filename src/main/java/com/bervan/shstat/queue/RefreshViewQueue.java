@@ -27,7 +27,7 @@ public class RefreshViewQueue extends AbstractQueue<RefreshViewQueueParam> {
             );
 
     public RefreshViewQueue(ProductService productService, ProductRepository productRepository, BervanLogger log, ApiKeyService apiKeyService) {
-        super(log, apiKeyService);
+        super(log, apiKeyService, "RefreshViewQueueParam");
         this.productService = productService;
         this.productRepository = productRepository;
     }

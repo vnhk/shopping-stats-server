@@ -1,5 +1,6 @@
 package com.bervan.shstat.queue;
 
+import com.bervan.common.service.ApiKeyService;
 import com.bervan.shstat.response.ApiResponse;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
@@ -16,10 +17,12 @@ public class QueueService {
     private final Set<AbstractQueue<?>> queueProcessors;
 
     private final Jackson2JsonMessageConverter messageConverter;
+    private final ApiKeyService apiKeyService;
 
-    public QueueService(Jackson2JsonMessageConverter messageConverter, Set<AbstractQueue<?>> queueProcessors) {
+    public QueueService(Jackson2JsonMessageConverter messageConverter, Set<AbstractQueue<?>> queueProcessors, ApiKeyService apiKeyService) {
         this.queueProcessors = queueProcessors;
         this.messageConverter = messageConverter;
+        this.apiKeyService = apiKeyService;
     }
 
     @Autowired
@@ -33,8 +36,12 @@ public class QueueService {
     @RabbitListener(queues = "PRODUCTS_QUEUE")
     public void receiveProductMessage(Message message) {
         QueueMessage queueMessage = (QueueMessage) messageConverter.fromMessage(message);
+        if (apiKeyService.getUserByAPIKey(queueMessage.getApiKey()) == null) {
+            System.err.println("NOT_API_KEY");
+            return;
+        }
         for (AbstractQueue<?> queueProcessor : queueProcessors) {
-            if (queueProcessor.supports(queueMessage.getaClass())) {
+            if (queueProcessor.supports(queueMessage.getSupportClassName())) {
                 queueProcessor.run(queueMessage.getBody());
             }
         }
