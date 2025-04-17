@@ -66,6 +66,12 @@ public abstract class AbstractProductView extends AbstractPageView {
                 productCard.getStyle().set("text-align", "center");
 
                 Image image = new Image(productDTO.getImgSrc() == null ? "" : productDTO.getImgSrc(), "No image :(");
+                if (productDTO.getImgSrc().startsWith("http") || productDTO.getImgSrc().startsWith("https")) {
+                    image.setSrc(productDTO.getImgSrc());
+                } else {
+                    image.setSrc("data:image/png;base64," + productDTO.getImgSrc());
+                }
+
                 image.setWidth("150px");
                 image.setHeight("150px");
                 image.getStyle().set("object-fit", "contain");
