@@ -1,9 +1,8 @@
 package com.bervan.shstat.favorites;
 
 import com.bervan.history.model.AbstractBaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -138,6 +137,9 @@ public class FavoriteProduct  implements AbstractBaseEntity<Long> {
         this.discountInPercent = discountInPercent;
     }
 
+    @Lob
+    @Size(max = 5000000)
+    @Column(columnDefinition = "LONGTEXT")
     private String imgSrc;
     private Date scrapDate;
     private String offerUrl;

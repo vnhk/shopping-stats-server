@@ -25,6 +25,9 @@ public class Product extends BervanBaseEntity<Long> {
     private String shop;
     @NotNull
     private String productListName;
+    @Lob
+    @Size(max = 5000000)
+    @Column(columnDefinition = "LONGTEXT")
     private String imgSrc;
     @NotNull
     private String productListUrl;
