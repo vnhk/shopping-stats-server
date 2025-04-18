@@ -137,13 +137,27 @@ public class ProductService {
     private Product mapProduct(Map<String, Object> productToMap) {
         Product product = mapProductCommonAttr(productToMap);
         ProductBasedOnDateAttributes perDateAttributes = mapProductPerDateAttributes(productToMap, product);
-        product.addAttribute(perDateAttributes);
+
+        Optional<ProductBasedOnDateAttributes> lastByDate = product.getProductBasedOnDateAttributes()
+                .stream()
+                .max(Comparator.comparing(ProductBasedOnDateAttributes::getScrapDate));
+
+        if (lastByDate.isPresent()) {
+            if (!Objects.equals(perDateAttributes.getPrice(), lastByDate.get().getPrice())) {
+                //dont add the same price
+                product.addAttribute(perDateAttributes);
+            }
+        } else {
+            product.addAttribute(perDateAttributes);
+        }
+
         Set<ProductAttribute> resAttributes = new HashSet<>();
         for (Map.Entry<String, Object> attrs : productToMap.entrySet()) {
             String key = attrs.getKey();
             Object value = attrs.getValue();
             if (value instanceof Date) {
-                throw new RuntimeException("Not implemented for: " + attrs);
+                System.err.println("Not implemented for: " + attrs);
+                continue;
             } else if (value instanceof String) {
                 Optional<ProductListTextAttribute> attrOpt = findProductAttr(product, key, ProductListTextAttribute.class);
                 if (attrOpt.isEmpty()) {
@@ -153,11 +167,14 @@ public class ProductService {
                     attrOpt.get().getValue().add((String) value);
                 }
             } else if (value instanceof LocalDate) {
-                throw new RuntimeException("Not implemented for: " + attrs);
+                System.err.println("Not implemented for: " + attrs);
+                continue;
             } else if (value instanceof LocalDateTime) {
-                throw new RuntimeException("Not implemented for: " + attrs);
+                System.err.println("Not implemented for: " + attrs);
+                continue;
             } else if (value instanceof Number) {
-                throw new RuntimeException("Not implemented for: " + attrs);
+                System.err.println("Not implemented for: " + attrs);
+                continue;
             } else if (value instanceof List<?>) {
                 List<?> list = (List<?>) value;
                 if (!list.isEmpty() && list.get(0) instanceof String) {
@@ -168,7 +185,8 @@ public class ProductService {
                         attrOpt.get().getValue().addAll((List<String>) value);
                     }
                 } else if (!list.isEmpty() && list.get(0) instanceof Number) {
-                    throw new RuntimeException("Not implemented for: " + attrs);
+                    System.err.println("Not implemented for: " + attrs);
+                    continue;
                 }
             } else if (value instanceof String[]) {
                 Optional<ProductListTextAttribute> attrOpt = findProductAttr(product, key, ProductListTextAttribute.class);
