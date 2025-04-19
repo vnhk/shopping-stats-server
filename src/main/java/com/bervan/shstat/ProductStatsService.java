@@ -36,6 +36,7 @@ public class ProductStatsService {
             byProductId = Optional.of(productStats);
         }
 
+
         if (price.compareTo(BigDecimal.ZERO) > 0) {
             updateHistoricalLow(byProductId.get(), price);
             updateAvgWholeHistory(byProductId.get(), price);
@@ -45,7 +46,7 @@ public class ProductStatsService {
             updateAvgLast6Month(byProductId.get(), price);
             updateAvgLast12Month(byProductId.get(), price);
 
-            if (byProductId.get().getOwners().contains(commonUser)) {
+            if (byProductId.get().getOwners().isEmpty()) {
                 byProductId.get().addOwner(commonUser);
             }
             productStatsRepository.save(byProductId.get());
