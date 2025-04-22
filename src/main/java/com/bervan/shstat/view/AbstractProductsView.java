@@ -19,14 +19,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-public abstract class AbstractProductView extends AbstractPageView {
+public abstract class AbstractProductsView extends AbstractPageView {
     public static final String ROUTE_NAME = "/shopping/products";
     private final ProductViewService productViewService;
     private final ProductSearchService productSearchService;
     private final BervanLogger log;
 
-    public AbstractProductView(ProductViewService productViewService, ProductSearchService productSearchService, BervanLogger log) {
+    public AbstractProductsView(ProductViewService productViewService, ProductSearchService productSearchService, BervanLogger log) {
         super();
+        this.add(new ShoppingLayout(ROUTE_NAME));
         this.productViewService = productViewService;
         this.productSearchService = productSearchService;
         this.log = log;

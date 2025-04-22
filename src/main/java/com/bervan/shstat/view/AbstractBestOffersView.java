@@ -1,6 +1,7 @@
 package com.bervan.shstat.view;
 
 import com.bervan.common.AbstractPageView;
+import com.bervan.common.MenuNavigationComponent;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.ProductSearchService;
 import com.bervan.shstat.response.ApiResponse;
@@ -29,6 +30,8 @@ public abstract class AbstractBestOffersView extends AbstractPageView {
 
     public AbstractBestOffersView(DiscountsViewService discountsViewService, ProductSearchService productSearchService, BervanLogger log) {
         super();
+        this.add(new ShoppingLayout(ROUTE_NAME));
+
         this.discountsViewService = discountsViewService;
         this.productSearchService = productSearchService;
         this.log = log;

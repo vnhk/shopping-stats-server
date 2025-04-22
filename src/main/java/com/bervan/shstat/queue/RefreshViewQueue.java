@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Service
@@ -36,9 +37,9 @@ public class RefreshViewQueue extends AbstractQueue<RefreshViewQueueParam> {
     protected void process(Serializable object) {
 //        log.info("Currently no views are refreshed!");
 
-        RefreshViewQueueParam param = (RefreshViewQueueParam) object;
+        String viewName = ((LinkedHashMap<String, Object>) object).get("viewName").toString();
 //        log.info("Refreshing product {} view started...", param.getViewName());
-        switch (param.getViewName()) {
+        switch (viewName) {
             case historicalLowPrices:
                 productRepository.refreshHistoricalLowPricesTable();
 //                break;
@@ -52,6 +53,6 @@ public class RefreshViewQueue extends AbstractQueue<RefreshViewQueueParam> {
                 productService.lowerThanAVGForLastXMonths();
                 break;
         }
-        log.info("Refreshing product {} view completed... " + param.getViewName());
+        log.info("Refreshing product {} view completed... " + viewName);
     }
 }
