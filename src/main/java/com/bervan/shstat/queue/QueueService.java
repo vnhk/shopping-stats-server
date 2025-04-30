@@ -2,6 +2,7 @@ package com.bervan.shstat.queue;
 
 import com.bervan.common.service.ApiKeyService;
 import com.bervan.shstat.response.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -13,6 +14,7 @@ import java.util.Collections;
 import java.util.Set;
 
 @Service
+@Slf4j
 public class QueueService {
     private final Set<AbstractQueue<?>> queueProcessors;
 
@@ -36,8 +38,9 @@ public class QueueService {
     @RabbitListener(queues = "PRODUCTS_QUEUE")
     public void receiveProductMessage(Message message) {
         QueueMessage queueMessage = (QueueMessage) messageConverter.fromMessage(message);
-        if (apiKeyService.getUserByAPIKey(queueMessage.getApiKey()) == null) {
-            System.err.println("NOT_API_KEY");
+        if (queueMessage.getApiKey() == null || queueMessage.getApiKey().isBlank() ||
+                apiKeyService.getUserByAPIKey(queueMessage.getApiKey()) == null) {
+            log.error("NOT_API_KEY for PRODUCTS_QUEUE message");
             return;
         }
         for (AbstractQueue<?> queueProcessor : queueProcessors) {
