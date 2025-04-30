@@ -66,7 +66,7 @@ public class ProductService {
                                     return BigDecimal.valueOf(-1);
                                 }
                                 BigDecimal price = BigDecimal.valueOf(Double.parseDouble(val.toString()));
-                                if (price.compareTo(BigDecimal.valueOf(90000)) > 0) {
+                                if (price.compareTo(BigDecimal.valueOf(900000)) > 0) {
                                     return AttrMapper.mappingError("Price");
                                 }
                                 return price;
