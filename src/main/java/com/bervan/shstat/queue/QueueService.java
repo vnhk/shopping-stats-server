@@ -2,7 +2,7 @@ package com.bervan.shstat.queue;
 
 import com.bervan.common.service.ApiKeyService;
 import com.bervan.shstat.response.ApiResponse;
-import lombok.extern.slf4j.Slf4j;
+import org.jboss.logging.Logger;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -14,8 +14,8 @@ import java.util.Collections;
 import java.util.Set;
 
 @Service
-@Slf4j
 public class QueueService {
+    Logger logger = Logger.getLogger(QueueService.class);
     private final Set<AbstractQueue<?>> queueProcessors;
 
     private final Jackson2JsonMessageConverter messageConverter;
@@ -40,7 +40,7 @@ public class QueueService {
         QueueMessage queueMessage = (QueueMessage) messageConverter.fromMessage(message);
         if (queueMessage.getApiKey() == null || queueMessage.getApiKey().isBlank() ||
                 apiKeyService.getUserByAPIKey(queueMessage.getApiKey()) == null) {
-            log.error("NOT_API_KEY for PRODUCTS_QUEUE message");
+            logger.error("NOT_API_KEY for PRODUCTS_QUEUE message");
             return;
         }
         for (AbstractQueue<?> queueProcessor : queueProcessors) {
