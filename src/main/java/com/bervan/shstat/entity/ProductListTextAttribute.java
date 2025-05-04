@@ -10,6 +10,7 @@ import java.util.Set;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class ProductListTextAttribute extends ProductAttribute {
     @ElementCollection(fetch = FetchType.EAGER)
+    @Column(name = "value", length = 1000)
     private Set<String> value;
 
     public Set<String> getValue() {
