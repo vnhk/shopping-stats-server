@@ -119,6 +119,10 @@ public class ProductService {
                 Product mappedProduct = mapProduct(product);
                 User commonUser = userRepository.findByUsername("COMMON_USER").get();
                 mappedProduct.addOwner(commonUser);
+                if (mappedProduct.getName().length() > 300) {
+                    System.err.println("Product name is to long: {}" + mappedProduct.getName());
+                    continue;
+                }
                 mappedProduct = productRepository.save(mappedProduct);
                 actualProductService.updateActualProducts(date, mappedProduct, commonUser);
                 productStatsService.updateProductStats(mappedProduct, price, commonUser);
