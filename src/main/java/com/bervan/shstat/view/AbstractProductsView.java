@@ -1,6 +1,7 @@
 package com.bervan.shstat.view;
 
 import com.bervan.common.AbstractPageView;
+import com.bervan.common.BervanComboBox;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.ProductSearchService;
 import com.bervan.shstat.response.PriceDTO;
@@ -14,17 +15,25 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.QueryParameters;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-public abstract class AbstractProductsView extends AbstractPageView {
+public abstract class AbstractProductsView extends AbstractPageView implements HasUrlParameter<Void> {
     public static final String ROUTE_NAME = "/shopping/products";
     private final ProductViewService productViewService;
     private final ProductSearchService productSearchService;
     private final BervanLogger log;
+    private final ComboBox<String> shopDropdown = new BervanComboBox<>("Shop:");
+    private final ComboBox<String> categoryDropdown = new ComboBox<>("Category:");
+    private final TextField name = new TextField("Product Name: NOT WORKING YET");
+    private final Button searchButton = new Button("Search");
 
     public AbstractProductsView(ProductViewService productViewService, ProductSearchService productSearchService, BervanLogger log) {
         super();
@@ -32,16 +41,11 @@ public abstract class AbstractProductsView extends AbstractPageView {
         this.productViewService = productViewService;
         this.productSearchService = productSearchService;
         this.log = log;
-        Set<String> categories = this.productSearchService.findCategories();
-        ComboBox<String> categoryDropdown = new ComboBox<>("Category:");
-        categoryDropdown.setItems(categories);
-
-        ComboBox<String> shopDropdown = new ComboBox<>("Shop:");
         shopDropdown.setItems(Arrays.asList("Media Expert", "RTV Euro AGD", "Morele"));
 
-        TextField name = new TextField("Product Name: NOT WORKING YET");
+        Set<String> categories = this.productSearchService.findCategories();
+        categoryDropdown.setItems(categories);
 
-        Button searchButton = new Button("Search");
         VerticalLayout productsLayout = new VerticalLayout();
 
         searchButton.addClickListener(buttonClickEvent -> {
@@ -78,7 +82,11 @@ public abstract class AbstractProductsView extends AbstractPageView {
                 image.setHeight("300px");
                 image.getStyle().set("object-fit", "contain");
 
-                Anchor nameText = new Anchor(AbstractProductView.ROUTE_NAME + "/" + productDTO.getId(), productDTO.getName());
+                String link = AbstractProductView.ROUTE_NAME + "/" + productDTO.getId()
+                        + "?category=" + categoryDropdown.getValue()
+                        + "&shop=" + shopDropdown.getValue()
+                        + "&product-name=" + name.getValue();
+                Anchor nameText = new Anchor(link, productDTO.getName());
 
                 List<PriceDTO> prices = productDTO.getPrices();
                 Text priceText = new Text("No price");
@@ -94,6 +102,41 @@ public abstract class AbstractProductsView extends AbstractPageView {
         });
 
         add(shopDropdown, categoryDropdown, name, searchButton, productsLayout);
+    }
+
+
+    @Override
+    public void setParameter(BeforeEvent event, @OptionalParameter Void parameter) {
+        QueryParameters queryParameters = event.getLocation().getQueryParameters();
+        String category = getSingleParam(queryParameters, "category");
+        String shop = getSingleParam(queryParameters, "shop");
+        String productName = getSingleParam(queryParameters, "product-name");
+
+        boolean atLeastOneParameter = false;
+
+        if (category != null) {
+            categoryDropdown.setValue(category);
+            atLeastOneParameter = true;
+        }
+
+        if (shop != null) {
+            shopDropdown.setValue(shop);
+            atLeastOneParameter = true;
+        }
+
+        if (productName != null) {
+            name.setValue(productName);
+            atLeastOneParameter = true;
+        }
+
+        if (atLeastOneParameter) {
+            searchButton.click();
+        }
+    }
+
+    private String getSingleParam(QueryParameters queryParameters, String name) {
+        List<String> values = queryParameters.getParameters().get(name);
+        return (values != null && !values.isEmpty()) ? values.get(0) : null;
     }
 
     public SearchApiResponse getProductList(String category, String shop, Pageable pageable) {
