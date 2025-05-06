@@ -15,6 +15,7 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import org.springframework.data.domain.Pageable;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public abstract class AbstractProductView extends AbstractPageView implements HasUrlParameter<Long> {
@@ -78,6 +79,13 @@ public abstract class AbstractProductView extends AbstractPageView implements Ha
                 productCard.add(anotherPriceText);
                 productCard.add(new Hr());
             }
+
+            ProductPriceChart productPriceChart = new ProductPriceChart(
+                    prices.stream().map(PriceDTO::getDate).map(e -> new SimpleDateFormat("dd-MM-yyyy").format(e)).toList(),
+                    prices.stream().map(PriceDTO::getPrice).map(e -> Double.parseDouble(e.toPlainString()))
+                            .toList()
+            );
+            productCard.add(productPriceChart);
         } else {
             productCard.add(priceText);
         }
