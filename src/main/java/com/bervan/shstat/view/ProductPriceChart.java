@@ -9,6 +9,7 @@ import elemental.json.impl.JreJsonArray;
 import elemental.json.impl.JreJsonFactory;
 import elemental.json.impl.JreJsonObject;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,8 +20,8 @@ public class ProductPriceChart extends Component implements HasSize {
         setId("priceChart");
 
         //reverse for chart
-        Collections.reverse(labels);
-        Collections.reverse(prices);
+        Collections.reverse(new ArrayList<>(labels));
+        Collections.reverse(new ArrayList<>(prices));
 
         // Initialize the chart with labels and prices passed from Java
         JreJsonObject labelsJson = getJreJsonObject(labels);
