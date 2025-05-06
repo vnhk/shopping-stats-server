@@ -9,6 +9,7 @@ public class ShoppingLayout extends MenuNavigationComponent {
 
         addButtonIfVisible(menuButtonsRow, AbstractProductsView.ROUTE_NAME, "Search");
         addButtonIfVisible(menuButtonsRow, AbstractBestOffersView.ROUTE_NAME, "Best Offers");
+        addButtonIfVisible(menuButtonsRow, AbstractProductView.ROUTE_NAME, "Product");
         add(menuButtonsRow);
     }
 }

@@ -9,6 +9,7 @@ import com.bervan.shstat.response.SearchApiResponse;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -58,7 +59,7 @@ public abstract class AbstractProductsView extends AbstractPageView {
                 ProductDTO productDTO = ((ProductDTO) item);
 
                 VerticalLayout productCard = new VerticalLayout();
-                productCard.setWidth("200px");
+                productCard.setWidth("350px");
                 productCard.getStyle().set("border", "1px solid #ccc");
                 productCard.getStyle().set("border-radius", "8px");
                 productCard.getStyle().set("padding", "10px");
@@ -73,15 +74,16 @@ public abstract class AbstractProductsView extends AbstractPageView {
                     image.setSrc("data:image/png;base64," + productDTO.getImgSrc());
                 }
 
-                image.setWidth("150px");
-                image.setHeight("150px");
+                image.setWidth("300px");
+                image.setHeight("300px");
                 image.getStyle().set("object-fit", "contain");
 
-                Text nameText = new Text(productDTO.getName());
+                Anchor nameText = new Anchor(AbstractProductView.ROUTE_NAME + "/" + productDTO.getId(), productDTO.getName());
+
                 List<PriceDTO> prices = productDTO.getPrices();
                 Text priceText = new Text("No price");
                 if (prices != null && !prices.isEmpty()) {
-                    priceText = new Text("Price: " + prices.get(0).getPrice() + " zł");
+                    priceText = new Text(" Price: " + prices.get(0).getPrice() + " zł");
                 }
 
                 productCard.add(image, nameText, priceText);
