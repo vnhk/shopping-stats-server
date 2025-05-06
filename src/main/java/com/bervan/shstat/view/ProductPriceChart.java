@@ -17,6 +17,10 @@ public class ProductPriceChart extends Component implements HasSize {
     public ProductPriceChart(List<String> labels, List<Double> prices) {
         setId("priceChart");
 
+        //reverse for chart
+        labels = labels.reversed();
+        prices = prices.reversed();
+
         // Initialize the chart with labels and prices passed from Java
         JreJsonObject labelsJson = getJreJsonObject(labels);
         JreJsonObject pricesJson = getJreJsonObject(prices);
