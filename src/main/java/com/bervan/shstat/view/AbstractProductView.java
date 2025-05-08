@@ -17,19 +17,19 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
 import org.springframework.data.domain.Pageable;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public abstract class AbstractProductView extends AbstractPageView implements HasUrlParameter<Long> {
     public static final String ROUTE_NAME = "/shopping/product/:productId";
     private final ProductViewService productViewService;
     private final ProductSearchService productSearchService;
     private final BervanLogger log;
-    private Long productId;
-    private String previousCategory;
-    private String previousShop;
-    private String previousProductName;
 
     public AbstractProductView(ProductViewService productViewService, ProductSearchService productSearchService, BervanLogger log) {
         super();
@@ -46,12 +46,7 @@ public abstract class AbstractProductView extends AbstractPageView implements Ha
 
     @Override
     public void setParameter(BeforeEvent beforeEvent, Long productId) {
-        QueryParameters queryParameters = beforeEvent.getLocation().getQueryParameters();
-        previousCategory = getSingleParam(queryParameters, "category");
-        previousShop = getSingleParam(queryParameters, "shop");
-        previousProductName = getSingleParam(queryParameters, "product-name");
-
-        this.productId = productId;
+        String backLink = buildBackLink(beforeEvent);
 
         SearchApiResponse byId = productViewService.findById(productId, Pageable.ofSize(1));
         ProductDTO productDTO = (ProductDTO) byId.getItems().iterator().next();
@@ -68,10 +63,6 @@ public abstract class AbstractProductView extends AbstractPageView implements Ha
         productCard.getStyle().set("background-color", "#fff");
         productCard.getStyle().set("text-align", "center");
 
-        String backLink = AbstractProductsView.ROUTE_NAME
-                + "?category=" + previousCategory
-                + "&shop=" + previousShop
-                + "&product-name=" + previousProductName;
 
         Anchor backButton = new Anchor(backLink, "← Back to products");
         productCard.add(backButton);
@@ -118,5 +109,26 @@ public abstract class AbstractProductView extends AbstractPageView implements Ha
         productsLayout.add(productCard);
 
         add(productsLayout);
+    }
+
+    private String buildBackLink(BeforeEvent beforeEvent) {
+        QueryParameters queryParameters = beforeEvent.getLocation().getQueryParameters();
+        String source = getSingleParam(queryParameters, "source");
+
+        Map<String, String> params = queryParameters.getParameters()
+                .entrySet()
+                .stream()
+                .filter(e -> !e.getKey().equals("source"))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> getSingleParam(queryParameters, e.getKey())
+                ));
+
+        String paramString = params.entrySet()
+                .stream()
+                .map(e -> e.getKey() + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
+                .collect(Collectors.joining("&"));
+
+        return source + "?" + paramString;
     }
 }

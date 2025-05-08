@@ -85,6 +85,7 @@ public abstract class AbstractProductsView extends AbstractPageView implements H
                 String link = AbstractProductView.ROUTE_NAME + "/" + productDTO.getId()
                         + "?category=" + categoryDropdown.getValue()
                         + "&shop=" + shopDropdown.getValue()
+                        + "&source=" + ROUTE_NAME
                         + "&product-name=" + name.getValue();
                 Anchor nameText = new Anchor(link, productDTO.getName());
 
