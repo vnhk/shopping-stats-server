@@ -18,6 +18,7 @@ import com.vaadin.flow.router.QueryParameters;
 import org.springframework.data.domain.Pageable;
 
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.List;
 
 public abstract class AbstractProductView extends AbstractPageView implements HasUrlParameter<Long> {
@@ -103,6 +104,7 @@ public abstract class AbstractProductView extends AbstractPageView implements Ha
                 productCard.add(new Hr());
             }
 
+            prices.sort(Comparator.comparing(PriceDTO::getDate));
             ProductPriceChart productPriceChart = new ProductPriceChart(
                     prices.stream().map(PriceDTO::getDate).map(e -> new SimpleDateFormat("dd-MM-yyyy").format(e)).toList(),
                     prices.stream().map(PriceDTO::getPrice).map(e -> Double.parseDouble(e.toPlainString()))
