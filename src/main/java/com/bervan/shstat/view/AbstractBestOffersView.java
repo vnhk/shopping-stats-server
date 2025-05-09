@@ -73,6 +73,7 @@ public abstract class AbstractBestOffersView extends AbstractPageView implements
             tileContainer.getStyle().set("gap", "1rem");
             tileContainer.setWidthFull();
 
+            log.info("Found " + body.getItems().size() + " items for Best Offers View");
             for (Object item : body.getItems()) {
                 ProductDTO productDTO = ((ProductDTO) item);
 
