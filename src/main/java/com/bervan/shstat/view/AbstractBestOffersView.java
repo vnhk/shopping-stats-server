@@ -23,7 +23,6 @@ import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.QueryParameters;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 
 import java.util.Arrays;
 import java.util.List;
@@ -61,10 +60,8 @@ public abstract class AbstractBestOffersView extends AbstractPageView implements
 
         searchButton = new BervanButton("Search");
         searchButton.addClickListener(buttonClickEvent -> {
-            ResponseEntity<ApiResponse> discountsComparedToAVGOnPricesInLastXMonths = findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable.ofSize(50),
+            SearchApiResponse body = (SearchApiResponse) findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable.ofSize(50),
                     discountMin.getValue(), discountMax.getValue(), months.getValue(), prevPriceMin.getValue(), prevPriceMax.getValue(), productName.getValue(), categoryDropdown.getValue(), shopDropdown.getValue());
-
-            SearchApiResponse body = (SearchApiResponse) discountsComparedToAVGOnPricesInLastXMonths.getBody();
 
             FlexLayout tileContainer = new FlexLayout();
             tileContainer.setJustifyContentMode(FlexLayout.JustifyContentMode.START);
@@ -210,8 +207,14 @@ public abstract class AbstractBestOffersView extends AbstractPageView implements
         return Integer.valueOf(singleParam);
     }
 
+    private static String getString(String shop) {
+        if (shop != null && StringUtils.isBlank(shop.trim())) {
+            shop = null;
+        }
+        return shop;
+    }
 
-    private ResponseEntity<ApiResponse> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable,
+    private ApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable,
                                                                                         Double discountMin,
                                                                                         Double discountMax,
                                                                                         Integer months,
@@ -220,12 +223,12 @@ public abstract class AbstractBestOffersView extends AbstractPageView implements
                                                                                         String name,
                                                                                         String category,
                                                                                         String shop) {
-        if (category != null && StringUtils.isBlank(category.trim())) {
-            category = null;
-        }
+        category = getString(category);
+        shop = getString(shop);
+        name = getString(name);
 
-        return ResponseEntity.ok(discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin,
-                discountMax, months, category, shop, name, prevPriceMin, prevPriceMax));
+        return discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin,
+                discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
 
     }
 

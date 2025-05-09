@@ -8,14 +8,15 @@ import com.bervan.shstat.dtomappers.DTOMapper;
 import com.bervan.shstat.dtomappers.ProductBasedOnDateAttributePriceMapper;
 import com.bervan.shstat.dtomappers.ProductPriceStatsMapper;
 import com.bervan.shstat.entity.Product;
-import com.bervan.shstat.repository.ProductRepository;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
+import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
+@Slf4j
 public class DiscountsViewService extends ViewBuilder {
     private final ProductSearchService productSearchService;
 
@@ -41,8 +43,11 @@ public class DiscountsViewService extends ViewBuilder {
     }
 
     public SearchApiResponse findHistoricalLowPriceProducts(Pageable pageable, String category, String shop, String name) {
+        log.info("Searching historical low prices: {} {} {}", category, shop, name);
         Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = productSearchService.findHistoricalLowProducts(pageable,
                 category, shop, name);
+        log.info("Found {} historical low prices: {} {} {}", historicalLowProducts.getSize(), category, shop, name);
+
         return buildResponse(pageable, historicalLowProducts);
     }
 
@@ -54,8 +59,11 @@ public class DiscountsViewService extends ViewBuilder {
     }
 
     public SearchApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name, Integer prevPriceMin, Integer prevPriceMax) {
+        log.info("Searching DiscountsComparedToAVGOnPricesInLastXMonths(discountMin, discountMax, months, category, shop, name, prevPriceMin, prevPriceMax): {} {} {} {} {} {} {} {} "
+                , discountMin, discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
         Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = productSearchService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin,
                 discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
+        log.info("Found {} DiscountsComparedToAVGOnPricesInLastXMonths", historicalLowProducts.getSize());
         return buildResponse(pageable, historicalLowProducts);
     }
 

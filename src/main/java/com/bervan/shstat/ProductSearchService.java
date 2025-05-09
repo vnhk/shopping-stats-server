@@ -1,9 +1,10 @@
 package com.bervan.shstat;
 
-import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.entity.Product;
+import com.bervan.shstat.repository.ProductRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
