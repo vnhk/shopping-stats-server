@@ -8,6 +8,7 @@ import com.bervan.shstat.response.ApiResponse;
 import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
+import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Anchor;
@@ -60,6 +61,7 @@ public abstract class AbstractBestOffersView extends AbstractPageView implements
 
         searchButton = new BervanButton("Search");
         searchButton.addClickListener(buttonClickEvent -> {
+            productsLayout.removeAll();
             SearchApiResponse body = (SearchApiResponse) findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable.ofSize(50),
                     discountMin.getValue(), discountMax.getValue(), months.getValue(), prevPriceMin.getValue(), prevPriceMax.getValue(), productName.getValue(), categoryDropdown.getValue(), shopDropdown.getValue());
 
@@ -136,59 +138,37 @@ public abstract class AbstractBestOffersView extends AbstractPageView implements
 
         boolean atLeastOneParameter = false;
 
-        if (category != null) {
-            categoryDropdown.setValue(category);
-            atLeastOneParameter = true;
-        }
+        atLeastOneParameter = updateField(category, categoryDropdown, atLeastOneParameter);
+        atLeastOneParameter = updateField(shop, shopDropdown, atLeastOneParameter);
+        atLeastOneParameter = updateField(productName, this.productName, atLeastOneParameter);
 
-        if (shop != null) {
-            shopDropdown.setValue(shop);
-            atLeastOneParameter = true;
-        }
-
-        if (productName != null) {
-            this.productName.setValue(productName);
-            atLeastOneParameter = true;
-        }
-
-        if (discountMin != null) {
-            this.discountMin.setValue(discountMin);
-            atLeastOneParameter = true;
-        } else {
-            this.discountMin.setValue(1.0);
-        }
-
-        if (discountMax != null) {
-            this.discountMax.setValue(discountMax);
-            atLeastOneParameter = true;
-        } else {
-            this.discountMax.setValue(100.0);
-        }
-
-        if (months != null) {
-            this.months.setValue(months);
-            atLeastOneParameter = true;
-        } else {
-            this.months.setValue(12);
-        }
-
-        if (prevPriceMin != null) {
-            this.prevPriceMin.setValue(prevPriceMin);
-            atLeastOneParameter = true;
-        } else {
-            this.prevPriceMin.setValue(10);
-        }
-
-        if (prevPriceMax != null) {
-            this.prevPriceMax.setValue(prevPriceMax);
-            atLeastOneParameter = true;
-        } else {
-            this.prevPriceMax.setValue(10000);
-        }
+        atLeastOneParameter = updateFieldWithDefault(discountMin, this.discountMin, atLeastOneParameter, 20.0);
+        atLeastOneParameter = updateFieldWithDefault(discountMax, this.discountMax, atLeastOneParameter, 100.0);
+        atLeastOneParameter = updateFieldWithDefault(months, this.months, atLeastOneParameter, 3);
+        atLeastOneParameter = updateFieldWithDefault(prevPriceMin, this.prevPriceMin, atLeastOneParameter, 100);
+        atLeastOneParameter = updateFieldWithDefault(prevPriceMax, this.prevPriceMax, atLeastOneParameter, 10000);
 
         if (atLeastOneParameter) {
             searchButton.click();
         }
+    }
+
+    private boolean updateField(String fieldValue, AbstractField field, boolean atLeastOneParameter) {
+        if (fieldValue != null && !fieldValue.equals("null")) {
+            field.setValue(fieldValue);
+            atLeastOneParameter = true;
+        }
+        return atLeastOneParameter;
+    }
+
+    private boolean updateFieldWithDefault(Object fieldValue, AbstractField field, boolean atLeastOneParameter, Object defaultVal) {
+        if (fieldValue != null && !fieldValue.toString().equals("null")) {
+            field.setValue(fieldValue);
+            atLeastOneParameter = true;
+        } else {
+            field.setValue(defaultVal);
+        }
+        return atLeastOneParameter;
     }
 
     private Double getDoubleParam(QueryParameters queryParameters, String name) {
