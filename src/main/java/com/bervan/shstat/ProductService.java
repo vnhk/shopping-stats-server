@@ -299,7 +299,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void lowerThanAVGForLastXMonths() {
+    public void createLowerThanAVGForLastXMonths() {
         String createTableQuery = "CREATE OR REPLACE TABLE LOWER_THAN_AVG_FOR_X_MONTHS AS";
         String sqlFor1MonthOffset = getSql(1);
         String sqlFor2MonthOffset = getSql(2);

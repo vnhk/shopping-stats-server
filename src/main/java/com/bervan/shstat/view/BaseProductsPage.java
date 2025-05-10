@@ -1,6 +1,5 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.AbstractPageView;
 import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
@@ -10,8 +9,8 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class BaseProductsPage extends BaseProductPage {
     protected FlexLayout getProductsLayout(SearchApiResponse products) {
@@ -22,9 +21,15 @@ public abstract class BaseProductsPage extends BaseProductPage {
         tileContainer.getStyle().set("gap", "1rem");
         tileContainer.setWidthFull();
 
-        for (Object item : products.getItems()) {
-            ProductDTO productDTO = ((ProductDTO) item);
+        List<ProductDTO> sortedProducts = (List<ProductDTO>) products.getItems().stream()
+                .map(item -> (ProductDTO) item)
+                .sorted((p1, p2) -> {
+                    Double discount1 = getDiscountPercentage((ProductDTO) p1);
+                    Double discount2 = getDiscountPercentage((ProductDTO) p2);
+                    return discount2.compareTo(discount1);
+                }).collect(Collectors.toList());
 
+        for (ProductDTO productDTO : sortedProducts) {
             VerticalLayout productCard = new VerticalLayout();
             productCard.setWidth("350px");
             setProductCardStyle(productCard);
@@ -48,6 +53,20 @@ public abstract class BaseProductsPage extends BaseProductPage {
             tileContainer.add(productCard);
         }
         return tileContainer;
+    }
+
+    private Double getDiscountPercentage(ProductDTO productDTO) {
+        List<PriceDTO> prices = productDTO.getPrices();
+        if (prices == null || prices.isEmpty()) {
+            return 0.0;
+        }
+        double averagePrice = productDTO.getAvgPrice().doubleValue();
+
+        double currentPrice = prices.get(0).getPrice().doubleValue();
+        if (averagePrice == 0.0) {
+            return 0.0;
+        }
+        return ((averagePrice - currentPrice) / averagePrice) * 100;
     }
 
     protected abstract String getBackLink(ProductDTO productDTO);

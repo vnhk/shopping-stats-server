@@ -40,7 +40,7 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
                         AND month_offset = :months
                         AND avgPrice >= :prevPriceMin AND avgPrice <= :prevPriceMax
                         AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
-                        AND UPPER(product_name) LIKE UPPER(COALESCE(:name, product_name))
+                        AND UPPER(product_name) LIKE CONCAT('%', UPPER(COALESCE(:name, product_name)), '%')
                         AND product_image_src is not null AND product_image_src <> '' AND TRIM(product_image_src) <> '' AND LENGTH(product_image_src) >= 10
                     ORDER BY id;
                     """

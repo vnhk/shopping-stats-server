@@ -50,7 +50,7 @@ public class RefreshViewQueue extends AbstractQueue<RefreshViewQueueParam> {
 //                productRepository.refreshLowerThanAVGForLastMonth();
 //                break;
             case lowerThanAvgForLastXMonths:
-                productService.lowerThanAVGForLastXMonths();
+                productService.createLowerThanAVGForLastXMonths();
                 break;
         }
         log.info("Refreshing product {} view completed... " + viewName);
