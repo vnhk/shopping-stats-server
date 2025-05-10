@@ -36,6 +36,7 @@ public class ProductService {
     public static final List<AttrFieldMappingVal<Field>> productPerDateAttributeProperties;
     @PersistenceContext
     private EntityManager entityManager;
+    private User commonUser;
 
     static {
         try {
@@ -117,7 +118,9 @@ public class ProductService {
                 Object date = product.get("Date");
                 Object price = product.get("Price");
                 Product mappedProduct = mapProduct(product);
-                User commonUser = userRepository.findByUsername("COMMON_USER").get();
+
+                loadCommonUserIfNotLoaded();
+
                 mappedProduct.addOwner(commonUser);
                 if (mappedProduct.getName().length() > 300) {
                     System.err.println("Product name is to long: {}" + mappedProduct.getName());
@@ -139,6 +142,12 @@ public class ProductService {
         }
 
         return new AddProductApiResponse(messages, allMapped.size(), products.size());
+    }
+
+    private void loadCommonUserIfNotLoaded() {
+        if (commonUser == null) {
+            commonUser = userRepository.findByUsername("COMMON_USER").get();
+        }
     }
 
 
