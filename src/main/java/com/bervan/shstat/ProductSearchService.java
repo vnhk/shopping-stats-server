@@ -4,7 +4,6 @@ import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.repository.ProductRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -22,11 +21,8 @@ public class ProductSearchService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public Page<Product> findProductsByCategory(String category, String shop, Pageable pageable) {
-        if (shop == null || shop.isBlank()) {
-            return productRepository.findProductsByCategoriesIn(category, pageable);
-        }
-        return productRepository.findProductsByCategoriesInAndShop(category, shop, pageable);
+    public Page<Product> findProducts(String category, String shop, String productName, Pageable pageable) {
+        return productRepository.findProductsBy(category, shop, productName, pageable);
     }
 
     public Set<String> findCategories() {

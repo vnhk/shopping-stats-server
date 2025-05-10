@@ -8,7 +8,6 @@ import com.bervan.shstat.response.ApiResponse;
 import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
-import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Anchor;
@@ -22,7 +21,6 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.QueryParameters;
-import io.micrometer.common.util.StringUtils;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
@@ -153,47 +151,6 @@ public abstract class AbstractBestOffersView extends AbstractPageView implements
         }
     }
 
-    private boolean updateField(String fieldValue, AbstractField field, boolean atLeastOneParameter) {
-        if (fieldValue != null && !fieldValue.equals("null")) {
-            field.setValue(fieldValue);
-            atLeastOneParameter = true;
-        }
-        return atLeastOneParameter;
-    }
-
-    private boolean updateFieldWithDefault(Object fieldValue, AbstractField field, boolean atLeastOneParameter, Object defaultVal) {
-        if (fieldValue != null && !fieldValue.toString().equals("null")) {
-            field.setValue(fieldValue);
-            atLeastOneParameter = true;
-        } else {
-            field.setValue(defaultVal);
-        }
-        return atLeastOneParameter;
-    }
-
-    private Double getDoubleParam(QueryParameters queryParameters, String name) {
-        String singleParam = getSingleParam(queryParameters, name);
-        if (singleParam == null) {
-            return null;
-        }
-        return Double.valueOf(singleParam);
-    }
-
-    private Integer getIntegerParam(QueryParameters queryParameters, String name) {
-        String singleParam = getSingleParam(queryParameters, name);
-        if (singleParam == null) {
-            return null;
-        }
-        return Integer.valueOf(singleParam);
-    }
-
-    private static String getString(String shop) {
-        if (shop != null && StringUtils.isBlank(shop.trim())) {
-            shop = null;
-        }
-        return shop;
-    }
-
     private ApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable,
                                                                                         Double discountMin,
                                                                                         Double discountMax,
@@ -210,10 +167,5 @@ public abstract class AbstractBestOffersView extends AbstractPageView implements
         return discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin,
                 discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
 
-    }
-
-    private String getSingleParam(QueryParameters queryParameters, String name) {
-        List<String> values = queryParameters.getParameters().get(name);
-        return (values != null && !values.isEmpty()) ? values.get(0) : null;
     }
 }

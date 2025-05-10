@@ -22,13 +22,6 @@ public class ProductViewController {
         this.discountsViewService = discountsViewService;
     }
 
-    @GetMapping
-    public ResponseEntity<ApiResponse> getProductList(@RequestParam String category,
-                                                      @RequestParam(required = false) String shop,
-                                                      Pageable pageable) {
-        return ResponseEntity.ok(productViewService.findProductsByCategory(category, shop, pageable));
-    }
-
     @GetMapping(path = "/product")
     public ResponseEntity<ApiResponse> findProduct(@RequestParam(required = false) String name,
                                                    @RequestParam(required = false) Long id,

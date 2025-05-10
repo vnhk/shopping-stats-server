@@ -32,7 +32,7 @@ public abstract class AbstractProductsView extends AbstractPageView implements H
     private final BervanLogger log;
     private final ComboBox<String> shopDropdown = new BervanComboBox<>("Shop:");
     private final ComboBox<String> categoryDropdown = new ComboBox<>("Category:");
-    private final TextField name = new TextField("Product Name: NOT WORKING YET");
+    private final TextField productName = new TextField("Product Name:");
     private final Button searchButton = new Button("Search");
 
     public AbstractProductsView(ProductViewService productViewService, ProductSearchService productSearchService, BervanLogger log) {
@@ -49,7 +49,7 @@ public abstract class AbstractProductsView extends AbstractPageView implements H
         VerticalLayout productsLayout = new VerticalLayout();
 
         searchButton.addClickListener(buttonClickEvent -> {
-            SearchApiResponse products = getProductList(categoryDropdown.getValue(), shopDropdown.getValue(), Pageable.ofSize(500));
+            SearchApiResponse products = getProductList(categoryDropdown.getValue(), shopDropdown.getValue(), productName.getValue(), Pageable.ofSize(500));
             productsLayout.removeAll();
 
             FlexLayout tileContainer = new FlexLayout();
@@ -86,7 +86,7 @@ public abstract class AbstractProductsView extends AbstractPageView implements H
                         + "?category=" + categoryDropdown.getValue()
                         + "&shop=" + shopDropdown.getValue()
                         + "&source=" + ROUTE_NAME
-                        + "&product-name=" + name.getValue();
+                        + "&product-name=" + productName.getValue();
                 Anchor nameText = new Anchor(link, productDTO.getName());
 
                 List<PriceDTO> prices = productDTO.getPrices();
@@ -102,7 +102,7 @@ public abstract class AbstractProductsView extends AbstractPageView implements H
             productsLayout.add(tileContainer);
         });
 
-        add(shopDropdown, categoryDropdown, name, searchButton, productsLayout);
+        add(shopDropdown, categoryDropdown, productName, searchButton, productsLayout);
     }
 
 
@@ -115,32 +115,16 @@ public abstract class AbstractProductsView extends AbstractPageView implements H
 
         boolean atLeastOneParameter = false;
 
-        if (category != null) {
-            categoryDropdown.setValue(category);
-            atLeastOneParameter = true;
-        }
-
-        if (shop != null) {
-            shopDropdown.setValue(shop);
-            atLeastOneParameter = true;
-        }
-
-        if (productName != null) {
-            name.setValue(productName);
-            atLeastOneParameter = true;
-        }
+        atLeastOneParameter = updateField(category, categoryDropdown, atLeastOneParameter);
+        atLeastOneParameter = updateField(shop, shopDropdown, atLeastOneParameter);
+        atLeastOneParameter = updateField(productName, this.productName, atLeastOneParameter);
 
         if (atLeastOneParameter) {
             searchButton.click();
         }
     }
 
-    private String getSingleParam(QueryParameters queryParameters, String name) {
-        List<String> values = queryParameters.getParameters().get(name);
-        return (values != null && !values.isEmpty()) ? values.get(0) : null;
-    }
-
-    public SearchApiResponse getProductList(String category, String shop, Pageable pageable) {
-        return productViewService.findProductsByCategory(category, shop, pageable);
+    public SearchApiResponse getProductList(String category, String shop, String productName, Pageable pageable) {
+        return productViewService.findProducts(category, shop, productName, pageable);
     }
 }

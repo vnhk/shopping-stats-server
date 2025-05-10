@@ -39,11 +39,6 @@ public abstract class AbstractProductView extends AbstractPageView implements Ha
         this.log = log;
     }
 
-    private String getSingleParam(QueryParameters queryParameters, String name) {
-        List<String> values = queryParameters.getParameters().get(name);
-        return (values != null && !values.isEmpty()) ? values.get(0) : null;
-    }
-
     @Override
     public void setParameter(BeforeEvent beforeEvent, Long productId) {
         String backLink = buildBackLink(beforeEvent);

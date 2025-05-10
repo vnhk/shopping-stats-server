@@ -64,8 +64,9 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
 
     Product findProductByProductBasedOnDateAttributesId(Long id);
 
-    @Query(value = "SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE :category = c AND p.shop = :shop")
-    Page<Product> findProductsByCategoriesInAndShop(String category, String shop, Pageable pageable);
+    @Query(value = "SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE " +
+            " c = COALESCE(:category, c) AND p.shop = COALESCE(:shop, p.shop) AND p.name LIKE %:productName%")
+    Page<Product> findProductsBy(String category, String shop, String productName, Pageable pageable);
 
     @Query(nativeQuery = true, value =
             """

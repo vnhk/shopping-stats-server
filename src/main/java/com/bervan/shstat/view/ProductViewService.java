@@ -3,9 +3,7 @@ package com.bervan.shstat.view;
 import com.bervan.shstat.DataHolder;
 import com.bervan.shstat.ProductSearchService;
 import com.bervan.shstat.ViewBuilder;
-import com.bervan.shstat.dtomappers.BaseProductAttributesMapper;
 import com.bervan.shstat.dtomappers.DTOMapper;
-import com.bervan.shstat.dtomappers.ProductPriceStatsMapper;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
@@ -16,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class ProductViewService extends ViewBuilder {
@@ -50,8 +47,8 @@ public class ProductViewService extends ViewBuilder {
                 .build();
     }
 
-    public SearchApiResponse findProductsByCategory(String category, String shop, Pageable pageable) {
-        Page<Product> productsByCategory = productSearchService.findProductsByCategory(category, shop, pageable);
+    public SearchApiResponse findProducts(String category, String shop, String productName, Pageable pageable) {
+        Page<Product> productsByCategory = productSearchService.findProducts(category, shop, productName, pageable);
         SearchApiResponse response = SearchApiResponse.builder()
                 .ofPage(productsByCategory)
                 .build();
