@@ -7,16 +7,15 @@ import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Hr;
-import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -82,19 +81,37 @@ public abstract class AbstractProductView extends AbstractPageView implements Ha
             productCard.add(priceText);
 
             productCard.add(new Hr());
+
+            VerticalLayout pricesLayout = new VerticalLayout();
             productCard.add(new H3("Last 10 prices:"));
 
             for (int i = 1; i < prices.size() && i < 10; i++) {
                 Text anotherPriceText = new Text(" Price: " + prices.get(i).getPrice() + " zł (" + prices.get(i).getFormattedDate() + ")");
-                productCard.add(anotherPriceText);
-                productCard.add(new Hr());
+                Div div = new Div();
+                div.setClassName("previous-price");
+                div.add(anotherPriceText);
+                div.add(new Hr());
+                pricesLayout.add(div);
             }
+
+            PriceDTO minPrice = productDTO.getMinPrice();
+            PriceDTO maxPrice = productDTO.getMaxPrice();
+            BigDecimal avgPrice = productDTO.getAvgPrice();
+
+            VerticalLayout pricesSummary = new VerticalLayout();
+            pricesSummary.setClassName("prices-summary");
+            pricesSummary.add(new H4("Min: " + minPrice.getPrice() + " zł (" + minPrice.getFormattedDate() + ")"));
+            pricesSummary.add(new H4("Avg: " + avgPrice + " zł"));
+            pricesSummary.add(new H4("Max: " + maxPrice.getPrice() + " zł (" + maxPrice.getFormattedDate() + ")"));
+
+            productCard.add(new HorizontalLayout(pricesLayout, pricesSummary));
 
             prices.sort(Comparator.comparing(PriceDTO::getDate));
             ProductPriceChart productPriceChart = new ProductPriceChart(
                     prices.stream().map(PriceDTO::getDate).map(e -> new SimpleDateFormat("dd-MM-yyyy").format(e)).toList(),
                     prices.stream().map(PriceDTO::getPrice).map(e -> Double.parseDouble(e.toPlainString()))
-                            .toList()
+                            .toList(),
+                    avgPrice.doubleValue()
             );
             productCard.add(productPriceChart);
         } else {

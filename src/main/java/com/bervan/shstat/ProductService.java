@@ -262,20 +262,10 @@ public class ProductService {
     }
 
     private Product findProductBasedOnAttributes(Product res) {
-//        System.out.println("Looking for: " + res.getName() + ":");
         Optional<Product> product = productRepository.findByNameAndShopAndProductListNameAndProductListUrl(res.getName(), res.getShop(),
                 res.getProductListName(), res.getProductListUrl());
 
-        if (product.isPresent()) {
-            //update categories
-            product.get().setCategories(res.getCategories());
-            if (res.getImgSrc() != null && res.getImgSrc().length() > 10) {
-                //update image src
-                product.get().setImgSrc(res.getImgSrc());
-            }
-            return product.get();
-        }
-        return res;
+        return product.orElse(res);
     }
 
     private Product mapProductCommonAttr(Map<String, Object> product) {
@@ -295,7 +285,17 @@ public class ProductService {
         wrapper.setPropertyValues(productProperties);
         Product res = (Product) wrapper.getWrappedInstance();
 
-        return findProductBasedOnAttributes(res);
+        Product productBasedOnAttributes = findProductBasedOnAttributes(res);
+        if(productBasedOnAttributes.getId() != null) {
+            //update categories
+            productBasedOnAttributes.setCategories(res.getCategories());
+            if (res.getImgSrc() != null && res.getImgSrc().length() > 10) {
+                //update image src
+                productBasedOnAttributes.setImgSrc(res.getImgSrc());
+            }
+        }
+
+        return productBasedOnAttributes;
     }
 
     @Transactional

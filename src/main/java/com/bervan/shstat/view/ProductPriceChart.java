@@ -9,23 +9,32 @@ import elemental.json.impl.JreJsonArray;
 import elemental.json.impl.JreJsonFactory;
 import elemental.json.impl.JreJsonObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @JsModule("./chart-component.js")
 @Tag("canvas")
 public class ProductPriceChart extends Component implements HasSize {
-    public ProductPriceChart(List<String> labels, List<Double> prices) {
+    public ProductPriceChart(List<String> labels, List<Double> prices, Double avg) {
         setId("priceChart");
+
+        // Prepare avg for chart, add N times avg for drawing a line
+        List<Double> avgData = new ArrayList<>();
+        for (int i = 0; i < prices.size(); i++) {
+            avgData.add(avg);
+        }
 
         // Initialize the chart with labels and prices passed from Java
         JreJsonObject labelsJson = getJreJsonObject(labels);
         JreJsonObject pricesJson = getJreJsonObject(prices);
+        JreJsonObject avgDataJson = getJreJsonObject(avgData);
 
         UI.getCurrent().getPage().executeJs(
-                "window.renderPriceChart($0, $1, $2)",
+                "window.renderPriceChart($0, $1, $2, $3)",
                 getElement(),
                 labelsJson.get("data"),
-                pricesJson.get("data")
+                pricesJson.get("data"),
+                avgDataJson.get("data")
         );
     }
 
