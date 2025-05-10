@@ -1,6 +1,5 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.AbstractPageView;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.ProductSearchService;
 import com.bervan.shstat.response.PriceDTO;
@@ -24,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public abstract class AbstractProductView extends AbstractPageView implements HasUrlParameter<Long> {
+public abstract class AbstractProductView extends BaseProductPage implements HasUrlParameter<Long> {
     public static final String ROUTE_NAME = "/shopping/product/:productId";
     private final ProductViewService productViewService;
     private final ProductSearchService productSearchService;
@@ -50,23 +49,13 @@ public abstract class AbstractProductView extends AbstractPageView implements Ha
 
         VerticalLayout productCard = new VerticalLayout();
         productCard.setWidth("1200px");
-        productCard.getStyle().set("border", "1px solid #ccc");
-        productCard.getStyle().set("border-radius", "8px");
-        productCard.getStyle().set("padding", "10px");
-        productCard.getStyle().set("box-shadow", "0 2px 5px rgba(0,0,0,0.1)");
-        productCard.getStyle().set("background-color", "#fff");
-        productCard.getStyle().set("text-align", "center");
+        setProductCardStyle(productCard);
 
 
         Anchor backButton = new Anchor(backLink, "← Back to products");
         productCard.add(backButton);
 
-        Image image = new Image(productDTO.getImgSrc() == null ? "" : productDTO.getImgSrc(), "No image :(");
-        if (productDTO.getImgSrc().startsWith("http") || productDTO.getImgSrc().startsWith("https")) {
-            image.setSrc(productDTO.getImgSrc());
-        } else {
-            image.setSrc("data:image/png;base64," + productDTO.getImgSrc());
-        }
+        Image image = getProductImage(productDTO);
 
         image.setWidth("400px");
         image.setHeight("400px");
@@ -77,7 +66,7 @@ public abstract class AbstractProductView extends AbstractPageView implements Ha
         List<PriceDTO> prices = productDTO.getPrices();
         Text priceText = new Text("No price");
         if (prices != null && !prices.isEmpty()) {
-            priceText = new Text(" Price: " + prices.get(0).getPrice() + " zł");
+            priceText = getLatestPriceText(prices, productDTO);
             productCard.add(priceText);
 
             productCard.add(new Hr());
@@ -101,7 +90,9 @@ public abstract class AbstractProductView extends AbstractPageView implements Ha
             VerticalLayout pricesSummary = new VerticalLayout();
             pricesSummary.setClassName("prices-summary");
             pricesSummary.add(new H4("Min: " + minPrice.getPrice() + " zł (" + minPrice.getFormattedDate() + ")"));
+            pricesSummary.add(new Hr());
             pricesSummary.add(new H4("Avg: " + avgPrice + " zł"));
+            pricesSummary.add(new Hr());
             pricesSummary.add(new H4("Max: " + maxPrice.getPrice() + " zł (" + maxPrice.getFormattedDate() + ")"));
 
             productCard.add(new HorizontalLayout(pricesLayout, pricesSummary));
