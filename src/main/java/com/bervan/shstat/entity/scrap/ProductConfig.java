@@ -1,9 +1,6 @@
 package com.bervan.shstat.entity.scrap;
 
-import com.bervan.common.model.BervanBaseEntity;
-import com.bervan.common.model.PersistableTableData;
-import com.bervan.common.model.VaadinDynamicDropdownTableColumn;
-import com.bervan.common.model.VaadinTableColumn;
+import com.bervan.common.model.*;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -25,7 +22,7 @@ public class ProductConfig extends BervanBaseEntity<Long> implements Persistable
     @ElementCollection
     @CollectionTable(name = "product_config_categories", joinColumns = @JoinColumn(name = "product_config_id"))
     @Column(name = "category")
-    @VaadinTableColumn(displayName = "Categories", internalName = "categories", extension = VaadinDynamicDropdownTableColumn.class)
+    @VaadinTableColumn(displayName = "Categories", internalName = "categories", extension = VaadinDynamicMultiDropdownTableColumn.class)
     private List<String> categories;
     @ManyToOne
     @JoinColumn(name = "shop_config_id")

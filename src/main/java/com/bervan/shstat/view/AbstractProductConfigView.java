@@ -1,6 +1,7 @@
 package com.bervan.shstat.view;
 
 import com.bervan.common.AbstractTableView;
+import com.bervan.common.AutoConfigurableField;
 import com.bervan.common.BervanComboBox;
 import com.bervan.common.search.SearchQueryOption;
 import com.bervan.common.search.SearchRequest;
@@ -14,8 +15,8 @@ import com.bervan.shstat.entity.scrap.ProductConfig;
 import com.bervan.shstat.entity.scrap.ShopConfig;
 import com.vaadin.flow.component.combobox.ComboBox;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Field;
+import java.util.*;
 
 public abstract class AbstractProductConfigView extends AbstractTableView<Long, ProductConfig> {
     public static final String ROUTE_NAME = "/shopping/product-config";
@@ -23,6 +24,7 @@ public abstract class AbstractProductConfigView extends AbstractTableView<Long, 
     private final ComboBox<String> shopDropdown = new BervanComboBox<>();
     private final SearchService searchService;
     private Map<String, ShopConfig> shops;
+    private Set<String> allAvailableCategories;
     private String selectedShopName;
 
     public AbstractProductConfigView(ProductConfigService productConfigService, SearchService searchService, BervanLogger log) {
@@ -30,6 +32,7 @@ public abstract class AbstractProductConfigView extends AbstractTableView<Long, 
         this.add(new ShoppingLayout(ROUTE_NAME));
         this.searchService = searchService;
         this.log = log;
+        loadCategories();
 
         loadShops();
         shopDropdown.setItems(shops.keySet());
@@ -59,6 +62,83 @@ public abstract class AbstractProductConfigView extends AbstractTableView<Long, 
 
     }
 
+    private void loadCategories() {
+        allAvailableCategories = ((ProductConfigService) service).loadAllCategories();
+    }
+
+    private List<String> loadCategories(ProductConfig productConfig) {
+        return ((ProductConfigService) service).loadAllCategories(productConfig);
+    }
+
+
+    @Override
+    protected List<String> getAllValuesForDynamicDropdowns(String key, ProductConfig item) {
+        if (key.equals("shop")) {
+            return shops.keySet().stream().toList();
+        }
+
+        return new ArrayList<>();
+    }
+
+    @Override
+    protected List<String> getAllValuesForDynamicMultiDropdowns(String key, ProductConfig item) {
+        if (key.equals("categories")) {
+            return allAvailableCategories.stream().sorted(String::compareTo).toList();
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    protected List<String> getInitialSelectedValueForDynamicMultiDropdown(String key, ProductConfig item) {
+        if (key.equals("categories") && item != null) {
+            List<String> categories = item.getCategories();
+            if (categories == null) {
+                //try load from db
+                return loadCategories(item);
+            }
+            return categories;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    protected String getInitialSelectedValueForDynamicDropdown(String key, ProductConfig item) {
+        //not used, because shop is visible in table
+        if (key.equals("shop") && item != null && item.getShop() != null) {
+            return item.getShop().getShopName();
+        }
+
+        return null;
+    }
+
+    @Override
+    protected Object getFieldValueForNewItemDialog(Map.Entry<Field, AutoConfigurableField> fieldAutoConfigurableFieldEntry) {
+        Object fieldValueForNewItemDialog = super.getFieldValueForNewItemDialog(fieldAutoConfigurableFieldEntry);
+        //convert shop name dropdown selected value to ShopConfig
+        if (fieldAutoConfigurableFieldEntry.getKey().getName().equals("shop")) {
+            String strValue = (String) fieldValueForNewItemDialog;
+            return shops.get(strValue);
+        }
+        return fieldValueForNewItemDialog;
+    }
+
+    @Override
+    protected ProductConfig customizeSavingInCreateForm(ProductConfig newItem) {
+        ProductConfig productConfig = super.customizeSavingInCreateForm(newItem);
+        productConfig.getOwners().add(loadCommonUser());
+        return productConfig;
+    }
+
+    @Override
+    protected List<ProductConfig> loadData() {
+        List<ProductConfig> productConfigs = super.loadData();
+
+        //update not fetched categories
+        for (ProductConfig productConfig : productConfigs) {
+            productConfig.setCategories(loadCategories(productConfig));
+        }
+        return productConfigs;
+    }
 
     private User loadCommonUser() {
         SearchRequest searchRequest = new SearchRequest();
@@ -68,12 +148,5 @@ public abstract class AbstractProductConfigView extends AbstractTableView<Long, 
         SearchQueryOption options = new SearchQueryOption(User.class);
 
         return (User) searchService.search(searchRequest, options).getResultList().get(0);
-    }
-
-    @Override
-    protected ProductConfig customizeSavingInCreateForm(ProductConfig newItem) {
-        ProductConfig productConfig = super.customizeSavingInCreateForm(newItem);
-        productConfig.getOwners().add(loadCommonUser());
-        return productConfig;
     }
 }
