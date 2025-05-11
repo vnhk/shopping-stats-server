@@ -6,6 +6,7 @@ import com.bervan.common.BervanComboBox;
 import com.bervan.common.search.SearchQueryOption;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.SearchService;
+import com.bervan.common.search.model.Operator;
 import com.bervan.common.search.model.SearchOperation;
 import com.bervan.common.user.User;
 import com.bervan.core.model.BervanLogger;
@@ -122,11 +123,24 @@ public abstract class AbstractProductConfigView extends AbstractTableView<Long, 
         return fieldValueForNewItemDialog;
     }
 
+
     @Override
     protected ProductConfig customizeSavingInCreateForm(ProductConfig newItem) {
         ProductConfig productConfig = super.customizeSavingInCreateForm(newItem);
         productConfig.getOwners().add(loadCommonUser());
         return productConfig;
+    }
+
+    @Override
+    protected void postSaveActions() {
+        loadCategories();
+    }
+
+    @Override
+    protected void customizePreLoad(SearchRequest request) {
+        request.addCriterion("SHOP_NAME_EQ_CRITERION", Operator.OR_OPERATOR, ProductConfig.class,
+                "shop.shopName", SearchOperation.EQUALS_OPERATION, selectedShopName);
+        request.setAddOwnerCriterion(false);
     }
 
     @Override
