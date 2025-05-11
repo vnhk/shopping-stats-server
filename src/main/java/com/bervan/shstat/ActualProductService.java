@@ -14,7 +14,7 @@ import static com.bervan.shstat.ProductService.productPerDateAttributeProperties
 
 @Service
 public class ActualProductService {
-    private static final Integer currentDateOffsetInDays = 2;
+    private static final Integer currentDateOffsetInDays = 2; //is ok, good offers will not last forever!
     private final ActualProductsRepository actualProductsRepository;
 
     public ActualProductService(ActualProductsRepository actualProductsRepository) {

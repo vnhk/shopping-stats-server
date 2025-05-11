@@ -117,6 +117,13 @@ public class ProductService {
             try {
                 Object date = product.get("Date");
                 Object price = product.get("Price");
+
+                if (price instanceof Integer priceInt) {
+                    if (priceInt < 1) {
+                        continue;
+                    }
+                }
+
                 Product mappedProduct = mapProduct(product);
 
                 loadCommonUserIfNotLoaded();
