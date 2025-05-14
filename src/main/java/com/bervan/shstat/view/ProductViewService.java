@@ -13,11 +13,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ProductViewService extends ViewBuilder {
     private final ProductSearchService productSearchService;
+    private Map<String, SearchApiResponse> lastFindProductsResponse = new HashMap<>();
 
     public ProductViewService(ProductSearchService productSearchService,
                               List<? extends DTOMapper<Product, ProductDTO>> productMappers) {
@@ -48,6 +51,15 @@ public class ProductViewService extends ViewBuilder {
     }
 
     public SearchApiResponse findProducts(String category, String shop, String productName, Pageable pageable) {
+        SearchApiResponse searchApiResponse = lastFindProductsResponse.get(category + shop + productName + pageable.getPageNumber() + pageable.getPageSize());
+        if (searchApiResponse != null) {
+            return searchApiResponse;
+        }
+
+        if (!lastFindProductsResponse.isEmpty()) {
+            lastFindProductsResponse.clear();
+        }
+
         Page<Product> productsByCategory = productSearchService.findProducts(category, shop, productName, pageable);
         SearchApiResponse response = SearchApiResponse.builder()
                 .ofPage(productsByCategory)
@@ -62,6 +74,7 @@ public class ProductViewService extends ViewBuilder {
         }
 
         response.setItems(result);
+        lastFindProductsResponse.put(category + shop + productName + pageable.getPageNumber() + pageable.getPageSize(), response);
         return response;
     }
 }
