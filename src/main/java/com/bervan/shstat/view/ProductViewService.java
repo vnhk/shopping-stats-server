@@ -12,15 +12,18 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ProductViewService extends ViewBuilder {
     private final ProductSearchService productSearchService;
-    private Map<String, SearchApiResponse> lastFindProductsResponse = new HashMap<>();
+    private final Map<SearchQueryKey, SearchApiResponse> cache =
+            new LinkedHashMap<>() {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<SearchQueryKey, SearchApiResponse> eldest) {
+                    return this.size() > 5;
+                }
+            };
 
     public ProductViewService(ProductSearchService productSearchService,
                               List<? extends DTOMapper<Product, ProductDTO>> productMappers) {
@@ -51,13 +54,10 @@ public class ProductViewService extends ViewBuilder {
     }
 
     public SearchApiResponse findProducts(String category, String shop, String productName, Pageable pageable) {
-        SearchApiResponse searchApiResponse = lastFindProductsResponse.get(category + shop + productName + pageable.getPageNumber() + pageable.getPageSize());
-        if (searchApiResponse != null) {
-            return searchApiResponse;
-        }
+        SearchQueryKey key = new SearchQueryKey(category, shop, productName, pageable.getPageNumber(), pageable.getPageSize());
 
-        if (!lastFindProductsResponse.isEmpty()) {
-            lastFindProductsResponse.clear();
+        if (cache.containsKey(key)) {
+            return cache.get(key);
         }
 
         Page<Product> productsByCategory = productSearchService.findProducts(category, shop, productName, pageable);
@@ -74,7 +74,40 @@ public class ProductViewService extends ViewBuilder {
         }
 
         response.setItems(result);
-        lastFindProductsResponse.put(category + shop + productName + pageable.getPageNumber() + pageable.getPageSize(), response);
+        cache.put(key, response);
         return response;
+    }
+
+    private static class SearchQueryKey {
+        private final String category;
+        private final String shop;
+        private final String productName;
+        private final int page;
+        private final int size;
+
+        public SearchQueryKey(String category, String shop, String productName, int page, int size) {
+            this.category = Objects.toString(category, "");
+            this.shop = Objects.toString(shop, "");
+            this.productName = Objects.toString(productName, "");
+            this.page = page;
+            this.size = size;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof SearchQueryKey)) return false;
+            SearchQueryKey that = (SearchQueryKey) o;
+            return page == that.page &&
+                    size == that.size &&
+                    category.equals(that.category) &&
+                    shop.equals(that.shop) &&
+                    productName.equals(that.productName);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(category, shop, productName, page, size);
+        }
     }
 }

@@ -25,6 +25,13 @@ import java.util.*;
 @Service
 public class DiscountsViewService extends ViewBuilder {
     private final ProductSearchService productSearchService;
+    private final Map<DiscountQueryKey, SearchApiResponse> cache =
+            new LinkedHashMap<>() {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<DiscountQueryKey, SearchApiResponse> eldest) {
+                    return this.size() > 5;
+                }
+            };
 
     public DiscountsViewService(ProductSearchService productSearchService,
                                 List<? extends DTOMapper<Product, ProductDTO>> productMappers,
@@ -55,9 +62,20 @@ public class DiscountsViewService extends ViewBuilder {
     }
 
     public SearchApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name, Integer prevPriceMin, Integer prevPriceMax) {
-        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts = productSearchService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin,
-                discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
-        return buildResponse(pageable, historicalLowProducts);
+        DiscountQueryKey key = new DiscountQueryKey(pageable.getPageNumber(), pageable.getPageSize(),
+                discountMin, discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
+
+        if (cache.containsKey(key)) {
+            return cache.get(key);
+        }
+
+        Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts =
+                productSearchService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin,
+                        discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
+
+        SearchApiResponse response = buildResponse(pageable, historicalLowProducts);
+        cache.put(key, response);
+        return response;
     }
 
     private SearchApiResponse buildResponse(Pageable pageable, Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts) {
@@ -111,5 +129,57 @@ public class DiscountsViewService extends ViewBuilder {
         }
 
         return res;
+    }
+
+    private static class DiscountQueryKey {
+        private final int page;
+        private final int size;
+        private final Double discountMin;
+        private final Double discountMax;
+        private final Integer months;
+        private final String category;
+        private final String shop;
+        private final String name;
+        private final Integer prevPriceMin;
+        private final Integer prevPriceMax;
+
+        public DiscountQueryKey(int page, int size,
+                                Double discountMin, Double discountMax, Integer months,
+                                String category, String shop, String name,
+                                Integer prevPriceMin, Integer prevPriceMax) {
+            this.page = page;
+            this.size = size;
+            this.discountMin = discountMin;
+            this.discountMax = discountMax;
+            this.months = months;
+            this.category = Objects.toString(category, "");
+            this.shop = Objects.toString(shop, "");
+            this.name = Objects.toString(name, "");
+            this.prevPriceMin = prevPriceMin;
+            this.prevPriceMax = prevPriceMax;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof DiscountQueryKey)) return false;
+            DiscountQueryKey that = (DiscountQueryKey) o;
+            return page == that.page &&
+                    size == that.size &&
+                    Objects.equals(discountMin, that.discountMin) &&
+                    Objects.equals(discountMax, that.discountMax) &&
+                    Objects.equals(months, that.months) &&
+                    category.equals(that.category) &&
+                    shop.equals(that.shop) &&
+                    name.equals(that.name) &&
+                    Objects.equals(prevPriceMin, that.prevPriceMin) &&
+                    Objects.equals(prevPriceMax, that.prevPriceMax);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(page, size, discountMin, discountMax, months,
+                    category, shop, name, prevPriceMin, prevPriceMax);
+        }
     }
 }
