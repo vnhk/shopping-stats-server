@@ -12,6 +12,21 @@ import org.springframework.context.annotation.Profile;
 @Profile("!test && !it")
 public class QueueConfig {
     @Bean
+    public Queue scraperQueue() {
+        return new Queue("SCRAPER_QUEUE", true);
+    }
+
+    @Bean
+    public DirectExchange scraperDirectExchange() {
+        return new DirectExchange("SCRAPER_DIRECT_EXCHANGE");
+    }
+
+    @Bean
+    public Binding scraperQueueBinding(Queue scraperQueue, DirectExchange scraperDirectExchange) {
+        return BindingBuilder.bind(scraperQueue).to(scraperDirectExchange).with("SCRAPER_ROUTING_KEY");
+    }
+
+    @Bean
     public Queue productsQueue() {
         return new Queue("PRODUCTS_QUEUE", true);
     }

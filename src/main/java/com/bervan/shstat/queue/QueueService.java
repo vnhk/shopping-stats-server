@@ -1,6 +1,7 @@
 package com.bervan.shstat.queue;
 
 import com.bervan.common.service.ApiKeyService;
+import com.bervan.shstat.ScrapContext;
 import com.bervan.shstat.response.ApiResponse;
 import org.jboss.logging.Logger;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -33,6 +34,10 @@ public class QueueService {
     public ApiResponse sendProductMessage(QueueMessage productMessage) {
         amqpTemplate.convertAndSend("DIRECT_EXCHANGE", "PRODUCTS_ROUTING_KEY", productMessage);
         return new ApiResponse(Collections.singletonList("Processing product message in progress..."));
+    }
+
+    public void addScrapingToQueue(ScrapContext scrapContext) {
+        amqpTemplate.convertAndSend("SCRAPER_DIRECT_EXCHANGE", "SCRAPER_ROUTING_KEY", scrapContext);
     }
 
     @RabbitListener(queues = "PRODUCTS_QUEUE")

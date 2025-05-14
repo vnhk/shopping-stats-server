@@ -5,6 +5,7 @@ import com.bervan.shstat.entity.scrap.ProductConfig;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
 
@@ -15,4 +16,7 @@ public interface ProductConfigRepository extends BaseRepository<ProductConfig, L
 
     @Query("SELECT c FROM ProductConfig p JOIN p.categories c WHERE (p.deleted IS FALSE OR p.deleted IS NULL) AND p = :productConfig")
     List<String> loadAllCategories(ProductConfig productConfig);
+
+    @Query("SELECT p FROM ProductConfig p WHERE (p.deleted IS FALSE OR p.deleted IS NULL) AND p.scrapTime = :scrapTime")
+    Set<ProductConfig> findAllActiveForHour(LocalTime scrapTime);
 }

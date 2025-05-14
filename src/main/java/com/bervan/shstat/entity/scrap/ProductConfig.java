@@ -19,7 +19,7 @@ public class ProductConfig extends BervanBaseEntity<Long> implements Persistable
     private String url;
     @VaadinTableColumn(displayName = "Scrap Time", internalName = "scrapTime")
     private LocalTime scrapTime;
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "product_config_categories", joinColumns = @JoinColumn(name = "product_config_id"))
     @Column(name = "category")
     @VaadinTableColumn(displayName = "Categories", internalName = "categories", extension = VaadinDynamicMultiDropdownTableColumn.class)
