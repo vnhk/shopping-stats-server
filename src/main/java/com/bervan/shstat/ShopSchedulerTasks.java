@@ -1,13 +1,16 @@
 package com.bervan.shstat;
 
+import com.bervan.common.user.UserRepository;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.entity.scrap.ProductConfig;
+import com.bervan.shstat.entity.scrap.ScrapAudit;
 import com.bervan.shstat.queue.QueueService;
 import com.bervan.shstat.repository.ProductConfigRepository;
+import com.bervan.shstat.repository.ScrapAuditRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,26 +21,27 @@ import java.util.Set;
 public class ShopSchedulerTasks {
     private final BervanLogger log;
     private final ProductConfigRepository productConfigRepository;
+    private final ScrapAuditRepository scrapAuditRepository;
     private final QueueService queueService;
+    private final UserRepository userRepository;
 
-    public ShopSchedulerTasks(BervanLogger log, ProductConfigRepository productConfigRepository, QueueService queueService) {
+    public ShopSchedulerTasks(BervanLogger log,
+                              ProductConfigRepository productConfigRepository,
+                              ScrapAuditRepository scrapAuditRepository,
+                              QueueService queueService, UserRepository userRepository) {
         this.log = log;
         this.productConfigRepository = productConfigRepository;
+        this.scrapAuditRepository = scrapAuditRepository;
         this.queueService = queueService;
+        this.userRepository = userRepository;
     }
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 */10 * * * *")
     public void scrapAddToQueue() throws InterruptedException {
         try {
-            LocalDateTime now = LocalDateTime.now();
-            int hour = now.getHour();
-//            SearchRequest request = new SearchRequest();
-//            request.addCriterion("HOUR_CRITERION", Operator.AND_OPERATOR, ProductConfig.class,
-//                    "scrapTime", SearchOperation.EQUALS_OPERATION, LocalTime.of(hour, 0));
-//            request.setAddOwnerCriterion(false);
-//            Set<ProductConfig> productConfigToProcess = productConfigService.load(request, Pageable.ofSize(500));
-
-            Set<ProductConfig> productConfigToProcess = productConfigRepository.findAllActiveForHour(LocalTime.of(hour, 0));
+            LocalTime now = LocalTime.now();
+            LocalDate localDate = LocalDate.now();
+            Set<ProductConfig> productConfigToProcess = productConfigRepository.findAllActiveForHour(now, localDate);
 
             for (ProductConfig configToProcess : productConfigToProcess) {
                 ConfigRoot config = new ConfigRoot();
@@ -58,11 +62,16 @@ public class ShopSchedulerTasks {
                 context.setProduct(configProduct);
                 context.setScrapDate(new Date());
 
-                log.info("Adding scrap request to queue: " + configToProcess.getName() + " from "
-                        + configToProcess.getShop().getShopName());
                 queueService.addScrapingToQueue(context);
+                log.info("Added scrap request to queue: " + configToProcess.getName() + " from "
+                        + configToProcess.getShop().getShopName());
+                ScrapAudit scrapAudit = new ScrapAudit();
+                scrapAudit.setDeleted(false);
+                scrapAudit.setProductConfig(configToProcess);
+                scrapAudit.setDate(localDate);
+                scrapAudit.addOwner(userRepository.findByUsername("COMMON_USER").get());
+                scrapAuditRepository.save(scrapAudit);
             }
-
 
         } catch (Exception e) {
             log.error("scrapAddToQueue: FAILED!", e);

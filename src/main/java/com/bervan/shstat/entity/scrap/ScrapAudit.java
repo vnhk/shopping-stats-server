@@ -64,6 +64,14 @@ public class ScrapAudit extends BervanBaseEntity<Long> implements PersistableTab
         return date.toString();
     }
 
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
     public ProductConfig getProductConfig() {
         return productConfig;
     }
