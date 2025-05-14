@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 public class ShopSchedulerTasks {
@@ -55,6 +58,8 @@ public class ShopSchedulerTasks {
                 context.setProduct(configProduct);
                 context.setScrapDate(new Date());
 
+                log.info("Adding scrap request to queue: " + configToProcess.getName() + " from "
+                        + configToProcess.getShop().getShopName());
                 queueService.addScrapingToQueue(context);
             }
 
