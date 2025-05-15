@@ -92,4 +92,8 @@ public class ScrapAudit extends BervanBaseEntity<Long> implements PersistableTab
         }
         return builder.toString();
     }
+
+    public void setProductDetails(String productDetails) {
+        this.productDetails = productDetails;
+    }
 }
