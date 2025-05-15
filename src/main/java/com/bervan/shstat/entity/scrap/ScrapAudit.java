@@ -84,11 +84,11 @@ public class ScrapAudit extends BervanBaseEntity<Long> implements PersistableTab
         StringBuilder builder = new StringBuilder();
         if (productConfig != null) {
             builder.append(productConfig.getName());
-            builder.append(" ");
-            builder.append(productConfig.getShop());
+            builder.append(" - ");
+            builder.append(productConfig.getShop().getShopName());
             builder.append(" (");
             builder.append(productConfig.getScrapTime().getHour());
-            builder.append(")");
+            builder.append(":00)");
         }
         return builder.toString();
     }
