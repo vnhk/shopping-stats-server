@@ -63,7 +63,7 @@ public class ProductService {
             productPerDateAttributeProperties = List.of(
                     AttrFieldMappingVal.of("Price", ProductBasedOnDateAttributes.class.getDeclaredField("price"),
                             (val) -> {
-                                if (val.toString().isBlank()) {
+                                if (val == null || val.toString().isBlank()) {
                                     return BigDecimal.valueOf(-1);
                                 }
                                 BigDecimal price = BigDecimal.valueOf(Double.parseDouble(val.toString()));
@@ -113,34 +113,103 @@ public class ProductService {
     public ApiResponse addProducts(List<Map<String, Object>> products) {
         List<Product> allMapped = new LinkedList<>();
         List<String> messages = new LinkedList<>();
-        for (Map<String, Object> product : products) {
+        for (Map<String, Object> productMap : products) {
             try {
-                Object date = product.get("Date");
-                Object price = product.get("Price");
+                Product product = mapProductCommonAttr(productMap);
+                ProductBasedOnDateAttributes perDateAttributes = mapProductPerDateAttributes(productMap, product);
 
-                if (price instanceof Integer priceInt) {
-                    if (priceInt < 1) {
+                Optional<ProductBasedOnDateAttributes> lastByDate = product.getProductBasedOnDateAttributes()
+                        .stream()
+                        .max(Comparator.comparing(ProductBasedOnDateAttributes::getScrapDate));
+
+                boolean productDateAttributeAdded = false;
+                if (lastByDate.isPresent()) {
+                    if (!Objects.equals(perDateAttributes.getPrice(), lastByDate.get().getPrice())) {
+                        //dont add the same price
+                        productDateAttributeAdded = addProductDateAttribute(product, perDateAttributes);
+                    }
+                } else {
+                    productDateAttributeAdded = addProductDateAttribute(product, perDateAttributes);
+                }
+
+                Set<ProductAttribute> resAttributes = new HashSet<>();
+                for (Map.Entry<String, Object> attrs : productMap.entrySet()) {
+                    String key = attrs.getKey();
+                    Object value = attrs.getValue();
+                    if (value instanceof Date) {
+                        System.err.println("Not implemented for: " + attrs);
                         continue;
+                    } else if (value instanceof String) {
+                        Optional<ProductListTextAttribute> attrOpt = findProductAttr(product, key, ProductListTextAttribute.class);
+                        if (attrOpt.isEmpty()) {
+                            resAttributes.add(new ProductListTextAttribute(key,
+                                    new HashSet<>(Collections.singletonList(((String) value)))));
+                        } else {
+                            attrOpt.get().getValue().add((String) value);
+                        }
+                    } else if (value instanceof LocalDate) {
+                        System.err.println("Not implemented for: " + attrs);
+                        continue;
+                    } else if (value instanceof LocalDateTime) {
+                        System.err.println("Not implemented for: " + attrs);
+                        continue;
+                    } else if (value instanceof Number) {
+                        System.err.println("Not implemented for: " + attrs);
+                        continue;
+                    } else if (value instanceof List<?>) {
+                        List<?> list = (List<?>) value;
+                        if (!list.isEmpty() && list.get(0) instanceof String) {
+                            Optional<ProductListTextAttribute> attrOpt = findProductAttr(product, key, ProductListTextAttribute.class);
+                            if (attrOpt.isEmpty()) {
+                                resAttributes.add(new ProductListTextAttribute(key, new HashSet<>((List<String>) value)));
+                            } else {
+                                attrOpt.get().getValue().addAll((List<String>) value);
+                            }
+                        } else if (!list.isEmpty() && list.get(0) instanceof Number) {
+                            System.err.println("Not implemented for: " + attrs);
+                            continue;
+                        }
+                    } else if (value instanceof String[]) {
+                        Optional<ProductListTextAttribute> attrOpt = findProductAttr(product, key, ProductListTextAttribute.class);
+                        if (attrOpt.isEmpty()) {
+                            resAttributes.add(new ProductListTextAttribute(key, new HashSet<>(List.of((String[]) value))));
+                        } else {
+                            attrOpt.get().getValue().addAll(List.of((String[]) value));
+                        }
+                    } else if (value != null) {
+                        Optional<ProductListTextAttribute> attrOpt = findProductAttr(product, key, ProductListTextAttribute.class);
+                        if (attrOpt.isEmpty()) {
+                            resAttributes.add(new ProductListTextAttribute(key,
+                                    new HashSet<>(Collections.singletonList(((String) value)))));
+                        } else {
+                            attrOpt.get().getValue().add((String) value);
+                        }
                     }
                 }
 
-                Product mappedProduct = mapProduct(product);
+                for (ProductAttribute resAttribute : resAttributes) {
+                    product.addAttribute(resAttribute);
+                }
 
                 loadCommonUserIfNotLoaded();
+                product.addOwner(commonUser);
+                if (product.getName().length() > 300) {
+                    System.err.println("Product name is to long: {}" + product.getName());
+                    continue;
+                }
+                if (product.getName().length() < 3) {
+                    System.err.println("Product name is to short: {}" + product.getName());
+                    continue;
+                }
 
-                mappedProduct.addOwner(commonUser);
-                if (mappedProduct.getName().length() > 300) {
-                    System.err.println("Product name is to long: {}" + mappedProduct.getName());
-                    continue;
+                product = productRepository.save(product);
+
+                if (productDateAttributeAdded) {
+                    actualProductService.updateActualProducts(perDateAttributes.getScrapDate(), product, commonUser);
+                    productStatsService.updateProductStats(product, perDateAttributes.getPrice(), commonUser);
                 }
-                if (mappedProduct.getName().length() < 3) {
-                    System.err.println("Product name is to short: {}" + mappedProduct.getName());
-                    continue;
-                }
-                mappedProduct = productRepository.save(mappedProduct);
-                actualProductService.updateActualProducts(date, mappedProduct, commonUser);
-                productStatsService.updateProductStats(mappedProduct, price, commonUser);
-                allMapped.add(mappedProduct);
+
+                allMapped.add(product);
             } catch (MapperException e) {
                 if (e.isSendErrorMessage() && e.getMessage() != null && !e.getMessage().isEmpty()) {
                     messages.add(e.getMessage());
@@ -157,85 +226,14 @@ public class ProductService {
         }
     }
 
-
-    private Product mapProduct(Map<String, Object> productToMap) {
-        Product product = mapProductCommonAttr(productToMap);
-        ProductBasedOnDateAttributes perDateAttributes = mapProductPerDateAttributes(productToMap, product);
-
-        Optional<ProductBasedOnDateAttributes> lastByDate = product.getProductBasedOnDateAttributes()
-                .stream()
-                .max(Comparator.comparing(ProductBasedOnDateAttributes::getScrapDate));
-
-        if (lastByDate.isPresent()) {
-            if (!Objects.equals(perDateAttributes.getPrice(), lastByDate.get().getPrice())) {
-                //dont add the same price
-                product.addAttribute(perDateAttributes);
-            }
-        } else {
+    private boolean addProductDateAttribute(Product product, ProductBasedOnDateAttributes perDateAttributes) {
+        if (perDateAttributes.getPrice().compareTo(BigDecimal.ONE) >= 0) {
             product.addAttribute(perDateAttributes);
+            return true;
         }
-
-        Set<ProductAttribute> resAttributes = new HashSet<>();
-        for (Map.Entry<String, Object> attrs : productToMap.entrySet()) {
-            String key = attrs.getKey();
-            Object value = attrs.getValue();
-            if (value instanceof Date) {
-                System.err.println("Not implemented for: " + attrs);
-                continue;
-            } else if (value instanceof String) {
-                Optional<ProductListTextAttribute> attrOpt = findProductAttr(product, key, ProductListTextAttribute.class);
-                if (attrOpt.isEmpty()) {
-                    resAttributes.add(new ProductListTextAttribute(key,
-                            new HashSet<>(Collections.singletonList(((String) value)))));
-                } else {
-                    attrOpt.get().getValue().add((String) value);
-                }
-            } else if (value instanceof LocalDate) {
-                System.err.println("Not implemented for: " + attrs);
-                continue;
-            } else if (value instanceof LocalDateTime) {
-                System.err.println("Not implemented for: " + attrs);
-                continue;
-            } else if (value instanceof Number) {
-                System.err.println("Not implemented for: " + attrs);
-                continue;
-            } else if (value instanceof List<?>) {
-                List<?> list = (List<?>) value;
-                if (!list.isEmpty() && list.get(0) instanceof String) {
-                    Optional<ProductListTextAttribute> attrOpt = findProductAttr(product, key, ProductListTextAttribute.class);
-                    if (attrOpt.isEmpty()) {
-                        resAttributes.add(new ProductListTextAttribute(key, new HashSet<>((List<String>) value)));
-                    } else {
-                        attrOpt.get().getValue().addAll((List<String>) value);
-                    }
-                } else if (!list.isEmpty() && list.get(0) instanceof Number) {
-                    System.err.println("Not implemented for: " + attrs);
-                    continue;
-                }
-            } else if (value instanceof String[]) {
-                Optional<ProductListTextAttribute> attrOpt = findProductAttr(product, key, ProductListTextAttribute.class);
-                if (attrOpt.isEmpty()) {
-                    resAttributes.add(new ProductListTextAttribute(key, new HashSet<>(List.of((String[]) value))));
-                } else {
-                    attrOpt.get().getValue().addAll(List.of((String[]) value));
-                }
-            } else if (value != null) {
-                Optional<ProductListTextAttribute> attrOpt = findProductAttr(product, key, ProductListTextAttribute.class);
-                if (attrOpt.isEmpty()) {
-                    resAttributes.add(new ProductListTextAttribute(key,
-                            new HashSet<>(Collections.singletonList(((String) value)))));
-                } else {
-                    attrOpt.get().getValue().add((String) value);
-                }
-            }
-        }
-
-        for (ProductAttribute resAttribute : resAttributes) {
-            product.addAttribute(resAttribute);
-        }
-
-        return product;
+        return false;
     }
+
 
     private static <T> Optional<T> findProductAttr(Product product, String key, Class<T> productAttrClass) {
         return (Optional<T>) product.getAttributes().stream().filter(e -> e.getName().equals(key))
