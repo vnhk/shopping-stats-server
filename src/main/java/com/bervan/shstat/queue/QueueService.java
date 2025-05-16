@@ -3,6 +3,7 @@ package com.bervan.shstat.queue;
 import com.bervan.common.service.ApiKeyService;
 import com.bervan.shstat.ScrapContext;
 import com.bervan.shstat.response.ApiResponse;
+import com.rabbitmq.client.Channel;
 import org.jboss.logging.Logger;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
@@ -11,6 +12,7 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
@@ -40,18 +42,24 @@ public class QueueService {
         amqpTemplate.convertAndSend("SCRAPER_DIRECT_EXCHANGE", "SCRAPER_ROUTING_KEY", scrapContext);
     }
 
-    @RabbitListener(queues = "PRODUCTS_QUEUE")
-    public void receiveProductMessage(Message message) {
-        QueueMessage queueMessage = (QueueMessage) messageConverter.fromMessage(message);
-        if (queueMessage.getApiKey() == null || queueMessage.getApiKey().isBlank() ||
-                apiKeyService.getUserByAPIKey(queueMessage.getApiKey()) == null) {
-            logger.error("NOT_API_KEY for PRODUCTS_QUEUE message");
-            return;
-        }
-        for (AbstractQueue<?> queueProcessor : queueProcessors) {
-            if (queueProcessor.supports(queueMessage.getSupportClassName())) {
-                queueProcessor.run(queueMessage.getBody());
+    @RabbitListener(queues = "PRODUCTS_QUEUE", ackMode = "MANUAL")
+    public void receiveProductMessage(Message message, Channel channel) throws IOException {
+        try {
+            QueueMessage queueMessage = (QueueMessage) messageConverter.fromMessage(message);
+            if (queueMessage.getApiKey() == null || queueMessage.getApiKey().isBlank() ||
+                    apiKeyService.getUserByAPIKey(queueMessage.getApiKey()) == null) {
+                logger.error("NOT_API_KEY for PRODUCTS_QUEUE message");
+                return;
             }
+            for (AbstractQueue<?> queueProcessor : queueProcessors) {
+                if (queueProcessor.supports(queueMessage.getSupportClassName())) {
+                    queueProcessor.run(queueMessage.getBody());
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e);
+        } finally {
+            channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
         }
     }
 
