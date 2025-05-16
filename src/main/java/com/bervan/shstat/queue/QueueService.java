@@ -44,22 +44,33 @@ public class QueueService {
 
     @RabbitListener(queues = "PRODUCTS_QUEUE", ackMode = "MANUAL")
     public void receiveProductMessage(Message message, Channel channel) throws IOException {
+        QueueMessage queueMessage = (QueueMessage) messageConverter.fromMessage(message);
+        boolean ackEarly = "RefreshViewQueueParam".equals(queueMessage.getSupportClassName());
+
         try {
-            QueueMessage queueMessage = (QueueMessage) messageConverter.fromMessage(message);
             if (queueMessage.getApiKey() == null || queueMessage.getApiKey().isBlank() ||
                     apiKeyService.getUserByAPIKey(queueMessage.getApiKey()) == null) {
                 logger.error("NOT_API_KEY for PRODUCTS_QUEUE message");
+                channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
                 return;
             }
+
+            if (ackEarly) {
+                channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+            }
+
             for (AbstractQueue<?> queueProcessor : queueProcessors) {
                 if (queueProcessor.supports(queueMessage.getSupportClassName())) {
                     queueProcessor.run(queueMessage.getBody());
                 }
             }
+
+            if (!ackEarly) {
+                channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+            }
+
         } catch (Exception e) {
             logger.error(e);
-        } finally {
-            channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
         }
     }
 
