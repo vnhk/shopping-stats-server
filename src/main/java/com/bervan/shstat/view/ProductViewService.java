@@ -10,6 +10,7 @@ import com.bervan.shstat.response.SearchApiResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -24,6 +25,11 @@ public class ProductViewService extends ViewBuilder {
                     return this.size() > 5;
                 }
             };
+
+    @Scheduled(cron = "0 0 * * * *")
+    public void clearCache() {
+        cache.clear();
+    }
 
     public ProductViewService(ProductSearchService productSearchService,
                               List<? extends DTOMapper<Product, ProductDTO>> productMappers) {

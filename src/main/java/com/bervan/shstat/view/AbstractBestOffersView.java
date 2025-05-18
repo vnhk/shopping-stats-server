@@ -2,6 +2,7 @@ package com.bervan.shstat.view;
 
 import com.bervan.common.BervanButton;
 import com.bervan.core.model.BervanLogger;
+import com.bervan.shstat.DiscountsViewService;
 import com.bervan.shstat.ProductSearchService;
 import com.bervan.shstat.response.ApiResponse;
 import com.bervan.shstat.response.ProductDTO;

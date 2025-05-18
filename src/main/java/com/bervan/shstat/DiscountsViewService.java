@@ -1,8 +1,5 @@
-package com.bervan.shstat.view;
+package com.bervan.shstat;
 
-import com.bervan.shstat.DataHolder;
-import com.bervan.shstat.ProductSearchService;
-import com.bervan.shstat.ViewBuilder;
 import com.bervan.shstat.dtomappers.BaseProductAttributesMapper;
 import com.bervan.shstat.dtomappers.DTOMapper;
 import com.bervan.shstat.dtomappers.ProductBasedOnDateAttributePriceMapper;
@@ -18,6 +15,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -32,6 +30,11 @@ public class DiscountsViewService extends ViewBuilder {
                     return this.size() > 5;
                 }
             };
+
+    @Scheduled(cron = "0 0 0 * * *")
+    public void clearCacheAtMidnight() {
+        cache.clear();
+    }
 
     public DiscountsViewService(ProductSearchService productSearchService,
                                 List<? extends DTOMapper<Product, ProductDTO>> productMappers,
