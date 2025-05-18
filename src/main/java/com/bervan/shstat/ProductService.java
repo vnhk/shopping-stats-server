@@ -323,15 +323,17 @@ public class ProductService {
         return " WITH RankedPrices AS (SELECT DISTINCT product_id, avg" + months + "month AS average_price FROM product_stats) " +
                 " SELECT DISTINCT pda.id AS id, pda.scrap_date AS scrap_date, pda.price AS price, rp.average_price AS avgPrice, " + months + " AS month_offset, " +
                 """
-                                p.name AS product_name, p.shop as shop, pc.categories AS category, p.img_src AS product_image_src,
-                                (IF(pda.price >= rp.average_price, 0, (1 - pda.price / rp.average_price) * 100)) AS discount_in_percent
+                            p.name AS product_name, p.shop as shop, pc.categories AS category, p.img_src AS product_image_src,
+                            (IF(pda.price >= rp.average_price, 0, (1 - pda.price / rp.average_price) * 100)) AS discount_in_percent
                         FROM product_based_on_date_attributes pda
-                                JOIN product p ON p.id = pda.product_id
-                                JOIN RankedPrices rp ON p.id = rp.product_id
-                                LEFT JOIN product_categories pc ON pda.product_id = pc.product_id
-                                JOIN actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date
-                        WHERE pda.price < rp.average_price AND pda.price > 0
-                                ORDER BY pda.id;
+                            JOIN product p ON p.id = pda.product_id
+                            JOIN RankedPrices rp ON p.id = rp.product_id
+                            LEFT JOIN product_categories pc ON pda.product_id = pc.product_id
+                            JOIN actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date
+                        WHERE pda.price < rp.average_price
+                            AND pda.price > 0
+                            AND ((1 - pda.price / rp.average_price) * 100) >= 5
+                        ORDER BY pda.id;
                         """;
     }
 }
