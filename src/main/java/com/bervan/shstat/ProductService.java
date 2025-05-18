@@ -317,13 +317,18 @@ public class ProductService {
         entityManager.createNativeQuery(insertIntoQuery + sqlFor3MonthOffset).executeUpdate();
         entityManager.createNativeQuery(insertIntoQuery + sqlFor6MonthOffset).executeUpdate();
         entityManager.createNativeQuery(insertIntoQuery + sqlFor12MonthOffset).executeUpdate();
+
+        // Create indexes for performance optimization
+        entityManager.createNativeQuery("CREATE INDEX idx_ltafxm_main_filter_full ON LOWER_THAN_AVG_FOR_X_MONTHS(month_offset, avgPrice, discount_in_percent, category, shop)").executeUpdate();
+        entityManager.createNativeQuery("CREATE INDEX idx_ltafxm_main_filter_partial ON LOWER_THAN_AVG_FOR_X_MONTHS(month_offset, avgPrice, discount_in_percent)").executeUpdate();
+        entityManager.createNativeQuery("CREATE INDEX idx_ltafxm_id ON LOWER_THAN_AVG_FOR_X_MONTHS(id)").executeUpdate();
     }
 
-    private static String getSql(int months) {
+    private String getSql(int months) {
         return " WITH RankedPrices AS (SELECT DISTINCT product_id, avg" + months + "month AS average_price FROM product_stats) " +
                 " SELECT DISTINCT pda.id AS id, pda.scrap_date AS scrap_date, pda.price AS price, rp.average_price AS avgPrice, " + months + " AS month_offset, " +
                 """
-                            p.name AS product_name, p.shop as shop, pc.categories AS category, p.img_src AS product_image_src,
+                            UPPER(p.name) AS product_name, p.shop as shop, pc.categories AS category, p.img_src AS product_image_src,
                             (IF(pda.price >= rp.average_price, 0, (1 - pda.price / rp.average_price) * 100)) AS discount_in_percent
                         FROM product_based_on_date_attributes pda
                             JOIN product p ON p.id = pda.product_id

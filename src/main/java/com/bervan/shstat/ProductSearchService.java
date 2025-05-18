@@ -48,6 +48,9 @@ public class ProductSearchService {
     }
 
     public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name, Integer prevPriceMin, Integer prevPriceMax) {
+        if (name != null) {
+            name = name.toUpperCase();
+        }
         return productRepository.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin, discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
     }
 
