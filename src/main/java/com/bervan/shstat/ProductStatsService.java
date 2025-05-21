@@ -38,13 +38,7 @@ public class ProductStatsService {
 
 
         if (price.compareTo(BigDecimal.ZERO) > 0) {
-            updateHistoricalLow(byProductId.get(), price);
-            updateAvgWholeHistory(byProductId.get(), price);
-            updateAvgLast1Month(byProductId.get(), price);
-            updateAvgLast2Month(byProductId.get(), price);
-            updateAvgLast3Month(byProductId.get(), price);
-            updateAvgLast6Month(byProductId.get(), price);
-            updateAvgLast12Month(byProductId.get(), price);
+            updateStats(byProductId);
 
             if (byProductId.get().getOwners().isEmpty()) {
                 byProductId.get().addOwner(commonUser);
@@ -53,54 +47,59 @@ public class ProductStatsService {
         }
     }
 
-    private void updateHistoricalLow(ProductStats productStats, BigDecimal price) {
-        BigDecimal historicalLow = productStats.getHistoricalLow();
-        productStats.setHistoricalLow(findHistoricalLowForMonths(productStats.getProductId(), historicalLow, 12000, price));
+    public void updateStatsAndSave(Optional<ProductStats> byProductId, Long productId) {
+        if (byProductId.isEmpty()) {
+            ProductStats productStats = new ProductStats();
+            productStats.setProductId(productId);
+            byProductId = Optional.of(productStats);
+        }
+        updateStats(byProductId);
+        productStatsRepository.save(byProductId.get());
     }
 
-    private void updateAvgWholeHistory(ProductStats productStats, BigDecimal price) {
-        BigDecimal avg = productStats.getAvgWholeHistory();
-        productStats.setAvgWholeHistory(calculateAvgForMonths(productStats.getProductId(), avg, 12000, price));
+    private void updateStats(Optional<ProductStats> byProductId) {
+        updateHistoricalLow(byProductId.get());
+        updateAvgWholeHistory(byProductId.get());
+        updateAvgLast1Month(byProductId.get());
+        updateAvgLast2Month(byProductId.get());
+        updateAvgLast3Month(byProductId.get());
+        updateAvgLast6Month(byProductId.get());
+        updateAvgLast12Month(byProductId.get());
     }
 
-    private void updateAvgLast12Month(ProductStats productStats, BigDecimal price) {
-        BigDecimal avg = productStats.getAvg12Month();
-        productStats.setAvg12Month(calculateAvgForMonths(productStats.getProductId(), avg, 12, price));
+    private void updateHistoricalLow(ProductStats productStats) {
+        productStats.setHistoricalLow(findHistoricalLowForMonths(productStats.getProductId(), 12000));
     }
 
-    private void updateAvgLast6Month(ProductStats productStats, BigDecimal price) {
-        BigDecimal avg = productStats.getAvg6Month();
-        productStats.setAvg6Month(calculateAvgForMonths(productStats.getProductId(), avg, 6, price));
+    private void updateAvgWholeHistory(ProductStats productStats) {
+        productStats.setAvgWholeHistory(calculateAvgForMonths(productStats.getProductId(), 12000));
     }
 
-    private void updateAvgLast3Month(ProductStats productStats, BigDecimal price) {
-        BigDecimal avg = productStats.getAvg3Month();
-        productStats.setAvg3Month(calculateAvgForMonths(productStats.getProductId(), avg, 3, price));
+    private void updateAvgLast12Month(ProductStats productStats) {
+        productStats.setAvg12Month(calculateAvgForMonths(productStats.getProductId(), 12));
     }
 
-    private void updateAvgLast2Month(ProductStats productStats, BigDecimal price) {
-        BigDecimal avg = productStats.getAvg2Month();
-        productStats.setAvg2Month(calculateAvgForMonths(productStats.getProductId(), avg, 2, price));
+    private void updateAvgLast6Month(ProductStats productStats) {
+        productStats.setAvg6Month(calculateAvgForMonths(productStats.getProductId(), 6));
     }
 
-    private void updateAvgLast1Month(ProductStats productStats, BigDecimal price) {
-        BigDecimal avg = productStats.getAvg1Month();
-        productStats.setAvg1Month(calculateAvgForMonths(productStats.getProductId(), avg, 1, price));
+    private void updateAvgLast3Month(ProductStats productStats) {
+        productStats.setAvg3Month(calculateAvgForMonths(productStats.getProductId(), 3));
     }
 
-    private BigDecimal findHistoricalLowForMonths(Long productId, BigDecimal historicalLow, int offset, BigDecimal price) {
-//        if (historicalLow == null || historicalLow.equals(BigDecimal.ZERO)) {
+    private void updateAvgLast2Month(ProductStats productStats) {
+        productStats.setAvg2Month(calculateAvgForMonths(productStats.getProductId(), 2));
+    }
+
+    private void updateAvgLast1Month(ProductStats productStats) {
+        productStats.setAvg1Month(calculateAvgForMonths(productStats.getProductId(), 1));
+    }
+
+    private BigDecimal findHistoricalLowForMonths(Long productId, int offset) {
         return createHistoricalLowForXMonth(productId, offset);
-//        } else {
-//            if (price.compareTo(historicalLow) < 0) {
-//                return price;
-//            } else {
-//                return historicalLow;
-//            }
-//        }
     }
 
-    private BigDecimal calculateAvgForMonths(@NotNull Long productId, BigDecimal avg, int offset, BigDecimal price) {
+    private BigDecimal calculateAvgForMonths(@NotNull Long productId, int offset) {
         //It doesnt make sense to update previous AVG, because if avg is for 1 month it can't be updated after 1 month....
         //to make it work in that way the stat should have start and end date fex:
         //- 2 month avg: start [01.01) - end (01.03) and price should be updated only in this range if after then create new avg for next 2 month
@@ -120,5 +119,9 @@ public class ProductStatsService {
 
     private BigDecimal createAvgForXMonth(Long productId, int offset) {
         return productStatsRepository.calculateAvgForXMonths(offset, productId);
+    }
+
+    public Optional<ProductStats> findByProductId(Long id) {
+        return productStatsRepository.findByProductId(id);
     }
 }

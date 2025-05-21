@@ -55,7 +55,7 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
         searchButton = new BervanButton("Search");
         searchButton.addClickListener(buttonClickEvent -> {
             productsLayout.removeAll();
-            SearchApiResponse body = (SearchApiResponse) findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable.ofSize(50),
+            SearchApiResponse body = (SearchApiResponse) findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable.ofSize(500),
                     discountMin.getValue(), discountMax.getValue(), months.getValue(), prevPriceMin.getValue(), prevPriceMax.getValue(), productName.getValue(), categoryDropdown.getValue(), shopDropdown.getValue());
 
             FlexLayout tileContainer = getProductsLayout(body);

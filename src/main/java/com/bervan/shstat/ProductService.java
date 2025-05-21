@@ -2,18 +2,17 @@ package com.bervan.shstat;
 
 import com.bervan.common.user.User;
 import com.bervan.common.user.UserRepository;
-import com.bervan.shstat.entity.Product;
-import com.bervan.shstat.entity.ProductAttribute;
-import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
-import com.bervan.shstat.entity.ProductListTextAttribute;
+import com.bervan.shstat.entity.*;
 import com.bervan.shstat.repository.ProductBasedOnDateAttributesRepository;
 import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.response.AddProductApiResponse;
 import com.bervan.shstat.response.ApiResponse;
 import com.google.common.collect.Lists;
+import com.vaadin.flow.component.UI;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -21,11 +20,13 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
+@Slf4j
 public class ProductService {
     private final ProductRepository productRepository;
     private final ActualProductService actualProductService;
@@ -220,6 +221,12 @@ public class ProductService {
         return new AddProductApiResponse(messages, allMapped.size(), products.size());
     }
 
+    public void updateStats(Product product) {
+        Optional<ProductStats> byProductId = productStatsService.findByProductId(product.getId());
+        productStatsService.updateStatsAndSave(byProductId, product.getId());
+        UI.getCurrent().getPage().executeJs("location.reload()");
+    }
+
     private void loadCommonUserIfNotLoaded() {
         if (commonUser == null) {
             commonUser = userRepository.findByUsername("COMMON_USER").get();
@@ -227,6 +234,22 @@ public class ProductService {
     }
 
     private boolean addProductDateAttribute(Product product, ProductBasedOnDateAttributes perDateAttributes) {
+        if (product.getId() != null && product.getProductBasedOnDateAttributes() != null
+                && product.getProductBasedOnDateAttributes().size() > 10) {
+            BigDecimal sum = BigDecimal.valueOf(1);
+            for (ProductBasedOnDateAttributes productBasedOnDateAttribute : product.getProductBasedOnDateAttributes()) {
+                sum = sum.add(productBasedOnDateAttribute.getPrice());
+            }
+
+            if (perDateAttributes.getPrice().compareTo(BigDecimal.valueOf(2).multiply(sum.divide(BigDecimal.valueOf(product.getProductBasedOnDateAttributes().size()),
+                    RoundingMode.CEILING))) >= 0) {
+                //if product has at least 10 prices and new price is much bigger than previous, we skip adding the price
+                log.warn("ProductBasedOnDateAttribute skipped because the new price is much bigger than average: {} -> {}",
+                        product.getName(), perDateAttributes.getPrice());
+                return false;
+            }
+        }
+
         if (perDateAttributes.getPrice().compareTo(BigDecimal.ONE) >= 0) {
             product.addAttribute(perDateAttributes);
             return true;

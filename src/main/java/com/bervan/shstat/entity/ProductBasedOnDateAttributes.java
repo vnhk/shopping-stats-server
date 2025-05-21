@@ -1,7 +1,8 @@
 package com.bervan.shstat.entity;
 
 import com.bervan.common.model.BervanBaseEntity;
-import com.bervan.history.model.AbstractBaseEntity;
+import com.bervan.common.model.PersistableTableData;
+import com.bervan.common.model.VaadinTableColumn;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -14,7 +15,7 @@ import java.util.Date;
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "scrapDate"})},
         indexes = {@Index(columnList = "formattedScrapDate"), @Index(columnList = "scrapDate")})
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public class ProductBasedOnDateAttributes extends BervanBaseEntity<Long> {
+public class ProductBasedOnDateAttributes extends BervanBaseEntity<Long> implements PersistableTableData<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -22,11 +23,14 @@ public class ProductBasedOnDateAttributes extends BervanBaseEntity<Long> {
     @JoinColumn(name = "product_id")
     private Product product;
     @NotNull
+    @VaadinTableColumn(internalName = "price", displayName = "Price")
     private BigDecimal price;
     @NotNull
     @Size(min = 3, max = 300)
+    @VaadinTableColumn(internalName = "formattedScrapDate", displayName = "Formatted  Scrap Date")
     private String formattedScrapDate;
     @NotNull
+    @VaadinTableColumn(internalName = "scrapDate", displayName = "Scrap Date")
     private Date scrapDate;
     private Boolean deleted = false;
 
@@ -98,5 +102,10 @@ public class ProductBasedOnDateAttributes extends BervanBaseEntity<Long> {
     @Override
     public void setModificationDate(LocalDateTime modificationDate) {
 
+    }
+
+    @Override
+    public String getTableFilterableColumnValue() {
+        return formattedScrapDate;
     }
 }

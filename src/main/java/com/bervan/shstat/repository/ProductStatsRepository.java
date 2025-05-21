@@ -3,7 +3,6 @@ package com.bervan.shstat.repository;
 import com.bervan.history.model.BaseRepository;
 import com.bervan.shstat.entity.ProductStats;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -15,14 +14,20 @@ public interface ProductStatsRepository extends BaseRepository<ProductStats, Lon
     Optional<ProductStats> findByProductId(Long productId);
 
     @Query(nativeQuery = true, value = "SELECT COUNT(pda.id) FROM product_based_on_date_attributes pda" +
-            " WHERE pda.product_id =:productId AND pda.price > 0 AND pda.scrap_date >= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL :monthOffset MONTH)")
+            " WHERE pda.product_id =:productId AND pda.price > 0 AND pda.scrap_date >= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL :monthOffset MONTH) " +
+            " AND (pda.deleted IS FALSE OR pda.deleted IS NULL) "
+    )
     Long countAllPricesForXMonths(Integer monthOffset, @NotNull Long productId);
 
     @Query(nativeQuery = true, value = "SELECT AVG(pda.price) FROM product_based_on_date_attributes pda" +
-            " WHERE pda.product_id =:productId AND pda.price > 0 AND pda.scrap_date >= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL :monthOffset MONTH)")
+            " WHERE pda.product_id =:productId AND pda.price > 0 AND pda.scrap_date >= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL :monthOffset MONTH) " +
+            " AND (pda.deleted IS FALSE OR pda.deleted IS NULL) "
+    )
     BigDecimal calculateAvgForXMonths(Integer monthOffset, @NotNull Long productId);
 
     @Query(nativeQuery = true, value = "SELECT MIN(pda.price) FROM product_based_on_date_attributes pda" +
-            " WHERE pda.product_id =:productId AND pda.price > 0 AND pda.scrap_Date >= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL :monthOffset MONTH)")
+            " WHERE pda.product_id =:productId AND pda.price > 0 AND pda.scrap_Date >= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL :monthOffset MONTH) " +
+            " AND (pda.deleted IS FALSE OR pda.deleted IS NULL) "
+    )
     BigDecimal findHistoricalLowForXMonths(Integer monthOffset, Long productId);
 }

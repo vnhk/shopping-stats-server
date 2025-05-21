@@ -1,7 +1,11 @@
 package com.bervan.shstat.view;
 
+import com.bervan.common.user.UserRepository;
 import com.bervan.core.model.BervanLogger;
+import com.bervan.shstat.ProductBasedOnDateAttributesService;
 import com.bervan.shstat.ProductSearchService;
+import com.bervan.shstat.ProductService;
+import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
@@ -27,11 +31,22 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
     public static final String ROUTE_NAME = "/shopping/product/:productId";
     private final ProductViewService productViewService;
     private final ProductSearchService productSearchService;
+    private final UserRepository userRepository;
+    private final ProductService productService;
+    private final ProductRepository productRepository;
+    private final ProductBasedOnDateAttributesService productDateAttService;
     private final BervanLogger log;
+    private final ShoppingLayout shoppingLayout = new ShoppingLayout(ROUTE_NAME);
+    private ProductDTO productDTO;
 
-    public AbstractProductView(ProductViewService productViewService, ProductSearchService productSearchService, BervanLogger log) {
+
+    public AbstractProductView(ProductViewService productViewService, ProductSearchService productSearchService, UserRepository userRepository, ProductService productService, ProductRepository productRepository, ProductBasedOnDateAttributesService productDateAttService, BervanLogger log) {
         super();
-        this.add(new ShoppingLayout(ROUTE_NAME));
+        this.userRepository = userRepository;
+        this.productService = productService;
+        this.productRepository = productRepository;
+        this.productDateAttService = productDateAttService;
+        this.add(shoppingLayout);
         this.productViewService = productViewService;
         this.productSearchService = productSearchService;
         this.log = log;
@@ -42,7 +57,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
         String backLink = buildBackLink(beforeEvent);
 
         SearchApiResponse byId = productViewService.findById(productId, Pageable.ofSize(1));
-        ProductDTO productDTO = (ProductDTO) byId.getItems().iterator().next();
+        productDTO = (ProductDTO) byId.getItems().iterator().next();
 
         /// /////////////////////
         VerticalLayout productsLayout = new VerticalLayout();
@@ -61,7 +76,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
         image.setHeight("400px");
         image.getStyle().set("object-fit", "contain");
 
-        productCard.add(image, new H3(productDTO.getName()));
+        productCard.add(image, new H3(productDTO.getName()), new Anchor(productDTO.getOfferLink(), productDTO.getOfferLink()));
 
         List<PriceDTO> prices = productDTO.getPrices();
         Text priceText = new Text("No price");
@@ -112,6 +127,8 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
         productsLayout.add(productCard);
 
         add(productsLayout);
+
+        add(new Hr(), new PricesListView(productDateAttService, productService, shoppingLayout, productRepository.findById(productId).get(), userRepository));
     }
 
     private String buildBackLink(BeforeEvent beforeEvent) {
