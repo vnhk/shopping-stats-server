@@ -11,7 +11,7 @@ import java.util.List;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class ProductConfig extends BervanBaseEntity<Long> implements PersistableTableData<Long> {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @VaadinTableColumn(displayName = "Name", internalName = "name")
     private String name;

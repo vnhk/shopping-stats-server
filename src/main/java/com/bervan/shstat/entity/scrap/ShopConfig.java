@@ -13,7 +13,7 @@ import java.util.Set;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class ShopConfig extends BervanBaseEntity<Long> implements PersistableTableData<Long> {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @VaadinTableColumn(displayName = "Shop Name", internalName = "shopName")
     private String shopName;

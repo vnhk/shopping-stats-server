@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class ScrapAudit extends BervanBaseEntity<Long> implements PersistableTableData<Long> {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     //We want to do processing once per day, but if product have to be scrapped more than 1 time just add new product config!

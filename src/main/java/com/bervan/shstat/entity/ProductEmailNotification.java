@@ -16,9 +16,6 @@ public class ProductEmailNotification extends BervanBaseEntity<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-
-
     private String bodyTemplate;
     private BigDecimal priceMin;
     private BigDecimal priceMax;

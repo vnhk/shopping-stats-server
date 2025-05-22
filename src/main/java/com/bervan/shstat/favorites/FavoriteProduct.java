@@ -12,7 +12,7 @@ import java.util.Objects;
 @Entity
 public class FavoriteProduct  implements AbstractBaseEntity<Long> {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long productId;
     private String productName;

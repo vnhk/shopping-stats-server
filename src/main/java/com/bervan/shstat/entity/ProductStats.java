@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class ProductStats extends BervanBaseEntity<Long> {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotNull
     private Long productId;

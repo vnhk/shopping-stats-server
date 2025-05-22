@@ -1,7 +1,6 @@
 package com.bervan.shstat.entity;
 
 import com.bervan.common.model.BervanBaseEntity;
-import com.bervan.history.model.AbstractBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -10,8 +9,13 @@ import jakarta.validation.constraints.Size;
 @Entity
 @Table(indexes = {@Index(columnList = "name")})
 public abstract class ProductAttribute extends BervanBaseEntity<Long> {
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_attribute_seq")
+    @SequenceGenerator(
+            name = "product_attribute_seq",
+            sequenceName = "product_attribute_seq",
+            allocationSize = 1
+    )
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     protected Long id;
     @NotNull
     @Size(min = 3, max = 300)
