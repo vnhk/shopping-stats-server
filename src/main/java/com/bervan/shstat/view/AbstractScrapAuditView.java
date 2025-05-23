@@ -19,7 +19,6 @@ public abstract class AbstractScrapAuditView extends AbstractTableView<Long, Scr
         super(new ShoppingLayout(ROUTE_NAME), scrapAuditService, log, ScrapAudit.class);
         this.log = log;
         this.scrapAuditRepository = scrapAuditRepository;
-        checkboxesColumnsEnabled = false;
         renderCommonComponents();
 
         addButton.setVisible(false);
