@@ -26,6 +26,10 @@ public class BaseProductAttributesMapper implements DTOMapper<Product, ProductDT
     }
 
     private static String getOfferUrl(String shop, String offerUrl) {
+        if (offerUrl.startsWith("http")) {
+            return offerUrl;
+        }
+
         return switch (shop) {
             case "Media Expert" -> "https://mediaexpert.pl" + offerUrl;
             case "Morele" -> "https://morele.net" + offerUrl;
