@@ -27,14 +27,16 @@ public class PricesListView extends AbstractTableView<Long, ProductBasedOnDateAt
     private final Product product;
     private final ProductService productService;
     private final UserRepository userRepository;
+    private final AbstractProductView parentView;
     private BervanButton decreasePrice10times;
     private BervanButton decreasePrice5times;
     private BervanButton decreasePrice2times;
 
-    public PricesListView(BaseService<Long, ProductBasedOnDateAttributes> service, ProductService productService, ShoppingLayout pageLayout, Product product, UserRepository userRepository) {
+    public PricesListView(AbstractProductView parentView, BaseService<Long, ProductBasedOnDateAttributes> service, ProductService productService, ShoppingLayout pageLayout, Product product, UserRepository userRepository) {
         super(pageLayout, service, BervanLoggerImpl.init(log), ProductBasedOnDateAttributes.class);
         this.product = product;
         this.productService = productService;
+        this.parentView = parentView;
         this.userRepository = userRepository;
         renderCommonComponents();
 
@@ -144,6 +146,6 @@ public class PricesListView extends AbstractTableView<Long, ProductBasedOnDateAt
 
     private void updateStatsOfProduct() {
         productService.updateStats(product);
-        UI.getCurrent().getPage().executeJs("location.reload()");
+        parentView.reload();
     }
 }

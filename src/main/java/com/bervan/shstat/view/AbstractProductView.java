@@ -38,6 +38,8 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
     private final BervanLogger log;
     private final ShoppingLayout shoppingLayout = new ShoppingLayout(ROUTE_NAME);
     private ProductDTO productDTO;
+    private BeforeEvent beforeEvent;
+    private Long productId;
 
 
     public AbstractProductView(ProductViewService productViewService, ProductSearchService productSearchService, UserRepository userRepository, ProductService productService, ProductRepository productRepository, ProductBasedOnDateAttributesService productDateAttService, BervanLogger log) {
@@ -46,7 +48,6 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
         this.productService = productService;
         this.productRepository = productRepository;
         this.productDateAttService = productDateAttService;
-        this.add(shoppingLayout);
         this.productViewService = productViewService;
         this.productSearchService = productSearchService;
         this.log = log;
@@ -54,6 +55,14 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
 
     @Override
     public void setParameter(BeforeEvent beforeEvent, Long productId) {
+        this.beforeEvent = beforeEvent;
+        this.productId = productId;
+        buildView();
+    }
+
+    private void buildView() {
+        this.add(shoppingLayout);
+
         String backLink = buildBackLink(beforeEvent);
 
         SearchApiResponse byId = productViewService.findById(productId, Pageable.ofSize(1));
@@ -128,7 +137,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
 
         add(productsLayout);
 
-        add(new Hr(), new PricesListView(productDateAttService, productService, shoppingLayout, productRepository.findById(productId).get(), userRepository));
+        add(new Hr(), new PricesListView(this, productDateAttService, productService, shoppingLayout, productRepository.findById(productId).get(), userRepository));
     }
 
     private String buildBackLink(BeforeEvent beforeEvent) {
@@ -150,5 +159,10 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
                 .collect(Collectors.joining("&"));
 
         return source + "?" + paramString;
+    }
+
+    public void reload() {
+        removeAll();
+        buildView();
     }
 }
