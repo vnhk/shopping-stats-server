@@ -8,7 +8,6 @@ import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.response.AddProductApiResponse;
 import com.bervan.shstat.response.ApiResponse;
 import com.google.common.collect.Lists;
-import com.vaadin.flow.component.UI;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -224,7 +223,6 @@ public class ProductService {
     public void updateStats(Product product) {
         Optional<ProductStats> byProductId = productStatsService.findByProductId(product.getId());
         productStatsService.updateStatsAndSave(byProductId, product.getId());
-        UI.getCurrent().getPage().executeJs("location.reload()");
     }
 
     private void loadCommonUserIfNotLoaded() {
