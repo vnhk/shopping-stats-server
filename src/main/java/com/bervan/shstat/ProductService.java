@@ -218,6 +218,7 @@ public class ProductService {
                 if (e.isSendErrorMessage() && e.getMessage() != null && !e.getMessage().isEmpty()) {
                     messages.add(e.getMessage());
                 }
+                log.error("MapperException: ", e);
             }
         }
         String delimiter = "___";
