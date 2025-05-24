@@ -218,7 +218,6 @@ public class ProductService {
                 if (e.isSendErrorMessage() && e.getMessage() != null && !e.getMessage().isEmpty()) {
                     messages.add(e.getMessage());
                 }
-                log.error("MapperException: ", e);
             }
         }
         String delimiter = "___";
@@ -235,7 +234,7 @@ public class ProductService {
             scrapAuditService.updateSavedProductsCount(split[0], split[1], split[2], list.size());
         });
 
-        log.info("Processing ended for: {} products", products.size());
+        log.info("Processing ended for: {} products", allMapped.size());
 
         return new AddProductApiResponse(messages, allMapped.size(), products.size());
     }
