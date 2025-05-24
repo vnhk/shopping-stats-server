@@ -23,9 +23,13 @@ public class ScrapAudit extends BervanBaseEntity<Long> implements PersistableTab
     @VaadinTableColumn(displayName = "Product", internalName = "product", inSaveForm = false, inEditForm = false)
     private String productDetails;
 
+    @VaadinTableColumn(displayName = "Saved", internalName = "saved", inSaveForm = false, inEditForm = false)
+    private long savedProducts = 0;
+
     @ManyToOne
     @JoinColumn(name = "product_config_id")
     private ProductConfig productConfig;
+
 
     private Boolean deleted = false;
 
@@ -95,5 +99,13 @@ public class ScrapAudit extends BervanBaseEntity<Long> implements PersistableTab
 
     public void setProductDetails(String productDetails) {
         this.productDetails = productDetails;
+    }
+
+    public long getSavedProducts() {
+        return savedProducts;
+    }
+
+    public synchronized void addToSavedProducts(int toBeAdded) {
+        savedProducts += toBeAdded;
     }
 }

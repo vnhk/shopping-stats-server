@@ -23,6 +23,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -37,6 +38,7 @@ public class ProductService {
     @PersistenceContext
     private EntityManager entityManager;
     private User commonUser;
+    private final ScrapAuditService scrapAuditService;
 
     static {
         try {
@@ -91,12 +93,13 @@ public class ProductService {
 
     public ProductService(ProductRepository productRepository,
                           ActualProductService actualProductService,
-                          ProductStatsService productStatsService, UserRepository userRepository, ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository) {
+                          ProductStatsService productStatsService, UserRepository userRepository, ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository, ScrapAuditService scrapAuditService) {
         this.productRepository = productRepository;
         this.actualProductService = actualProductService;
         this.productStatsService = productStatsService;
         this.userRepository = userRepository;
         this.productBasedOnDateAttributesRepository = productBasedOnDateAttributesRepository;
+        this.scrapAuditService = scrapAuditService;
     }
 
     public void addProductsByPartitions(List<Map<String, Object>> products) {
@@ -216,6 +219,20 @@ public class ProductService {
                 }
             }
         }
+        String delimiter = "___";
+
+        // group result by "shop", "productListName", "productListUrl"
+        Map<String, List<Product>> groupedProducts = allMapped.stream()
+                .collect(Collectors.groupingBy(p -> String.join(delimiter,
+                        Optional.ofNullable(p.getShop()).orElse(""),
+                        Optional.ofNullable(p.getProductListName()).orElse(""),
+                        Optional.ofNullable(p.getProductListUrl()).orElse(""))));
+
+        groupedProducts.forEach((key, list) -> {
+            String[] split = key.split(delimiter);
+            scrapAuditService.updateSavedProductsCount(split[0], split[1], split[2], list.size());
+        });
+
 
         return new AddProductApiResponse(messages, allMapped.size(), products.size());
     }
