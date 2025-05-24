@@ -23,6 +23,7 @@ public class ScrapAuditService extends BaseService<Long, ScrapAudit> {
         if (scrapAudit.isPresent()) {
             scrapAudit.get().addToSavedProducts(size);
             repository.save(scrapAudit.get());
+            log.info("ScrapAudit - processed products - updated");
         } else {
             log.error("ScrapAudit not found for the given date and product config! {} | {} | {}", shop, productListName, productListUrl);
         }
