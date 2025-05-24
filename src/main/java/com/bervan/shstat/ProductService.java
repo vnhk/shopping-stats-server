@@ -116,6 +116,7 @@ public class ProductService {
     public ApiResponse addProducts(List<Map<String, Object>> products) {
         List<Product> allMapped = new LinkedList<>();
         List<String> messages = new LinkedList<>();
+        log.info("Processing started for: {} products", products.size());
         for (Map<String, Object> productMap : products) {
             try {
                 Product product = mapProductCommonAttr(productMap);
@@ -233,6 +234,7 @@ public class ProductService {
             scrapAuditService.updateSavedProductsCount(split[0], split[1], split[2], list.size());
         });
 
+        log.info("Processing ended for: {} products", products.size());
 
         return new AddProductApiResponse(messages, allMapped.size(), products.size());
     }
