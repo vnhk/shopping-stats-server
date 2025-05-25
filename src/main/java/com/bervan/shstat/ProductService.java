@@ -299,7 +299,12 @@ public class ProductService {
         ProductBasedOnDateAttributes res = (ProductBasedOnDateAttributes) wrapper.getWrappedInstance();
 
         if (product.getId() != null &&
-                productBasedOnDateAttributesRepository.existsByProductAndFormattedScrapDate(product, res.getFormattedScrapDate())) {
+                productBasedOnDateAttributesRepository.existsByProductIdAndFormattedScrapDate(product.getId(), res.getFormattedScrapDate())) {
+            log.warn("Product {} ({}) was already mapped for given date!\nShop:{}\nProductListName:{}\nScrapDate:{}",
+                    product.getName(),
+                    product.getId(),
+                    product.getShop(), product.getProductListName(),
+                    res.getFormattedScrapDate());
             throw new MapperException(new StringFormattedMessage("Product %s was already mapped for given date!", product.getName()), false);
         }
 

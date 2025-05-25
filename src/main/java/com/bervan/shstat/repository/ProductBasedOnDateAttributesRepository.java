@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductBasedOnDateAttributesRepository extends BaseRepository<ProductBasedOnDateAttributes, Long> {
-    Boolean existsByProductAndFormattedScrapDate(Product product, String formattedScrapDate);
+    Boolean existsByProductIdAndFormattedScrapDate(Long productId, String formattedScrapDate);
 }
