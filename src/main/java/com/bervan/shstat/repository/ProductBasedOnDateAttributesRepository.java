@@ -5,9 +5,7 @@ import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
-
 @Repository
 public interface ProductBasedOnDateAttributesRepository extends BaseRepository<ProductBasedOnDateAttributes, Long> {
-    Boolean existsByProductAndScrapDate(Product product, Date scrapDate);
+    Boolean existsByProductAndFormattedScrapDate(Product product, String formattedScrapDate);
 }

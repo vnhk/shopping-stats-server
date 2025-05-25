@@ -198,11 +198,11 @@ public class ProductService {
                 loadCommonUserIfNotLoaded();
                 product.addOwner(commonUser);
                 if (product.getName().length() > 300) {
-                    System.err.println("Product name is to long: {}" + product.getName());
+                    log.error("Product name is to long: {}" + product.getName());
                     continue;
                 }
                 if (product.getName().length() < 3) {
-                    System.err.println("Product name is to short: {}" + product.getName());
+                    log.error("Product name is to short: {}" + product.getName());
                     continue;
                 }
 
@@ -299,7 +299,7 @@ public class ProductService {
         ProductBasedOnDateAttributes res = (ProductBasedOnDateAttributes) wrapper.getWrappedInstance();
 
         if (product.getId() != null &&
-                productBasedOnDateAttributesRepository.existsByProductAndScrapDate(product, res.getScrapDate())) {
+                productBasedOnDateAttributesRepository.existsByProductAndFormattedScrapDate(product, res.getFormattedScrapDate())) {
             throw new MapperException(new StringFormattedMessage("Product %s was already mapped for given date!", product.getName()), false);
         }
 
