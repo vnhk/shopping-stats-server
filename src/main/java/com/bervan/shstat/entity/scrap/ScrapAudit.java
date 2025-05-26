@@ -16,7 +16,7 @@ public class ScrapAudit extends BervanBaseEntity<Long> implements PersistableTab
     private Long id;
 
     //We want to do processing once per day, but if product have to be scrapped more than 1 time just add new product config!
-    @VaadinTableColumn(displayName = "Date", internalName = "date")
+    @VaadinTableColumn(displayName = "Date", internalName = "date", inEditForm = false, inSaveForm = false)
     private LocalDate date;
 
     @Transient
