@@ -20,7 +20,7 @@ public class ScrapAudit extends BervanBaseEntity<Long> implements PersistableTab
     private LocalDate date;
 
     @Transient
-    @VaadinTableColumn(displayName = "Product", internalName = "product", inSaveForm = false, inEditForm = false)
+    @VaadinTableColumn(displayName = "Product", internalName = "product", inSaveForm = false, inEditForm = false, sortable = false)
     private String productDetails;
 
     @VaadinTableColumn(displayName = "Saved", internalName = "savedProducts", inSaveForm = false, inEditForm = false)
