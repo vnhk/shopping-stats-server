@@ -11,6 +11,7 @@ import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
 import com.bervan.shstat.tokens.ProductSimilarOffersService;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -23,6 +24,7 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +80,6 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
         VerticalLayout productCard = new VerticalLayout();
         productCard.setWidth("1200px");
         setProductCardStyle(productCard);
-
 
         Anchor backButton = new Anchor(backLink, "← Back to products");
         productCard.add(backButton);
@@ -145,13 +146,88 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
         add(new Hr());
 
         List<Long> similarOffers = productSimilarOffersService.findSimilarOffers(productDTO.getId(), 10);
-        add(new H4("Similar offers:"));
 
+        List<ProductDTO> similarOffersProducts = new ArrayList<>();
         for (Long similarOffer : similarOffers) {
             SearchApiResponse res = productViewService.findById(similarOffer, Pageable.ofSize(1));
             ProductDTO next = (ProductDTO) res.getItems().iterator().next();
-            add(new HorizontalLayout(new H4(next.getName())));
+            similarOffersProducts.add(next);
         }
+
+        add(createScrollableSection("Similar offers:", createScrollingLayout(similarOffersProducts)));
+    }
+
+    private VerticalLayout createScrollableSection(String title, HorizontalLayout contentLayout) {
+        VerticalLayout section = new VerticalLayout();
+        section.add(new H3(title));
+        section.setWidth("95vw");
+
+        HorizontalLayout container = new HorizontalLayout();
+        container.setWidthFull();
+        container.setAlignItems(Alignment.CENTER);
+
+        Button leftArrow = new Button("<");
+        leftArrow.addClassName("option-button");
+        leftArrow.addClickListener(event -> contentLayout.getElement().executeJs("this.scrollBy({left: -345, behavior: 'smooth'})"));
+
+        Button rightArrow = new Button(">");
+        rightArrow.addClassName("option-button");
+        rightArrow.addClickListener(event -> contentLayout.getElement().executeJs("this.scrollBy({left: 345, behavior: 'smooth'})"));
+
+        container.add(leftArrow, contentLayout, rightArrow);
+        container.setFlexGrow(1, contentLayout);
+
+        section.add(container);
+        return section;
+    }
+
+    private HorizontalLayout createScrollingLayout(List<ProductDTO> products) {
+        HorizontalLayout scrollingLayout = new HorizontalLayout();
+        scrollingLayout.getStyle()
+                .set("overflow-x", "hidden")
+                .set("white-space", "nowrap")
+                .set("padding", "10px");
+
+        for (ProductDTO product : products) {
+            VerticalLayout tile = getTile();
+            setProductCardStyle(tile);
+
+            Image image = getProductImage(product);
+
+            image.setWidth("300px");
+            image.setHeight("300px");
+            image.getStyle().set("object-fit", "contain");
+
+            String link = "todo";
+            Anchor nameText = new Anchor(link, product.getName());
+
+            List<PriceDTO> prices = product.getPrices();
+            Text priceText = new Text("No price");
+            if (prices != null && !prices.isEmpty()) {
+                priceText = getLatestPriceText(prices, product);
+            }
+
+            tile.add(image, nameText, priceText);
+            scrollingLayout.add(tile);
+        }
+
+        return scrollingLayout;
+    }
+
+    private VerticalLayout getTile() {
+        VerticalLayout tile = new VerticalLayout();
+        tile.addClassName("offer-tile");
+        tile.getStyle()
+                .set("margin", "10px")
+                .set("cursor", "pointer")
+                .set("display", "inline-block")
+                .set("min-width", "320px")
+                .set("width", "320px")
+                .set("height", "840px")
+                .set("border-radius", "8px")
+                .set("overflow", "hidden")
+                .set("box-shadow", "0px 4px 10px rgba(0, 0, 0, 0.1)");
+        return tile;
     }
 
     private String buildBackLink(BeforeEvent beforeEvent) {
