@@ -7,6 +7,7 @@ import com.bervan.shstat.repository.ProductBasedOnDateAttributesRepository;
 import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.response.AddProductApiResponse;
 import com.bervan.shstat.response.ApiResponse;
+import com.bervan.shstat.tokens.ProductSimilarOffersService;
 import com.google.common.collect.Lists;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -31,6 +32,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ActualProductService actualProductService;
     private final ProductStatsService productStatsService;
+    private final ProductSimilarOffersService productSimilarOffersService;
     private final UserRepository userRepository;
     private final ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository;
     public static final List<AttrFieldMappingVal<Field>> commonProductProperties;
@@ -93,10 +95,14 @@ public class ProductService {
 
     public ProductService(ProductRepository productRepository,
                           ActualProductService actualProductService,
-                          ProductStatsService productStatsService, UserRepository userRepository, ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository, ScrapAuditService scrapAuditService) {
+                          ProductStatsService productStatsService, ProductSimilarOffersService productSimilarOffersService,
+                          UserRepository userRepository,
+                          ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository,
+                          ScrapAuditService scrapAuditService) {
         this.productRepository = productRepository;
         this.actualProductService = actualProductService;
         this.productStatsService = productStatsService;
+        this.productSimilarOffersService = productSimilarOffersService;
         this.userRepository = userRepository;
         this.productBasedOnDateAttributesRepository = productBasedOnDateAttributesRepository;
         this.scrapAuditService = scrapAuditService;
@@ -207,6 +213,7 @@ public class ProductService {
                 }
 
                 product = productRepository.save(product);
+                productSimilarOffersService.createAndUpdateTokens(product);
 
                 if (productDateAttributeAdded) {
                     actualProductService.updateActualProducts(perDateAttributes.getScrapDate(), product, commonUser);

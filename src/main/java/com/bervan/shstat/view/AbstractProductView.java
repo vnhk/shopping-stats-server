@@ -9,6 +9,7 @@ import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
+import com.bervan.shstat.tokens.ProductSimilarOffersService;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -33,6 +34,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
     private final ProductSearchService productSearchService;
     private final UserRepository userRepository;
     private final ProductService productService;
+    private final ProductSimilarOffersService productSimilarOffersService;
     private final ProductRepository productRepository;
     private final ProductBasedOnDateAttributesService productDateAttService;
     private final BervanLogger log;
@@ -42,10 +44,12 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
     private Long productId;
 
 
-    public AbstractProductView(ProductViewService productViewService, ProductSearchService productSearchService, UserRepository userRepository, ProductService productService, ProductRepository productRepository, ProductBasedOnDateAttributesService productDateAttService, BervanLogger log) {
+    public AbstractProductView(ProductViewService productViewService, ProductSearchService productSearchService,
+                               UserRepository userRepository, ProductService productService, ProductSimilarOffersService productSimilarOffersService, ProductRepository productRepository, ProductBasedOnDateAttributesService productDateAttService, BervanLogger log) {
         super();
         this.userRepository = userRepository;
         this.productService = productService;
+        this.productSimilarOffersService = productSimilarOffersService;
         this.productRepository = productRepository;
         this.productDateAttService = productDateAttService;
         this.productViewService = productViewService;
@@ -138,6 +142,16 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
         add(productsLayout);
 
         add(new Hr(), new PricesListView(this, productDateAttService, productService, shoppingLayout, productRepository.findById(productId).get(), userRepository));
+        add(new Hr());
+
+        List<Long> similarOffers = productSimilarOffersService.findSimilarOffers(productDTO.getId(), 10);
+        add(new H4("Similar offers:"));
+
+        for (Long similarOffer : similarOffers) {
+            SearchApiResponse res = productViewService.findById(similarOffer, Pageable.ofSize(1));
+            ProductDTO next = (ProductDTO) res.getItems().iterator().next();
+            add(new HorizontalLayout(new H4(next.getName())));
+        }
     }
 
     private String buildBackLink(BeforeEvent beforeEvent) {
