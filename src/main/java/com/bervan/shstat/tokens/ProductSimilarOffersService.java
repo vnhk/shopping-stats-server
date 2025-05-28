@@ -8,10 +8,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,13 +66,15 @@ public class ProductSimilarOffersService {
             commonUser = userRepository.findByUsername("COMMON_USER").get();
         }
 
+        List<ProductTokens> toBeSaved = new ArrayList<>();
+
         for (String categoryToken : categoryTokens) {
             ProductTokens productTokensEntityNew = new ProductTokens();
             productTokensEntityNew.setValue(categoryToken);
             productTokensEntityNew.setFactor(3);
             productTokensEntityNew.setProductId(product.getId());
             productTokensEntityNew.addOwner(commonUser);
-            productTokensRepository.save(productTokensEntityNew);
+            toBeSaved.add(productTokensEntityNew);
         }
 
         for (String nameToken : nameTokens) {
@@ -84,7 +83,7 @@ public class ProductSimilarOffersService {
             productTokensEntityNew.setFactor(2);
             productTokensEntityNew.setProductId(product.getId());
             productTokensEntityNew.addOwner(commonUser);
-            productTokensRepository.save(productTokensEntityNew);
+            toBeSaved.add(productTokensEntityNew);
         }
 
         for (String attrNameToken : attrNameTokens) {
@@ -93,8 +92,10 @@ public class ProductSimilarOffersService {
             productTokensEntityNew.setFactor(1);
             productTokensEntityNew.setProductId(product.getId());
             productTokensEntityNew.addOwner(commonUser);
-            productTokensRepository.save(productTokensEntityNew);
+            toBeSaved.add(productTokensEntityNew);
         }
+
+        productTokensRepository.saveAll(toBeSaved);
     }
 
 
