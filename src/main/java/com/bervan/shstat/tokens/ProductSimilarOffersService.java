@@ -59,49 +59,58 @@ public class ProductSimilarOffersService {
             }
         }
 
-        productTokensRepository.deleteOwnersByProductId(product.getId());
-        productTokensRepository.deleteByProductId(product.getId());
-
         if (commonUser == null) {
             commonUser = userRepository.findByUsername("COMMON_USER").get();
         }
 
-        List<ProductTokens> toBeSaved = new ArrayList<>();
+        Set<ProductTokens> existingTokens = productTokensRepository.findByProductId(product.getId());
 
-        for (String categoryToken : categoryTokens) {
-            ProductTokens productTokensEntityNew = new ProductTokens();
-            productTokensEntityNew.setValue(categoryToken);
-            productTokensEntityNew.setFactor(3);
-            productTokensEntityNew.setProductId(product.getId());
-            productTokensEntityNew.addOwner(commonUser);
-            toBeSaved.add(productTokensEntityNew);
+        Map<String, ProductTokens> existingTokenMap = existingTokens.stream()
+            .collect(Collectors.toMap(ProductTokens::getValue, t -> t));
+
+        List<ProductTokens> tokensToSave = new ArrayList<>();
+
+        Map<String, Integer> newTokensWithFactors = new HashMap<>();
+        categoryTokens.forEach(token -> newTokensWithFactors.put(token, 3));
+        nameTokens.forEach(token -> newTokensWithFactors.put(token, 2));
+        attrNameTokens.forEach(token -> newTokensWithFactors.put(token, 1));
+
+        for (Map.Entry<String, Integer> entry : newTokensWithFactors.entrySet()) {
+            String tokenValue = entry.getKey();
+            int newFactor = entry.getValue();
+            ProductTokens existing = existingTokenMap.remove(tokenValue);
+
+            if (existing == null) {
+                ProductTokens token = new ProductTokens();
+                token.setValue(tokenValue);
+                token.setFactor(newFactor);
+                token.setProductId(product.getId());
+                token.addOwner(commonUser);
+                tokensToSave.add(token);
+            } else if (existing.getFactor() != newFactor) {
+                existing.setFactor(newFactor);
+                tokensToSave.add(existing);
+            }
         }
 
-        for (String nameToken : nameTokens) {
-            ProductTokens productTokensEntityNew = new ProductTokens();
-            productTokensEntityNew.setValue(nameToken);
-            productTokensEntityNew.setFactor(2);
-            productTokensEntityNew.setProductId(product.getId());
-            productTokensEntityNew.addOwner(commonUser);
-            toBeSaved.add(productTokensEntityNew);
+        // Remaining tokens in map are no longer needed
+        List<ProductTokens> tokensToDelete = new ArrayList<>(existingTokenMap.values());
+
+        if (!tokensToDelete.isEmpty()) {
+            List<Long> tokensId = tokensToDelete.stream().map(ProductTokens::getId).collect(Collectors.toList());
+            productTokensRepository.deleteOwnersTokens(tokensId);
+            productTokensRepository.deleteTokens(tokensId);
         }
 
-        for (String attrNameToken : attrNameTokens) {
-            ProductTokens productTokensEntityNew = new ProductTokens();
-            productTokensEntityNew.setValue(attrNameToken);
-            productTokensEntityNew.setFactor(1);
-            productTokensEntityNew.setProductId(product.getId());
-            productTokensEntityNew.addOwner(commonUser);
-            toBeSaved.add(productTokensEntityNew);
+        if (!tokensToSave.isEmpty()) {
+            productTokensRepository.saveAll(tokensToSave);
         }
-
-        productTokensRepository.saveAll(toBeSaved);
     }
 
 
     public List<Long> findSimilarOffers(Long productId, int amountOfOffers) {
-        Set<String> tokens = productTokensRepository.findByProductId(productId);
-        List<Object[]> byTokens = productTokensRepository.findByTokens(tokens, Pageable.ofSize(amountOfOffers));
+        Set<String> tokens = productTokensRepository.findValuesByProductId(productId);
+        List<Object[]> byTokens = productTokensRepository.findByTokens(tokens, Pageable.ofSize(amountOfOffers), productId);
 
         return byTokens.stream().map(e -> ((Long) e[0])).collect(Collectors.toList());
     }

@@ -19,7 +19,17 @@ public interface ProductTokensRepository extends BaseRepository<ProductTokens, L
                 WHERE
                     pt.productId = :id
             """)
-    Set<String> findByProductId(Long id);
+    Set<String> findValuesByProductId(Long id);
+
+    @Query("""
+                SELECT
+                    pt.value
+                FROM
+                    ProductTokens pt
+                WHERE
+                    pt.productId = :id
+            """)
+    Set<ProductTokens> findByProductId(Long id);
 
     @Query("""
                 SELECT
@@ -30,26 +40,26 @@ public interface ProductTokensRepository extends BaseRepository<ProductTokens, L
                     ProductTokens pt
                 WHERE
                     pt.value IN :tokens
+                AND pt.productId != :productId
                 GROUP BY
                     pt.productId
                 ORDER BY
                     score DESC, matchedTokens DESC
             """)
-    List<Object[]> findByTokens(@Param("tokens") Set<String> tokens, Pageable pageable);
+    List<Object[]> findByTokens(@Param("tokens") Set<String> tokens, Pageable pageable, Long productId);
 
     @Modifying
     @Transactional
     @Query(value = """
             DELETE FROM product_tokens_owners
             WHERE product_tokens_id IN (
-                SELECT id from product_tokens WHERE product_id = :productId
+                :tokensToDelete
             )
             """, nativeQuery = true)
-    void deleteOwnersByProductId(Long productId);
+    void deleteOwnersTokens(List<Long> tokensToDelete);
 
     @Modifying
     @Transactional
-    @Query("DELETE FROM ProductTokens p WHERE p.productId = :productId")
-    void deleteByProductId(Long productId);
-
+    @Query("DELETE FROM ProductTokens p WHERE p.id in :tokensToDelete")
+    void deleteTokens(List<Long> tokensToDelete);
 }
