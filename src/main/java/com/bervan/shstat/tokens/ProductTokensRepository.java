@@ -23,7 +23,7 @@ public interface ProductTokensRepository extends BaseRepository<ProductTokens, L
 
     @Query("""
                 SELECT
-                    pt.value
+                    pt
                 FROM
                     ProductTokens pt
                 WHERE
