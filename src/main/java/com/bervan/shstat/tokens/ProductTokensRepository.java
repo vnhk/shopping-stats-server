@@ -52,9 +52,7 @@ public interface ProductTokensRepository extends BaseRepository<ProductTokens, L
     @Transactional
     @Query(value = """
             DELETE FROM product_tokens_owners
-            WHERE product_tokens_id IN (
-                :tokensToDelete
-            )
+            WHERE product_tokens_id IN :tokensToDelete
             """, nativeQuery = true)
     void deleteOwnersTokens(List<Long> tokensToDelete);
 
