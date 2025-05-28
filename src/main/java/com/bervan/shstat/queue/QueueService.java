@@ -71,6 +71,9 @@ public class QueueService {
 
         } catch (Exception e) {
             logger.error(e);
+            if (!ackEarly) {
+                channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+            }
         }
     }
 
