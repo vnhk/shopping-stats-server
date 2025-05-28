@@ -265,9 +265,11 @@ public class ProductService {
                 sum = sum.add(productBasedOnDateAttribute.getPrice());
             }
 
-            if (perDateAttributes.getPrice().compareTo(BigDecimal.valueOf(2).multiply(sum.divide(BigDecimal.valueOf(product.getProductBasedOnDateAttributes().size()),
-                    RoundingMode.CEILING))) >= 0) {
-                //if product has at least 10 prices and new price is much bigger than previous, we skip adding the price
+            if (perDateAttributes.getPrice().compareTo(BigDecimal.valueOf(2)
+                    .multiply(sum.divide(BigDecimal.valueOf(product.getProductBasedOnDateAttributes().size()),
+                            RoundingMode.CEILING))) >= 0
+                    && perDateAttributes.getPrice().subtract(BigDecimal.valueOf(2000)).compareTo(BigDecimal.ONE) >= 0) {
+                //if product has at least 10 prices and new price is much bigger than previous, and newPrice - 2000 >= 1 - we skip adding the price
                 log.warn("ProductBasedOnDateAttribute skipped because the new price is much bigger than average: {} -> {}",
                         product.getName(), perDateAttributes.getPrice());
                 return false;
