@@ -207,7 +207,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
                 priceText = getLatestPriceText(prices, product);
             }
 
-            tile.add(image, nameText, priceText);
+            tile.add(image, new Hr(), nameText, priceText);
             scrollingLayout.add(tile);
         }
 
@@ -222,8 +222,8 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
                 .set("cursor", "pointer")
                 .set("display", "inline-block")
                 .set("min-width", "320px")
-                .set("width", "320px")
-                .set("height", "840px")
+                .set("width", "400px")
+                .set("height", "540px")
                 .set("border-radius", "8px")
                 .set("overflow", "hidden")
                 .set("box-shadow", "0px 4px 10px rgba(0, 0, 0, 0.1)");
