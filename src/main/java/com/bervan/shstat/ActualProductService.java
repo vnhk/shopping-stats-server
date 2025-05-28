@@ -5,6 +5,7 @@ import com.bervan.shstat.entity.ActualProduct;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.repository.ActualProductsRepository;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -12,6 +13,7 @@ import java.util.Optional;
 
 import static com.bervan.shstat.ProductService.productPerDateAttributeProperties;
 
+@Slf4j
 @Service
 public class ActualProductService {
     private static final Integer currentDateOffsetInDays = 2; //is ok, good offers will not last forever!
@@ -44,9 +46,12 @@ public class ActualProductService {
         updateActualProducts();
     }
 
-    @Transactional
     public void updateActualProducts() {
-        actualProductsRepository.deleteRelatedProductOwners(currentDateOffsetInDays);
-        actualProductsRepository.deleteNotActualProducts(currentDateOffsetInDays);
+        try {
+            actualProductsRepository.deleteRelatedProductOwners(currentDateOffsetInDays);
+            actualProductsRepository.deleteNotActualProducts(currentDateOffsetInDays);
+        } catch (Exception e) {
+            log.error("Failed to updateActualProducts!", e);
+        }
     }
 }

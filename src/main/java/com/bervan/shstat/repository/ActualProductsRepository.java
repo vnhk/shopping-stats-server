@@ -18,7 +18,7 @@ public interface ActualProductsRepository extends BaseRepository<ActualProduct, 
             DELETE FROM actual_product
             WHERE scrap_date < DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL :offset DAY)
             OR scrap_date > CURRENT_TIMESTAMP()
-                   """, nativeQuery = true)
+    """, nativeQuery = true)
     @Transactional
     void deleteNotActualProducts(Integer offset);
 
