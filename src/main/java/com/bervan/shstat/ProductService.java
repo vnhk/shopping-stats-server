@@ -261,8 +261,6 @@ public class ProductService {
             BigDecimal threshold = previousPrice.multiply(BigDecimal.valueOf(0.05)); // 5% threshold
 
             if (difference.compareTo(threshold) < 0) {
-                log.info("Skipping price update for product '{}' due to insignificant change (prev: {}, current: {})",
-                        product.getName(), previousPrice, currentPrice);
                 return false;
             }
         }
