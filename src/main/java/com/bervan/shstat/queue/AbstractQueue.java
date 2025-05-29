@@ -5,7 +5,6 @@ import com.bervan.common.service.ApiKeyService;
 import com.bervan.core.model.BervanLogger;
 
 import java.io.Serializable;
-import java.lang.reflect.ParameterizedType;
 import java.util.Date;
 
 public abstract class AbstractQueue<T extends Serializable> {
@@ -24,7 +23,7 @@ public abstract class AbstractQueue<T extends Serializable> {
         process(param);
         Date endDate = new Date();
         long diffTimeInSeconds = diffTimeInSeconds(startDate, endDate);
-        log.info("Task duration: " + diffTimeInSeconds + " (s)");
+        log.info("[" + supports + "] Task duration: " + diffTimeInSeconds + " (s)");
     }
 
     protected abstract void process(Serializable param);
