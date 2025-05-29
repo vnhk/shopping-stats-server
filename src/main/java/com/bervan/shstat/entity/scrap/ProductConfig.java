@@ -17,6 +17,10 @@ public class ProductConfig extends BervanBaseEntity<Long> implements Persistable
     private String name;
     @VaadinTableColumn(displayName = "Url", internalName = "url")
     private String url;
+    @VaadinTableColumn(displayName = "Min Price", internalName = "minPrice")
+    private Integer minPrice;
+    @VaadinTableColumn(displayName = "Max Price", internalName = "maxPrice")
+    private Integer maxPrice;
     @VaadinTableColumn(displayName = "Scrap Time", internalName = "scrapTime")
     private LocalTime scrapTime;
     @ElementCollection(fetch = FetchType.EAGER)
@@ -100,5 +104,21 @@ public class ProductConfig extends BervanBaseEntity<Long> implements Persistable
 
     public void setScrapTime(LocalTime scrapTime) {
         this.scrapTime = scrapTime;
+    }
+
+    public Integer getMinPrice() {
+        return minPrice;
+    }
+
+    public void setMinPrice(Integer minPrice) {
+        this.minPrice = minPrice;
+    }
+
+    public Integer getMaxPrice() {
+        return maxPrice;
+    }
+
+    public void setMaxPrice(Integer maxPrice) {
+        this.maxPrice = maxPrice;
     }
 }

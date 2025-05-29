@@ -35,7 +35,7 @@ public abstract class AbstractProductsView extends BaseProductsPage implements H
         this.productViewService = productViewService;
         this.productSearchService = productSearchService;
         this.log = log;
-        shopDropdown.setItems(Arrays.asList("Media Expert", "RTV Euro AGD", "Morele"));
+        shopDropdown.setItems(Arrays.asList("Media Expert", "RTV Euro AGD", "Morele", "Centrum Rowerowe"));
 
         Set<String> categories = this.productSearchService.findCategories();
         categoryDropdown.setItems(categories);

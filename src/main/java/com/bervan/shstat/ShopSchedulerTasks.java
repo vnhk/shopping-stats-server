@@ -53,6 +53,8 @@ public class ShopSchedulerTasks {
                 scrapTime.setHours(configToProcess.getScrapTime().getHour());
                 configProduct.setScrapTime(scrapTime);
                 configProduct.setUrl(configToProcess.getUrl());
+                configProduct.setMinPrice(configToProcess.getMinPrice());
+                configProduct.setMaxPrice(configToProcess.getMaxPrice());
                 configProduct.setCategories(new HashSet<>(configToProcess.getCategories()));
                 ArrayList<ConfigProduct> products = new ArrayList<>();
                 products.add(configProduct);

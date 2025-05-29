@@ -7,6 +7,8 @@ public class ConfigProduct implements Serializable {
     private String name;
     private Set<String> categories;
     private String url;
+    private Integer minPrice;
+    private Integer maxPrice;
     private ScrapTime scrapTime;
 
     public Set<String> getCategories() {
@@ -39,5 +41,21 @@ public class ConfigProduct implements Serializable {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public Integer getMaxPrice() {
+        return maxPrice;
+    }
+
+    public void setMaxPrice(Integer maxPrice) {
+        this.maxPrice = maxPrice;
+    }
+
+    public Integer getMinPrice() {
+        return minPrice;
+    }
+
+    public void setMinPrice(Integer minPrice) {
+        this.minPrice = minPrice;
     }
 }

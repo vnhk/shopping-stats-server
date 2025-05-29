@@ -27,7 +27,7 @@ public interface ProductConfigRepository extends BaseRepository<ProductConfig, L
                       SELECT 1 FROM ScrapAudit sa
                       WHERE sa.productConfig = p
                         AND sa.date = :now
-                        AND (p.deleted IS FALSE OR p.deleted IS NULL)
+                        AND (sa.deleted IS FALSE OR sa.deleted IS NULL)
                   )
             """)
     Set<ProductConfig> findAllActiveForHour(@Param("scrapTime") LocalTime scrapTime, @Param("now") LocalDate now);
