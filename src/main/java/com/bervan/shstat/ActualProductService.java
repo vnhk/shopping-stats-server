@@ -6,6 +6,7 @@ import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.repository.ActualProductsRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -42,10 +43,9 @@ public class ActualProductService {
             newAP.setScrapDate(scrapDate);
             actualProductsRepository.save(newAP);
         }
-
-        updateActualProducts();
     }
 
+    @Scheduled(cron = "0 0 * * * *")
     public void updateActualProducts() {
         try {
             actualProductsRepository.deleteRelatedProductOwners(currentDateOffsetInDays);

@@ -127,27 +127,15 @@ public class ProductService {
             try {
                 Product product = mapProductCommonAttr(productMap);
                 ProductBasedOnDateAttributes perDateAttributes = mapProductPerDateAttributes(productMap, product);
-
-                Optional<ProductBasedOnDateAttributes> lastByDate = product.getProductBasedOnDateAttributes()
-                        .stream()
-                        .max(Comparator.comparing(ProductBasedOnDateAttributes::getScrapDate));
-
-                boolean productDateAttributeAdded = false;
-                if (lastByDate.isPresent()) {
-                    if (!Objects.equals(perDateAttributes.getPrice(), lastByDate.get().getPrice())) {
-                        //dont add the same price
-                        productDateAttributeAdded = addProductDateAttribute(product, perDateAttributes);
-                    }
-                } else {
-                    productDateAttributeAdded = addProductDateAttribute(product, perDateAttributes);
-                }
+                
+                boolean productDateAttributeAdded = addProductDateAttribute(product, perDateAttributes);
 
                 Set<ProductAttribute> resAttributes = new HashSet<>();
                 for (Map.Entry<String, Object> attrs : productMap.entrySet()) {
                     String key = attrs.getKey();
                     Object value = attrs.getValue();
                     if (value instanceof Date) {
-                        System.err.println("Not implemented for: " + attrs);
+                        log.warn("Not implemented for: " + attrs);
                         continue;
                     } else if (value instanceof String) {
                         Optional<ProductListTextAttribute> attrOpt = findProductAttr(product, key, ProductListTextAttribute.class);
@@ -158,13 +146,13 @@ public class ProductService {
                             attrOpt.get().getValue().add((String) value);
                         }
                     } else if (value instanceof LocalDate) {
-                        System.err.println("Not implemented for: " + attrs);
+                        log.warn("Not implemented for: " + attrs);
                         continue;
                     } else if (value instanceof LocalDateTime) {
-                        System.err.println("Not implemented for: " + attrs);
+                        log.warn("Not implemented for: " + attrs);
                         continue;
                     } else if (value instanceof Number) {
-                        System.err.println("Not implemented for: " + attrs);
+                        log.warn("Not implemented for: " + attrs);
                         continue;
                     } else if (value instanceof List<?>) {
                         List<?> list = (List<?>) value;
@@ -176,7 +164,7 @@ public class ProductService {
                                 attrOpt.get().getValue().addAll((List<String>) value);
                             }
                         } else if (!list.isEmpty() && list.get(0) instanceof Number) {
-                            System.err.println("Not implemented for: " + attrs);
+                            log.warn("Not implemented for: " + attrs);
                             continue;
                         }
                     } else if (value instanceof String[]) {
@@ -214,9 +202,9 @@ public class ProductService {
 
                 product = productRepository.save(product);
                 productSimilarOffersService.createAndUpdateTokens(product);
+                actualProductService.updateActualProducts(perDateAttributes.getScrapDate(), product, commonUser);
 
                 if (productDateAttributeAdded) {
-                    actualProductService.updateActualProducts(perDateAttributes.getScrapDate(), product, commonUser);
                     productStatsService.updateProductStats(product, perDateAttributes.getPrice(), commonUser);
                 }
 
@@ -257,27 +245,48 @@ public class ProductService {
         }
     }
 
-    private boolean addProductDateAttribute(Product product, ProductBasedOnDateAttributes perDateAttributes) {
-        if (product.getId() != null && product.getProductBasedOnDateAttributes() != null
-                && product.getProductBasedOnDateAttributes().size() > 10) {
+    private boolean addProductDateAttribute(Product product, ProductBasedOnDateAttributes newPerDateAttribute) {
+        List<ProductBasedOnDateAttributes> sortedPrices = new ArrayList<>();
+        if (product.getProductBasedOnDateAttributes() != null) {
+            sortedPrices = product.getProductBasedOnDateAttributes().stream()
+                    .sorted(Comparator.comparing(ProductBasedOnDateAttributes::getScrapDate).reversed())
+                    .toList();
+        }
+
+        if (!sortedPrices.isEmpty()) {
+            ProductBasedOnDateAttributes lastAttr = sortedPrices.get(0);
+            BigDecimal previousPrice = lastAttr.getPrice();
+            BigDecimal currentPrice = newPerDateAttribute.getPrice();
+            BigDecimal difference = previousPrice.subtract(currentPrice).abs();
+            BigDecimal threshold = previousPrice.multiply(BigDecimal.valueOf(0.05)); // 5% threshold
+
+            if (difference.compareTo(threshold) < 0) {
+                log.info("Skipping price update for product '{}' due to insignificant change (prev: {}, current: {})",
+                        product.getName(), previousPrice, currentPrice);
+                return false;
+            }
+        }
+
+        if (product.getId() != null && sortedPrices.size() > 10) {
             BigDecimal sum = BigDecimal.valueOf(1);
             for (ProductBasedOnDateAttributes productBasedOnDateAttribute : product.getProductBasedOnDateAttributes()) {
                 sum = sum.add(productBasedOnDateAttribute.getPrice());
             }
 
-            if (perDateAttributes.getPrice().compareTo(BigDecimal.valueOf(2)
+            if (newPerDateAttribute.getPrice().compareTo(BigDecimal.valueOf(2)
                     .multiply(sum.divide(BigDecimal.valueOf(product.getProductBasedOnDateAttributes().size()),
                             RoundingMode.CEILING))) >= 0
-                    && perDateAttributes.getPrice().subtract(BigDecimal.valueOf(2000)).compareTo(BigDecimal.ONE) >= 0) {
+                    && newPerDateAttribute.getPrice().subtract(BigDecimal.valueOf(2000)).compareTo(BigDecimal.ONE) >= 0) {
                 //if product has at least 10 prices and new price is much bigger than previous, and newPrice - 2000 >= 1 - we skip adding the price
                 log.warn("ProductBasedOnDateAttribute skipped because the new price is much bigger than average: {} -> {}",
-                        product.getName(), perDateAttributes.getPrice());
+                        product.getName(), newPerDateAttribute.getPrice());
                 return false;
             }
         }
 
-        if (perDateAttributes.getPrice().compareTo(BigDecimal.ONE) >= 0) {
-            product.addAttribute(perDateAttributes);
+
+        if (newPerDateAttribute.getPrice().compareTo(BigDecimal.ONE) >= 0) {
+            product.addAttribute(newPerDateAttribute);
             return true;
         }
         return false;
