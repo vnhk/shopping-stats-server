@@ -18,6 +18,7 @@ public interface ScrapAuditRepository extends BaseRepository<ScrapAudit, Long> {
                      WHERE pc.name = :productListName AND pc.url = :productListUrl
                      AND sc.shopName = :shop
                      AND s.date = :now
+                     AND (s.deleted IS FALSE OR s.deleted IS NULL)
             """)
     Optional<ScrapAudit> findByProductConfigAndDate(String shop, String productListName, String productListUrl, LocalDate now);
 }
