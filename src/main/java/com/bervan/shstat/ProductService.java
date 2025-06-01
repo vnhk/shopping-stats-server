@@ -201,12 +201,12 @@ public class ProductService {
                     continue;
                 }
 
-                product = productRepository.save(product);
-                productSimilarOffersService.createAndUpdateTokens(product);
-                actualProductService.updateActualProducts(perDateAttributes.getScrapDate(), product, commonUser);
+                product = save(product);
+                createAndUpdateTokens(product);
+                updateActualProducts(perDateAttributes, product);
 
                 if (productDateAttributeAdded) {
-                    productStatsService.updateProductStats(product, perDateAttributes.getPrice(), commonUser);
+                    updateProductStats(product, perDateAttributes);
                 }
 
                 allMapped.add(product);
@@ -233,6 +233,42 @@ public class ProductService {
         log.info("Processing ended for: {} products", allMapped.size());
 
         return new AddProductApiResponse(messages, allMapped.size(), products.size());
+    }
+
+    private void updateProductStats(Product product, ProductBasedOnDateAttributes perDateAttributes) {
+        try {
+            productStatsService.updateProductStats(product, perDateAttributes.getPrice(), commonUser);
+        } catch (Exception e) {
+            log.error("Failed to updateProductStats!", e);
+            throw new MapperException("Failed to updateProductStats!");
+        }
+    }
+
+    private void updateActualProducts(ProductBasedOnDateAttributes perDateAttributes, Product product) {
+        try {
+            actualProductService.updateActualProducts(perDateAttributes.getScrapDate(), product, commonUser);
+        } catch (Exception e) {
+            log.error("Failed to updateActualProducts!", e);
+            throw new MapperException("Failed to updateActualProducts!");
+        }
+    }
+
+    private void createAndUpdateTokens(Product product) {
+        try {
+            productSimilarOffersService.createAndUpdateTokens(product);
+        } catch (Exception e) {
+            log.error("Failed to createAndUpdateTokens!", e);
+            throw new MapperException("Failed to createAndUpdateTokens!");
+        }
+    }
+
+    private Product save(Product product) {
+        try {
+            return productRepository.save(product);
+        } catch (Exception e) {
+            log.error("Failed to save/update product!", e);
+            throw new MapperException("Failed to save/update product!");
+        }
     }
 
     public void updateStats(Product product) {

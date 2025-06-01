@@ -14,6 +14,10 @@ public class MapperException extends RuntimeException {
         this.sendErrorMessage = sendErrorMessage;
     }
 
+    public MapperException(String message) {
+        super(message);
+    }
+
     public boolean isSendErrorMessage() {
         return sendErrorMessage;
     }
