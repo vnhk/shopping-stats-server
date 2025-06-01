@@ -17,9 +17,15 @@ public class BaseProductAttributesMapper implements DTOMapper<Product, ProductDT
         productDTO.value.setName(product.value.getName());
         productDTO.value.setShop(product.value.getShop());
         Set<ProductAttribute> attributes = product.value.getAttributes();
-        String offerUrl = ((ProductListTextAttribute) attributes.stream().
-                filter(e -> e.getName().equals("Offer Url")).findFirst().get())
-                .getValue().iterator().next();
+
+        String offerUrl = product.value.getOfferUrl();
+
+        if (offerUrl == null || offerUrl.isBlank()) {
+            offerUrl = ((ProductListTextAttribute) attributes.stream().
+                    filter(e -> e.getName().equals("Offer Url")).findFirst().get())
+                    .getValue().iterator().next();
+        }
+
         productDTO.value.setOfferLink(getOfferUrl(product.value.getShop(), offerUrl));
         productDTO.value.setImgSrc(product.value.getImgSrc());
         productDTO.value.setCategories(product.value.getCategories());
@@ -34,6 +40,7 @@ public class BaseProductAttributesMapper implements DTOMapper<Product, ProductDT
             case "Media Expert" -> "https://mediaexpert.pl" + offerUrl;
             case "Morele" -> "https://morele.net" + offerUrl;
             case "RTV Euro AGD" -> "https://www.euro.com.pl" + offerUrl;
+            case "Centrum Rowerowe" -> "https://www.centrumrowerowe.pl" + offerUrl;
             default -> offerUrl;
         };
     }

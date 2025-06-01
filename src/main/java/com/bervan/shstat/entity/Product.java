@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "shop", "productListName", "productListUrl"})},
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "shop", "productListName", "productListUrl", "offerUrl"})},
         indexes = {@Index(columnList = "shop"), @Index(columnList = "name")})
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class Product extends BervanBaseEntity<Long> {
@@ -25,6 +25,8 @@ public class Product extends BervanBaseEntity<Long> {
     private String shop;
     @NotNull
     private String productListName;
+    @Column(length = 1000)
+    private String offerUrl;
     @Lob
     @Size(max = 5000000)
     @Column(columnDefinition = "LONGTEXT")
@@ -141,5 +143,13 @@ public class Product extends BervanBaseEntity<Long> {
     @Override
     public void setModificationDate(LocalDateTime modificationDate) {
 
+    }
+
+    public String getOfferUrl() {
+        return offerUrl;
+    }
+
+    public void setOfferUrl(String offerUrl) {
+        this.offerUrl = offerUrl;
     }
 }

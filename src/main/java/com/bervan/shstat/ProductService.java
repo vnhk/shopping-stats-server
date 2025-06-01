@@ -47,6 +47,7 @@ public class ProductService {
             commonProductProperties = List.of(
                     AttrFieldMappingVal.of("Name", Product.class.getDeclaredField("name")),
                     AttrFieldMappingVal.of("Product List Url", Product.class.getDeclaredField("productListUrl")),
+                    AttrFieldMappingVal.of("Offer Url", Product.class.getDeclaredField("offerUrl")),
                     AttrFieldMappingVal.of("Shop", Product.class.getDeclaredField("shop")),
                     AttrFieldMappingVal.of("Image", Product.class.getDeclaredField("imgSrc")),
                     AttrFieldMappingVal.of("Categories", Product.class.getDeclaredField("categories"),
@@ -192,11 +193,11 @@ public class ProductService {
                 loadCommonUserIfNotLoaded();
                 product.addOwner(commonUser);
                 if (product.getName().length() > 300) {
-                    log.error("Product name is to long: {}" + product.getName());
+                    log.error("Product name is to long: {}", product.getName());
                     continue;
                 }
                 if (product.getName().length() < 3) {
-                    log.error("Product name is to short: {}" + product.getName());
+                    log.error("Product name is to short: {}", product.getName());
                     continue;
                 }
 
@@ -328,8 +329,9 @@ public class ProductService {
     }
 
     private Product findProductBasedOnAttributes(Product res) {
-        Optional<Product> product = productRepository.findByNameAndShopAndProductListNameAndProductListUrl(res.getName(), res.getShop(),
-                res.getProductListName(), res.getProductListUrl());
+        Optional<Product> product = productRepository.findByNameAndShopAndProductListNameAndProductListUrlAndOfferUrl(res.getName(), res.getShop(),
+                        res.getProductListName(), res.getProductListUrl()
+                        , res.getOfferUrl());
 
         return product.orElse(res);
     }

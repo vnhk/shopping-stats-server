@@ -48,7 +48,7 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
         Set<String> categories = this.productSearchService.findCategories();
         categoryDropdown.setItems(categories);
 
-        shopDropdown.setItems(Arrays.asList("Media Expert", "RTV Euro AGD", "Morele"));
+        shopDropdown.setItems(Arrays.asList("Media Expert", "RTV Euro AGD", "Morele", "Centrum Rowerowe"));
 
         VerticalLayout productsLayout = new VerticalLayout();
 

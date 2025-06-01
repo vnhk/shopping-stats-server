@@ -17,10 +17,11 @@ import java.util.Set;
 
 @Repository
 public interface ProductRepository extends BaseRepository<Product, Long> {
-    Optional<Product> findByNameAndShopAndProductListNameAndProductListUrl(String name,
-                                                                           String shop,
-                                                                           String productListName,
-                                                                           String productListUrl);
+    Optional<Product> findByNameAndShopAndProductListNameAndProductListUrlAndOfferUrl(String name,
+                                                                                      String shop,
+                                                                                      String productListName,
+                                                                                      String productListUrl,
+                                                                                      String offerUrl);
 
     @Query(value = """
             SELECT DISTINCT p FROM Product p JOIN ActualProduct ap ON ap.productId = p.id
