@@ -77,8 +77,7 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
                         AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
                         AND historical_low_price >= COALESCE(:prevPriceMin ,historical_low_price) AND historical_low_price <= COALESCE(:prevPriceMax ,historical_low_price)
                         AND UPPER(product_name) LIKE UPPER(COALESCE(:name, product_name))
-                        AND product_image_src is not null AND product_image_src <> '' AND TRIM(product_image_src) <> '' AND LENGTH(product_image_src) >= 10
-                    ORDER BY id;
+                    ORDER BY discount_in_percent DESC;
                     """
     )
     Page<ProductBasedOnDateAttributesNativeResInterface> findAllXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discountMin, Double discountMax, String category, String shop, String name, Integer prevPriceMin, Integer prevPriceMax);
@@ -91,11 +90,10 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
                         AND shop = COALESCE(:shop, shop)
                         AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
                         AND historical_low_price >= COALESCE(:prevPriceMin ,historical_low_price) AND historical_low_price <= COALESCE(:prevPriceMax ,historical_low_price)
-                        AND product_image_src is not null AND product_image_src <> '' AND TRIM(product_image_src) <> '' AND LENGTH(product_image_src) >= 10
                         AND scrap_date >= DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 2 DAY)
                                          AND scrap_date < CURRENT_TIMESTAMP()
                         AND UPPER(product_name) LIKE UPPER(COALESCE(:name, product_name))
-                    ORDER BY id;
+                    ORDER BY discount_in_percent DESC;
                     """
     )
     Page<ProductBasedOnDateAttributesNativeResInterface> findActualXPercentLowerPriceThanHistoricalLow(Pageable pageable, Double discountMin, Double discountMax, String category, String shop, String name, Integer prevPriceMin, Integer prevPriceMax);
@@ -119,35 +117,35 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
 
     @Modifying
     @Query(value = """
-            CREATE OR REPLACE TABLE LOWER_PRICES_THAN_HISTORICAL_LOW AS
-            WITH RankedPrices AS (SELECT product_id, MIN(price) as min_price
-                                  FROM product_based_on_date_attributes pda
-                                  WHERE (product_id, price) NOT IN
-                                        (SELECT product_id, MIN(price)
-                                         FROM product_based_on_date_attributes pda
-                                         WHERE pda.price <> -1
-                                         GROUP BY product_id)
-                                    AND pda.price <> -1
-                                  GROUP BY product_id)
-            SELECT DISTINCT pda.id                              AS id,
-                            pda.scrap_date                      AS scrap_date,
-                            pda.price                           AS price,
-                            rp1.min_price                       AS historical_low_price,
-                            (IF(pda.price >= rp1.min_price, 0, (1 - pda.price / rp1.min_price) * 100))   AS discount_in_percent,
-                            p.shop                              AS shop,
-                            p.img_src                           AS product_image_src,
-                            p.name                              AS product_name,
-                            pc.categories                       AS category,
-                            pda.product_id                      AS product_id
-            FROM product_based_on_date_attributes pda
-                     JOIN RankedPrices rp1 ON pda.product_id = rp1.product_id
-                     JOIN product p ON p.id = pda.product_id
-                     LEFT JOIN product_categories pc ON pda.product_id = pc.product_id
-                     JOIN actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date
-            WHERE pda.price > 0
-              AND pda.price <= rp1.min_price
-            ORDER BY pda.id;
-                        """, nativeQuery = true)
+                        CREATE OR REPLACE TABLE LOWER_PRICES_THAN_HISTORICAL_LOW AS
+                        WITH RankedPrices AS (SELECT product_id, MIN(price) as min_price
+                                              FROM product_based_on_date_attributes pda
+                                              WHERE (product_id, price) NOT IN
+                                                    (SELECT product_id, MIN(price)
+                                                     FROM product_based_on_date_attributes pda
+                                                     WHERE pda.price <> -1
+                                                     GROUP BY product_id)
+                                                AND pda.price <> -1
+                                              GROUP BY product_id)
+                        SELECT DISTINCT pda.id                              AS id,
+                                        pda.scrap_date                      AS scrap_date,
+                                        pda.price                           AS price,
+                                        rp1.min_price                       AS historical_low_price,
+                                        (IF(pda.price >= rp1.min_price, 0, (1 - pda.price / rp1.min_price) * 100))   AS discount_in_percent,
+                                        p.shop                              AS shop,
+                                        p.img_src                           AS product_image_src,
+                                        p.name                              AS product_name,
+                                        pc.categories                       AS category,
+                                        pda.product_id                      AS product_id
+                        FROM product_based_on_date_attributes pda
+                                 JOIN RankedPrices rp1 ON pda.product_id = rp1.product_id
+                                 JOIN product p ON p.id = pda.product_id
+                                 LEFT JOIN product_categories pc ON pda.product_id = pc.product_id
+                                 JOIN actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date
+                        WHERE pda.price > 0
+                          AND pda.price <= rp1.min_price
+                        ORDER BY pda.id;
+            """, nativeQuery = true)
     @Transactional
     void refreshLowerPricesThanHistoricalLowTable();
 
