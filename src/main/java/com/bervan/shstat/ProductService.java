@@ -365,12 +365,10 @@ public class ProductService {
     }
 
     private Product findProductBasedOnAttributes(Product res) {
-        log.error("A");
         Optional<Product> product = productRepository.findByNameAndShopAndProductListNameAndProductListUrlAndOfferUrl(res.getName(), res.getShop(),
                         res.getProductListName(), res.getProductListUrl()
                         , res.getOfferUrl());
 
-        log.error("B");
         return product.orElse(res);
     }
 
