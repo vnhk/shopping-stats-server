@@ -31,7 +31,7 @@ public class DiscountsViewService extends ViewBuilder {
                 }
             };
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void clearCacheAtMidnight() {
         cache.clear();
     }
