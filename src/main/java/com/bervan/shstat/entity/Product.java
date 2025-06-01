@@ -10,7 +10,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "shop", "productListName", "productListUrl", "offerUrl"})})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "shop", "productListName", "productListUrl", "offerUrl"})},
+        indexes = {@Index(columnList = "shop"), @Index(columnList = "name"), @Index(columnList = "productListName"),
+                @Index(columnList = "productListUrl"), @Index(columnList = "offerUrl")})
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class Product extends BervanBaseEntity<Long> {
     @Id
