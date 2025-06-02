@@ -19,7 +19,9 @@ public class ProductPricesMapper implements DTOMapper<Product, ProductDTO> {
     public void map(DataHolder<Product> product, DataHolder<ProductDTO> productDTO) {
         List<PriceDTO> prices = new ArrayList<>();
         for (ProductBasedOnDateAttributes productBasedOnDateAttribute : product.value.getProductBasedOnDateAttributes()) {
-            prices.add(buildPrice(productBasedOnDateAttribute));
+            if (!productBasedOnDateAttribute.isDeleted()) {
+                prices.add(buildPrice(productBasedOnDateAttribute));
+            }
         }
         productDTO.value.setPrices(prices);
         prices.sort(Comparator.nullsLast(

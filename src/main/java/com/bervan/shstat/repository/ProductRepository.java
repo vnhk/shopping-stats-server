@@ -226,6 +226,7 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
             "     (SELECT min(pd.price) as price " +
             "          FROM Product p " +
             "             JOIN ProductBasedOnDateAttributes pd ON pd.product = p " +
+            " AND pd.deleted is not true " +
             "          WHERE p.shop = :shop " +
             "             AND pd.price <> -1" +
             "             AND p.name = :name)" +
@@ -241,6 +242,7 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
             "     (SELECT max(pd.price) as price " +
             "          FROM Product p " +
             "             JOIN ProductBasedOnDateAttributes pd ON pd.product = p " +
+            "   AND pd.deleted is not true " +
             "          WHERE p.shop = :shop " +
             "             AND pd.price <> -1" +
             "             AND p.name = :name)" +
@@ -251,6 +253,7 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
     @Query(value = "SELECT DISTINCT avg(pd.price) FROM Product p " +
             " JOIN ProductBasedOnDateAttributes pd ON " +
             " pd.product = p WHERE p.shop = :shop " +
+            " AND p.deleted is not true " +
             " AND pd.price <> -1" +
             " AND p.name = :name")
     Double avgPrice(String name, String shop);

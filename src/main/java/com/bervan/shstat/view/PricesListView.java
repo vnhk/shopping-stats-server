@@ -8,11 +8,11 @@ import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.model.SearchOperation;
 import com.bervan.common.service.BaseService;
 import com.bervan.common.user.UserRepository;
+import com.bervan.shstat.ProductBasedOnDateAttributesService;
 import com.bervan.shstat.ProductService;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.vaadin.flow.component.AbstractField;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -32,7 +32,7 @@ public class PricesListView extends AbstractTableView<Long, ProductBasedOnDateAt
     private BervanButton decreasePrice5times;
     private BervanButton decreasePrice2times;
 
-    public PricesListView(AbstractProductView parentView, BaseService<Long, ProductBasedOnDateAttributes> service, ProductService productService, ShoppingLayout pageLayout, Product product, UserRepository userRepository) {
+    public PricesListView(AbstractProductView parentView, ProductBasedOnDateAttributesService service, ProductService productService, ShoppingLayout pageLayout, Product product, UserRepository userRepository) {
         super(pageLayout, service, BervanLoggerImpl.init(log), ProductBasedOnDateAttributes.class);
         this.product = product;
         this.productService = productService;

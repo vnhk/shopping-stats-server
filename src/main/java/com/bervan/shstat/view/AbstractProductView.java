@@ -207,7 +207,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
                 priceText = getLatestPriceText(prices, product);
             }
 
-            tile.add(image, new Hr(), nameText, priceText);
+            tile.add(image, new Hr(), nameText, new Hr(), priceText);
             scrollingLayout.add(tile);
         }
 
