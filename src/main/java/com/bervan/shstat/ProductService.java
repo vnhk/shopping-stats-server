@@ -5,8 +5,6 @@ import com.bervan.common.user.UserRepository;
 import com.bervan.shstat.entity.*;
 import com.bervan.shstat.repository.ProductBasedOnDateAttributesRepository;
 import com.bervan.shstat.repository.ProductRepository;
-import com.bervan.shstat.response.AddProductApiResponse;
-import com.bervan.shstat.response.ApiResponse;
 import com.bervan.shstat.tokens.ProductSimilarOffersService;
 import com.google.common.collect.Lists;
 import jakarta.persistence.EntityManager;
@@ -16,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -24,6 +23,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -109,18 +109,8 @@ public class ProductService {
         this.scrapAuditService = scrapAuditService;
     }
 
-    public void addProductsByPartitions(List<Map<String, Object>> products) {
-        List<List<Map<String, Object>>> partition = Lists.partition(products, 50);
-        for (List<Map<String, Object>> p : partition) {
-            ApiResponse apiResponse = addProducts(p);
-            if (apiResponse.getMessages() != null && !apiResponse.getMessages().isEmpty()) {
-                System.out.println(apiResponse.getMessages());
-            }
-        }
-    }
-
-    @Transactional
-    public ApiResponse addProducts(List<Map<String, Object>> products) {
+    @Async("productTaskExecutor")
+    public CompletableFuture<Void> addProductsAsync(List<Map<String, Object>> products) {
         List<Product> allMapped = new LinkedList<>();
         List<String> messages = new LinkedList<>();
         log.info("Processing started for: {} products", products.size());
@@ -231,8 +221,11 @@ public class ProductService {
         });
 
         log.info("Processing ended for: {} products", allMapped.size());
+        for (String message : messages) {
+            log.error(message);
+        }
 
-        return new AddProductApiResponse(messages, allMapped.size(), products.size());
+        return CompletableFuture.completedFuture(null);
     }
 
     private void updateProductStats(Product product, ProductBasedOnDateAttributes perDateAttributes) {
