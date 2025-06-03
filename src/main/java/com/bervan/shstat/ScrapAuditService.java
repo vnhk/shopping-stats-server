@@ -17,7 +17,7 @@ public class ScrapAuditService extends BaseService<Long, ScrapAudit> {
         super(repository, searchService);
     }
 
-    public void updateSavedProductsCount(String shop, String productListName, String productListUrl, int size) {
+    public synchronized void updateSavedProductsCount(String shop, String productListName, String productListUrl, int size) {
         Optional<ScrapAudit> scrapAudit = ((ScrapAuditRepository) repository)
                 .findByProductConfigAndDate(shop, productListName, productListUrl, LocalDate.now());
         if (scrapAudit.isPresent()) {
