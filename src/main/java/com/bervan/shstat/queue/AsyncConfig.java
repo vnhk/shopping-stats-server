@@ -13,7 +13,7 @@ public class AsyncConfig {
 
     @Bean("productTaskExecutor")
     public Executor productTaskExecutor() {
-        int availableProcessors = Runtime.getRuntime().availableProcessors(); // np. 4
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
         int core = Math.max(1, availableProcessors - 1);
 
         log.info("Available processors in application: {}", availableProcessors);
