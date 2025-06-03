@@ -5,6 +5,7 @@ import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.ProductService;
 import com.bervan.shstat.entity.Product;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @Service
+@Slf4j
 public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
     private final ProductService productService;
 
@@ -27,18 +29,16 @@ public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
 
     @Override
     protected void process(Serializable param) {
-        log.info("Processing products started...");
         if (param instanceof List<?> list) {
             addProductsByPartitions((List<Map<String, Object>>) param);
         } else {
             LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>) param;
             addProductsByPartitions((List<Map<String, Object>>) data.get("addProductsQueueParam"));
         }
-
-        log.info("Processing products completed...");
     }
 
     private void addProductsByPartitions(List<Map<String, Object>> products) {
+        log.info("Processing started for: {} products", products.size());
         List<List<Map<String, Object>>> partition = Lists.partition(products, 3);
         List<CompletableFuture<List<Product>>> futures = new ArrayList<>();
         List<Product> allMapped = new ArrayList<>();
@@ -60,5 +60,6 @@ public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
         }
 
         productService.updateScrapAudit(allMapped);
+        log.info("Processing ended for: {} products", allMapped.size());
     }
 }

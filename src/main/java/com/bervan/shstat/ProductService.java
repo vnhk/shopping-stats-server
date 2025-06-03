@@ -112,7 +112,6 @@ public class ProductService {
     public CompletableFuture<List<Product>> addProductsAsync(List<Map<String, Object>> products) {
         List<Product> allMapped = new LinkedList<>();
         List<String> messages = new LinkedList<>();
-        log.info("Processing started for: {} products", products.size());
         for (Map<String, Object> productMap : products) {
             try {
                 Product product = mapProductCommonAttr(productMap);
@@ -206,7 +205,6 @@ public class ProductService {
             }
         }
 
-        log.info("Processing ended for: {} products", allMapped.size());
         for (String message : messages) {
             log.error(message);
         }

@@ -8,7 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
@@ -17,15 +19,25 @@ public class ScrapAuditService extends BaseService<Long, ScrapAudit> {
         super(repository, searchService);
     }
 
+    private final Map<String, ScrapAudit> scrapAuditCache = new ConcurrentHashMap<>();
+
     public synchronized void updateSavedProductsCount(String shop, String productListName, String productListUrl, int size) {
-        Optional<ScrapAudit> scrapAudit = ((ScrapAuditRepository) repository)
+        String key = shop + "|" + productListName + "|" + productListUrl + "|" + LocalDate.now();
+
+        ScrapAudit audit = scrapAuditCache.computeIfAbsent(key, k -> {
+            Optional<ScrapAudit> existing = ((ScrapAuditRepository) repository)
                 .findByProductConfigAndDate(shop, productListName, productListUrl, LocalDate.now());
-        if (scrapAudit.isPresent()) {
-            scrapAudit.get().addToSavedProducts(size);
-            repository.save(scrapAudit.get());
-            log.info("ScrapAudit - processed products - updated");
+            if (existing.isPresent()) {
+                return existing.get();
         } else {
             log.error("ScrapAudit not found for the given date and product config! {} | {} | {}", shop, productListName, productListUrl);
+                return null;
+            }
+        });
+
+        if (audit != null) {
+            audit.addToSavedProducts(size);
+            repository.save(audit);
         }
     }
 }
