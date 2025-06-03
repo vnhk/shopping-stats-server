@@ -439,4 +439,13 @@ public class ProductService {
                         ORDER BY pda.id;
                         """;
     }
+
+    public void update(Long id, String name, String link, String finalImage) {
+        Product product = productRepository.findById(id).get();
+        product.setName(name);
+        product.setOfferUrl(link);
+        product.setImgSrc(finalImage);
+
+        productRepository.save(product);
+    }
 }

@@ -1,5 +1,8 @@
 package com.bervan.shstat.view;
 
+import com.bervan.common.BervanButton;
+import com.bervan.common.BervanButtonStyle;
+import com.bervan.common.BervanTextField;
 import com.bervan.common.user.UserRepository;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.ProductBasedOnDateAttributesService;
@@ -12,6 +15,7 @@ import com.bervan.shstat.response.SearchApiResponse;
 import com.bervan.shstat.tokens.ProductSimilarOffersService;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -20,14 +24,14 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
 import org.springframework.data.domain.Pageable;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class AbstractProductView extends BaseProductPage implements HasUrlParameter<Long> {
@@ -78,6 +82,18 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
         VerticalLayout productsLayout = new VerticalLayout();
 
         VerticalLayout productCard = new VerticalLayout();
+
+        Button editButton = new Button("✎");
+        editButton.getStyle()
+                .set("position", "absolute")
+                .set("top", "10px")
+                .set("right", "10px")
+                .set("z-index", "10");
+
+        editButton.addClickListener(e -> openEditDialog(productDTO));
+        productCard.getStyle().set("position", "relative");
+        productCard.add(editButton);
+
         productCard.setWidth("1200px");
         setProductCardStyle(productCard);
 
@@ -254,5 +270,68 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
     public void reload() {
         removeAll();
         buildView();
+    }
+
+    private void openEditDialog(ProductDTO productDTO) {
+        Dialog dialog = new Dialog();
+        dialog.setWidth("900px");
+
+        VerticalLayout layout = new VerticalLayout();
+
+        BervanTextField nameField = new BervanTextField("Product Name");
+        nameField.setWidth("800px");
+        nameField.setValue(productDTO.getName());
+
+        BervanTextField offerLinkField = new BervanTextField("Offer URL");
+        offerLinkField.setWidth("800px");
+        offerLinkField.setValue(productDTO.getOfferLink());
+
+        BervanTextField imageUrlField = new BervanTextField("Image URL");
+        imageUrlField.setWidth("800px");
+        imageUrlField.setValue(productDTO.getImgSrc());
+
+        BervanButton saveBtn = new BervanButton("Save", e -> {
+            String name = nameField.getValue();
+            String link = offerLinkField.getValue();
+            String imageInput = imageUrlField.getValue();
+
+            String finalImage;
+            try {
+                if (imageInput.startsWith("http")) {
+                    finalImage = toBase64(imageInput);
+                } else {
+                    finalImage = imageInput;
+                }
+
+                saveChanges(productDTO.getId(), name, link, finalImage);
+                showSuccessNotification("Changes saved");
+                dialog.close();
+                reload();
+            } catch (Exception ex) {
+                showErrorNotification("Error: " + ex.getMessage());
+            }
+        }, BervanButtonStyle.PRIMARY);
+
+        Button cancelBtn = new Button("Cancel", e -> dialog.close());
+
+        layout.add(nameField, offerLinkField, imageUrlField, new HorizontalLayout(saveBtn, cancelBtn));
+        dialog.add(layout);
+        dialog.open();
+    }
+
+    private void saveChanges(Long id, String name, String link, String finalImage) {
+        productService.update(id, name, link, finalImage);
+        reload();
+    }
+
+    private String toBase64(String imageUrl) throws Exception {
+        try (InputStream in = new URL(imageUrl).openStream(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+            return "data:image/png;base64," + Base64.getEncoder().encodeToString(out.toByteArray());
+        }
     }
 }
