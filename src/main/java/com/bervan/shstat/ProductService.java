@@ -6,7 +6,6 @@ import com.bervan.shstat.entity.*;
 import com.bervan.shstat.repository.ProductBasedOnDateAttributesRepository;
 import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.tokens.ProductSimilarOffersService;
-import com.google.common.collect.Lists;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -257,6 +256,11 @@ public class ProductService {
 
     private Product save(Product product) {
         try {
+            if (product.getId() == null) {
+                synchronized (this) {
+                    return productRepository.save(product);
+                }
+            }
             return productRepository.save(product);
         } catch (Exception e) {
             log.error("Failed to save/update product!", e);

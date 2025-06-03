@@ -14,9 +14,10 @@ public class AsyncConfig {
     @Bean("productTaskExecutor")
     public Executor productTaskExecutor() {
         int availableProcessors = Runtime.getRuntime().availableProcessors();
-        int core = Math.max(1, availableProcessors - 1);
+        int core = Math.max(1, availableProcessors * 2);
 
         log.info("Available processors in application: {}", availableProcessors);
+        log.info("Product Task Executor pool size : {}", core);
 
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(core);
