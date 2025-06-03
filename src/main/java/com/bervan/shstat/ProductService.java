@@ -109,7 +109,7 @@ public class ProductService {
     }
 
     @Async("productTaskExecutor")
-    public CompletableFuture<Void> addProductsAsync(List<Map<String, Object>> products) {
+    public CompletableFuture<List<Product>> addProductsAsync(List<Map<String, Object>> products) {
         List<Product> allMapped = new LinkedList<>();
         List<String> messages = new LinkedList<>();
         log.info("Processing started for: {} products", products.size());
@@ -205,6 +205,17 @@ public class ProductService {
                 }
             }
         }
+
+        log.info("Processing ended for: {} products", allMapped.size());
+        for (String message : messages) {
+            log.error(message);
+        }
+
+        return CompletableFuture.completedFuture(allMapped);
+    }
+
+
+    public void updateScrapAudit(List<Product> allMapped) {
         String delimiter = "___";
 
         // group result by "shop", "productListName", "productListUrl"
@@ -218,13 +229,6 @@ public class ProductService {
             String[] split = key.split(delimiter);
             scrapAuditService.updateSavedProductsCount(split[0], split[1], split[2], list.size());
         });
-
-        log.info("Processing ended for: {} products", allMapped.size());
-        for (String message : messages) {
-            log.error(message);
-        }
-
-        return CompletableFuture.completedFuture(null);
     }
 
     private void updateProductStats(Product product, ProductBasedOnDateAttributes perDateAttributes) {

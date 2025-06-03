@@ -3,6 +3,7 @@ package com.bervan.shstat.queue;
 import com.bervan.common.service.ApiKeyService;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.ProductService;
+import com.bervan.shstat.entity.Product;
 import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
 
@@ -38,20 +39,26 @@ public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
     }
 
     private void addProductsByPartitions(List<Map<String, Object>> products) {
-        List<List<Map<String, Object>>> partition = Lists.partition(products, 10);
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        List<List<Map<String, Object>>> partition = Lists.partition(products, 3);
+        List<CompletableFuture<List<Product>>> futures = new ArrayList<>();
+        List<Product> allMapped = new ArrayList<>();
 
         for (List<Map<String, Object>> p : partition) {
             futures.add(productService.addProductsAsync(p));
         }
 
         try {
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                    .get(10, TimeUnit.MINUTES);
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(1, TimeUnit.MINUTES);
+
+            for (CompletableFuture<List<Product>> future : futures) {
+                allMapped.addAll(future.get());
+            }
         } catch (TimeoutException e) {
             log.error("Timeout while waiting for async tasks");
         } catch (Exception e) {
             log.error("Error while processing async tasks", e);
         }
+
+        productService.updateScrapAudit(allMapped);
     }
 }
