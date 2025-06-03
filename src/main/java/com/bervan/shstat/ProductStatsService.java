@@ -36,14 +36,16 @@ public class ProductStatsService {
             byProductId = Optional.of(productStats);
         }
 
-
         if (price.compareTo(BigDecimal.ZERO) > 0) {
             updateStats(byProductId);
 
             if (byProductId.get().getOwners().isEmpty()) {
                 byProductId.get().addOwner(commonUser);
             }
-            productStatsRepository.save(byProductId.get());
+
+            synchronized (this) {
+                productStatsRepository.save(byProductId.get());
+            }
         }
     }
 

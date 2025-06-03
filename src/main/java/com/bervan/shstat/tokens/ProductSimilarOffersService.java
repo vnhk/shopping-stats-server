@@ -103,7 +103,9 @@ public class ProductSimilarOffersService {
         }
 
         if (!tokensToSave.isEmpty()) {
-            productTokensRepository.saveAll(tokensToSave);
+            synchronized (this) {
+                productTokensRepository.saveAll(tokensToSave);
+            }
         }
     }
 

@@ -4,7 +4,6 @@ import com.bervan.common.user.User;
 import com.bervan.shstat.entity.ActualProduct;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.repository.ActualProductsRepository;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -41,7 +40,9 @@ public class ActualProductService {
             newAP.addOwner(commonUser);
             newAP.setProductId(mappedProduct.getId());
             newAP.setScrapDate(scrapDate);
-            actualProductsRepository.save(newAP);
+            synchronized (this) {
+                actualProductsRepository.save(newAP);
+            }
         }
     }
 
