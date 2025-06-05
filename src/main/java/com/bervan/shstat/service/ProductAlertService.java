@@ -28,7 +28,7 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
         this.discountsViewService = discountsViewService;
     }
 
-    @Scheduled(cron = "0 0 0/12 * * *")
+    @Scheduled(cron = "0 0 9 * * *")
     public void notifyAboutProducts() {
         log.info("notifyAboutProducts started");
 
