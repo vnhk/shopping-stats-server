@@ -186,7 +186,7 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
                                     %s
                                 </li>
                             """, link, name, latest.getPrice() != null ? latest.getPrice() : BigDecimal.ZERO,
-                    discount != null ? String.format(" (%s) ", discount) : "?"));
+                    discount != null ? String.format(" (%s%%) ", discount) : "?"));
         }
 
         html.append("""
