@@ -52,7 +52,7 @@ public abstract class AbstractProductAlertView extends AbstractTableView<Long, P
     protected List<String> getInitialSelectedValueForDynamicMultiDropdown(String key, ProductAlert item) {
         if (key.equals("productCategories")) {
             return item.getProductCategories();
-        } else if (key.equals("productEmails")) {
+        } else if (key.equals("emails")) {
             return item.getEmails();
         }
         return new ArrayList<>();
