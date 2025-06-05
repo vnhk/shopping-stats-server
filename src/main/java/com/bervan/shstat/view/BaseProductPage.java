@@ -33,6 +33,11 @@ public abstract class BaseProductPage extends AbstractPageView {
     }
 
     protected Text getLatestPriceText(List<PriceDTO> prices, ProductDTO productDTO) {
+        StringBuilder priceTextBuilder = getLatestPriceTextWithDiscount(prices, productDTO);
+        return new Text(priceTextBuilder.toString());
+    }
+
+    private static StringBuilder getLatestPriceTextWithDiscount(List<PriceDTO> prices, ProductDTO productDTO) {
         PriceDTO latest = prices.get(0);
         BigDecimal latestPrice = latest.getPrice();
 
@@ -51,8 +56,7 @@ public abstract class BaseProductPage extends AbstractPageView {
                 priceTextBuilder.append(" (-" + percentage + "% avg)");
             }
         }
-
-        return new Text(priceTextBuilder.toString());
+        return priceTextBuilder;
     }
 
 

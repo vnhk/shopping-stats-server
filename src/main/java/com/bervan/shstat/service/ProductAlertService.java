@@ -6,6 +6,7 @@ import com.bervan.common.service.BaseService;
 import com.bervan.common.service.EmailService;
 import com.bervan.shstat.entity.ProductAlert;
 import com.bervan.shstat.repository.ProductAlertRepository;
+import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -72,9 +74,13 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
                 50, 1_000_000
         );
 
-        List<ProductDTO> discountedProducts = discountsCompared.getItems().stream()
+        List<ProductDTO> discountedProducts = (List<ProductDTO>) discountsCompared.getItems().stream()
                 .map(item -> (ProductDTO) item)
-                .toList();
+                .sorted((p1, p2) -> {
+                    Double discount1 = getDiscountPercentage((ProductDTO) p1);
+                    Double discount2 = getDiscountPercentage((ProductDTO) p2);
+                    return discount2.compareTo(discount1);
+                }).collect(Collectors.toList());
 
         for (Map.Entry<String, List<ProductAlert>> entry : alertsByEmail.entrySet()) {
             String email = entry.getKey();
@@ -129,7 +135,21 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
         log.info("notifyAboutProducts ended");
     }
 
-    public String buildHtmlProductList(List<ProductDTO> products) {
+    private Double getDiscountPercentage(ProductDTO productDTO) {
+        List<PriceDTO> prices = productDTO.getPrices();
+        if (prices == null || prices.isEmpty()) {
+            return 0.0;
+        }
+        double averagePrice = productDTO.getAvgPrice().doubleValue();
+
+        double currentPrice = prices.get(0).getPrice().doubleValue();
+        if (averagePrice == 0.0) {
+            return 0.0;
+        }
+        return ((averagePrice - currentPrice) / averagePrice) * 100;
+    }
+
+    private String buildHtmlProductList(List<ProductDTO> products) {
         StringBuilder html = new StringBuilder();
         html.append("""
                     <html>
@@ -141,16 +161,32 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
         for (ProductDTO product : products) {
             String name = product.getName();
             String link = product.getOfferLink();
-            BigDecimal price = product.getPrices().get(0).getPrice();
-            Double discount = product.getDiscount();
+
+            List<PriceDTO> prices = product.getPrices();
+            PriceDTO latest = prices.get(0);
+            BigDecimal latestPrice = latest.getPrice();
+            BigDecimal avgPrice = product.getAvgPrice();
+
+            String discount = null;
+            if (avgPrice != null && latestPrice != null && avgPrice.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal diff = latestPrice.subtract(avgPrice);
+                BigDecimal percentage = diff.abs().divide(avgPrice, 2, BigDecimal.ROUND_HALF_UP)
+                        .multiply(BigDecimal.valueOf(100));
+
+                if (latestPrice.compareTo(avgPrice) > 0) {
+                    discount = "+" + percentage;
+                } else if (latestPrice.compareTo(avgPrice) < 0) {
+                    discount = "-" + percentage;
+                }
+            }
 
             html.append(String.format("""
                                 <li>
                                     <a href="%s">%s</a> – <strong>%.2f PLN</strong>
                                     %s
                                 </li>
-                            """, link, name, price != null ? price : BigDecimal.ZERO,
-                    discount != null ? String.format("(-%.0f%%)", discount) : ""));
+                            """, link, name, latest.getPrice() != null ? latest.getPrice() : BigDecimal.ZERO,
+                    discount != null ? String.format(" (%s) ", discount) : "?"));
         }
 
         html.append("""
@@ -162,6 +198,7 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
 
         return html.toString();
     }
+
 
     public List<String> loadAllCategories(ProductAlert productAlert) {
         return ((ProductAlertRepository) repository).loadAllCategories(productAlert);
