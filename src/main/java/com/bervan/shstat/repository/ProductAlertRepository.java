@@ -11,9 +11,15 @@ import java.util.List;
 public interface ProductAlertRepository extends BaseRepository<ProductAlert, Long> {
     List<ProductAlert> findAllByDeletedIsFalseOrDeletedNull();
 
-    @Query("SELECT DISTINCT c FROM ProductAlert p JOIN p.productCategories c WHERE (p.deleted IS FALSE OR p.deleted IS NULL)")
+    @Query("SELECT DISTINCT c FROM ProductAlert p JOIN p.productCategories c WHERE (p.deleted IS FALSE OR p.deleted IS NULL) AND p = :productAlert")
     List<String> loadAllCategories(ProductAlert productAlert);
 
-    @Query("SELECT DISTINCT c FROM ProductAlert p JOIN p.emails c WHERE (p.deleted IS FALSE OR p.deleted IS NULL)")
+    @Query("SELECT DISTINCT c FROM ProductAlert p JOIN p.productCategories c WHERE (p.deleted IS FALSE OR p.deleted IS NULL)")
+    List<String> loadAllCategories();
+
+    @Query("SELECT DISTINCT c FROM ProductAlert p JOIN p.emails c WHERE (p.deleted IS FALSE OR p.deleted IS NULL) AND p = :productAlert")
     List<String> loadAllEmails(ProductAlert productAlert);
+
+    @Query("SELECT DISTINCT c FROM ProductAlert p JOIN p.emails c WHERE (p.deleted IS FALSE OR p.deleted IS NULL)")
+    List<String> loadAllEmails();
 }
