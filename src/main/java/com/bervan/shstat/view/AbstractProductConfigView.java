@@ -11,7 +11,7 @@ import com.bervan.common.search.model.SearchOperation;
 import com.bervan.common.user.User;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.history.model.Persistable;
-import com.bervan.shstat.ProductConfigService;
+import com.bervan.shstat.service.ProductConfigService;
 import com.bervan.shstat.entity.scrap.ProductConfig;
 import com.bervan.shstat.entity.scrap.ShopConfig;
 import com.vaadin.flow.component.combobox.ComboBox;

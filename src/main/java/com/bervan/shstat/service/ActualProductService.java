@@ -1,4 +1,4 @@
-package com.bervan.shstat;
+package com.bervan.shstat.service;
 
 import com.bervan.common.user.User;
 import com.bervan.shstat.entity.ActualProduct;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.Optional;
 
-import static com.bervan.shstat.ProductService.productPerDateAttributeProperties;
+import static com.bervan.shstat.service.ProductService.productPerDateAttributeProperties;
 
 @Slf4j
 @Service

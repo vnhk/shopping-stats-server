@@ -2,8 +2,8 @@ package com.bervan.shstat.view;
 
 import com.bervan.common.BervanButton;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.shstat.DiscountsViewService;
-import com.bervan.shstat.ProductSearchService;
+import com.bervan.shstat.service.DiscountsViewService;
+import com.bervan.shstat.service.ProductSearchService;
 import com.bervan.shstat.response.ApiResponse;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
@@ -20,6 +20,7 @@ import com.vaadin.flow.router.QueryParameters;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 
 public abstract class AbstractBestOffersView extends BaseProductsPage implements HasUrlParameter<Void> {
@@ -122,7 +123,7 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
         name = getString(name);
 
         return discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin,
-                discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
+                discountMax, months, Collections.singletonList(category), shop, name, prevPriceMin, prevPriceMax);
 
     }
 }

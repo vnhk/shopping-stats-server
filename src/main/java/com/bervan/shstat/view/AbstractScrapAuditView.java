@@ -5,7 +5,7 @@ import com.bervan.common.BervanButton;
 import com.bervan.common.BervanButtonStyle;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.shstat.ScrapAuditService;
+import com.bervan.shstat.service.ScrapAuditService;
 import com.bervan.shstat.entity.scrap.ScrapAudit;
 import com.bervan.shstat.repository.ScrapAuditRepository;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;

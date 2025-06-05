@@ -7,8 +7,7 @@ import com.bervan.common.search.SearchService;
 import com.bervan.common.search.model.SearchOperation;
 import com.bervan.common.user.User;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.shstat.ShopConfigService;
-import com.bervan.shstat.entity.scrap.ProductConfig;
+import com.bervan.shstat.service.ShopConfigService;
 import com.bervan.shstat.entity.scrap.ShopConfig;
 
 public abstract class AbstractShopConfigView extends AbstractTableView<Long, ShopConfig> {

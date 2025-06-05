@@ -1,7 +1,7 @@
 package com.bervan.shstat.view;
 
 import com.bervan.shstat.DataHolder;
-import com.bervan.shstat.ProductSearchService;
+import com.bervan.shstat.service.ProductSearchService;
 import com.bervan.shstat.ViewBuilder;
 import com.bervan.shstat.dtomappers.DTOMapper;
 import com.bervan.shstat.entity.Product;

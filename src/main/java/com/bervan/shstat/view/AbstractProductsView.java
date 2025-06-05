@@ -2,7 +2,7 @@ package com.bervan.shstat.view;
 
 import com.bervan.common.BervanComboBox;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.shstat.ProductSearchService;
+import com.bervan.shstat.service.ProductSearchService;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
 import com.vaadin.flow.component.button.Button;

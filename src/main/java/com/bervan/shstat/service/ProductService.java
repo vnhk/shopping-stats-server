@@ -1,7 +1,10 @@
-package com.bervan.shstat;
+package com.bervan.shstat.service;
 
 import com.bervan.common.user.User;
 import com.bervan.common.user.UserRepository;
+import com.bervan.shstat.AttrFieldMappingVal;
+import com.bervan.shstat.AttrMapper;
+import com.bervan.shstat.MapperException;
 import com.bervan.shstat.entity.*;
 import com.bervan.shstat.repository.ProductBasedOnDateAttributesRepository;
 import com.bervan.shstat.repository.ProductRepository;

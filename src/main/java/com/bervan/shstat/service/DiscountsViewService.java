@@ -1,5 +1,7 @@
-package com.bervan.shstat;
+package com.bervan.shstat.service;
 
+import com.bervan.shstat.DataHolder;
+import com.bervan.shstat.ViewBuilder;
 import com.bervan.shstat.dtomappers.BaseProductAttributesMapper;
 import com.bervan.shstat.dtomappers.DTOMapper;
 import com.bervan.shstat.dtomappers.ProductBasedOnDateAttributePriceMapper;
@@ -64,9 +66,9 @@ public class DiscountsViewService extends ViewBuilder {
         return buildResponse(pageable, historicalLowProducts);
     }
 
-    public SearchApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name, Integer prevPriceMin, Integer prevPriceMax) {
+    public SearchApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, List<String> categories, String shop, String name, Integer prevPriceMin, Integer prevPriceMax) {
         DiscountQueryKey key = new DiscountQueryKey(pageable.getPageNumber(), pageable.getPageSize(),
-                discountMin, discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
+                discountMin, discountMax, months, categories, shop, name, prevPriceMin, prevPriceMax);
 
         if (cache.containsKey(key)) {
             return cache.get(key);
@@ -74,7 +76,7 @@ public class DiscountsViewService extends ViewBuilder {
 
         Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts =
                 productSearchService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin,
-                        discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
+                        discountMax, months, categories, shop, name, prevPriceMin, prevPriceMax);
 
         SearchApiResponse response = buildResponse(pageable, historicalLowProducts);
         cache.put(key, response);
@@ -140,7 +142,7 @@ public class DiscountsViewService extends ViewBuilder {
         private final Double discountMin;
         private final Double discountMax;
         private final Integer months;
-        private final String category;
+        private final List<String> categories;
         private final String shop;
         private final String name;
         private final Integer prevPriceMin;
@@ -148,14 +150,14 @@ public class DiscountsViewService extends ViewBuilder {
 
         public DiscountQueryKey(int page, int size,
                                 Double discountMin, Double discountMax, Integer months,
-                                String category, String shop, String name,
+                                List<String> categories, String shop, String name,
                                 Integer prevPriceMin, Integer prevPriceMax) {
             this.page = page;
             this.size = size;
             this.discountMin = discountMin;
             this.discountMax = discountMax;
             this.months = months;
-            this.category = Objects.toString(category, "");
+            this.categories = categories;
             this.shop = Objects.toString(shop, "");
             this.name = Objects.toString(name, "");
             this.prevPriceMin = prevPriceMin;
@@ -172,7 +174,7 @@ public class DiscountsViewService extends ViewBuilder {
                     Objects.equals(discountMin, that.discountMin) &&
                     Objects.equals(discountMax, that.discountMax) &&
                     Objects.equals(months, that.months) &&
-                    category.equals(that.category) &&
+                    categories.equals(that.categories) &&
                     shop.equals(that.shop) &&
                     name.equals(that.name) &&
                     Objects.equals(prevPriceMin, that.prevPriceMin) &&
@@ -182,7 +184,7 @@ public class DiscountsViewService extends ViewBuilder {
         @Override
         public int hashCode() {
             return Objects.hash(page, size, discountMin, discountMax, months,
-                    category, shop, name, prevPriceMin, prevPriceMax);
+                    categories, shop, name, prevPriceMin, prevPriceMax);
         }
     }
 }

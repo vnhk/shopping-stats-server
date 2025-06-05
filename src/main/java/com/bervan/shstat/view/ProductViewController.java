@@ -1,6 +1,6 @@
 package com.bervan.shstat.view;
 
-import com.bervan.shstat.DiscountsViewService;
+import com.bervan.shstat.service.DiscountsViewService;
 import com.bervan.shstat.response.ApiResponse;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.data.domain.Pageable;
@@ -93,7 +93,7 @@ public class ProductViewController {
             String numberMin = discountMin.split("%")[0];
             String numberMax = discountMax.split("%")[0];
             return ResponseEntity.ok(discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, Double.parseDouble(numberMin),
-                    Double.parseDouble(numberMax), months, category, shop, name, prevPriceMin, prevPriceMax));
+                    Double.parseDouble(numberMax), months, Collections.singletonList(category), shop, name, prevPriceMin, prevPriceMax));
         } else {
             return new ResponseEntity<>(new ApiResponse(Collections.singletonList("The discount should be a percentage.\nThe months must be positive."))
                     , HttpStatus.BAD_REQUEST);

@@ -1,4 +1,4 @@
-package com.bervan.shstat;
+package com.bervan.shstat.service;
 
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.repository.ProductRepository;
@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -47,11 +48,14 @@ public class ProductSearchService {
         }
     }
 
-    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String category, String shop, String name, Integer prevPriceMin, Integer prevPriceMax) {
+    public Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, List<String> categories, String shop, String name, Integer prevPriceMin, Integer prevPriceMax) {
         if (name != null) {
             name = name.toUpperCase();
         }
-        return productRepository.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin, discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
+        if (categories != null && categories.isEmpty()) {
+            categories = null;
+        }
+        return productRepository.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin, discountMax, months, categories, shop, name, prevPriceMin, prevPriceMax);
     }
 
     public Page<Product> findProducts(String name, Pageable pageable) {

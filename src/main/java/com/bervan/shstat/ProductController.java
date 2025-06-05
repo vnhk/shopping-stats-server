@@ -1,11 +1,12 @@
 package com.bervan.shstat;
 
 import com.bervan.common.service.ApiKeyService;
-import com.bervan.shstat.queue.AddProductsQueueParam;
 import com.bervan.shstat.queue.AddProductsQueueRequest;
 import com.bervan.shstat.queue.QueueMessage;
 import com.bervan.shstat.queue.QueueService;
 import com.bervan.shstat.response.ApiResponse;
+import com.bervan.shstat.service.ProductSearchService;
+import com.bervan.shstat.service.ProductService;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -2,7 +2,7 @@ package com.bervan.shstat.queue;
 
 import com.bervan.common.service.ApiKeyService;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.shstat.ProductService;
+import com.bervan.shstat.service.ProductService;
 import com.bervan.shstat.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 

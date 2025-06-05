@@ -1,4 +1,4 @@
-package com.bervan.shstat;
+package com.bervan.shstat.service;
 
 import com.bervan.common.search.SearchService;
 import com.bervan.common.service.BaseService;
