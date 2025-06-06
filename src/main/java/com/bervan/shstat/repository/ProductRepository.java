@@ -37,7 +37,7 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
             """
                     SELECT DISTINCT id, scrap_date as scrapDate, price
                     FROM LOWER_THAN_AVG_FOR_X_MONTHS
-                    WHERE (:categories IS NULL OR category IN (:categories))
+                    WHERE (category IN (:categories))
                         AND shop = COALESCE(:shop, shop)
                         AND month_offset = :months
                         AND avgPrice >= :prevPriceMin AND avgPrice <= :prevPriceMax
