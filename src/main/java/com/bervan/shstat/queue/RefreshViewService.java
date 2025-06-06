@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class RefreshViewQueueService {
+public class RefreshViewService {
     private final ProductService productService;
     private final ProductRepository productRepository;
     public static final String historicalLowPrices = "HISTORICAL_LOW_PRICES";
@@ -26,7 +26,7 @@ public class RefreshViewQueueService {
                     lowerThanAvgForLastXMonths
             );
 
-    public RefreshViewQueueService(ProductService productService, ProductRepository productRepository) {
+    public RefreshViewService(ProductService productService, ProductRepository productRepository) {
         this.productService = productService;
         this.productRepository = productRepository;
     }

@@ -1,6 +1,7 @@
 package com.bervan.shstat.view;
 
 import com.bervan.common.AbstractTableView;
+import com.bervan.common.BervanButton;
 import com.bervan.common.search.SearchQueryOption;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.SearchService;
@@ -19,14 +20,19 @@ public abstract class AbstractProductAlertView extends AbstractTableView<Long, P
     public static final String ROUTE_NAME = "/shopping/product-alerts";
     private final ProductConfigService productConfigService;
     private final SearchService searchService;
-    private final BervanLogger log;
     private Set<String> allAvailableCategories;
+    private BervanButton notifyAboutProducts;
 
     public AbstractProductAlertView(ProductAlertService service, ProductConfigService productConfigService, SearchService searchService, BervanLogger log) {
         super(new ShoppingLayout(ROUTE_NAME), service, log, ProductAlert.class);
         this.productConfigService = productConfigService;
         this.searchService = searchService;
-        this.log = log;
+        notifyAboutProducts = new BervanButton("Force notification via email", (e) -> {
+            showPrimaryNotification("Notifying started...");
+            service.notifyAboutProducts();
+            showPrimaryNotification("Notifying ended!");
+        });
+        this.add(notifyAboutProducts);
         renderCommonComponents();
         loadCategories();
     }

@@ -2,13 +2,15 @@ package com.bervan.shstat.view;
 
 import com.bervan.common.BervanButton;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.shstat.service.DiscountsViewService;
-import com.bervan.shstat.service.ProductSearchService;
+import com.bervan.shstat.queue.RefreshViewService;
 import com.bervan.shstat.response.ApiResponse;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
+import com.bervan.shstat.service.DiscountsViewService;
+import com.bervan.shstat.service.ProductSearchService;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
@@ -26,6 +28,7 @@ import java.util.Set;
 public abstract class AbstractBestOffersView extends BaseProductsPage implements HasUrlParameter<Void> {
     public static final String ROUTE_NAME = "/shopping/best-offers";
     private final DiscountsViewService discountsViewService;
+    private final RefreshViewService refreshViewService;
     private final ProductSearchService productSearchService;
     private final BervanLogger log;
     private NumberField discountMin = new NumberField("Discount Min:");
@@ -37,10 +40,17 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
     private ComboBox<String> shopDropdown = new ComboBox<>("Shop:");
     private ComboBox<String> categoryDropdown = new ComboBox<>("Category:");
     private BervanButton searchButton;
+    private BervanButton rebuildBestOffers;
 
 
-    public AbstractBestOffersView(DiscountsViewService discountsViewService, ProductSearchService productSearchService, BervanLogger log) {
+    public AbstractBestOffersView(DiscountsViewService discountsViewService, RefreshViewService refreshViewService, ProductSearchService productSearchService, BervanLogger log) {
         super();
+        this.refreshViewService = refreshViewService;
+        rebuildBestOffers = new BervanButton("Force Rebuild", (e) -> {
+            showPrimaryNotification("Views are rebuilding... It will take time...");
+            refreshViewService.refreshViewsScheduled();
+            showPrimaryNotification("Views rebuilt");
+        });
         this.add(new ShoppingLayout(ROUTE_NAME));
 
         this.discountsViewService = discountsViewService;
@@ -63,7 +73,7 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
             productsLayout.add(tileContainer);
         });
 
-        add(shopDropdown, categoryDropdown, discountMin, discountMax, months, prevPriceMin, prevPriceMax, productName, searchButton, productsLayout);
+        add(new HorizontalLayout(shopDropdown, rebuildBestOffers), categoryDropdown, discountMin, discountMax, months, prevPriceMin, prevPriceMax, productName, searchButton, productsLayout);
     }
 
     @Override
