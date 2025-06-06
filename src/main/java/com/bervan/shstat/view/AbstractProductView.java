@@ -5,13 +5,13 @@ import com.bervan.common.BervanButtonStyle;
 import com.bervan.common.BervanTextField;
 import com.bervan.common.user.UserRepository;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.shstat.service.ProductBasedOnDateAttributesService;
-import com.bervan.shstat.service.ProductSearchService;
-import com.bervan.shstat.service.ProductService;
 import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
+import com.bervan.shstat.service.ProductBasedOnDateAttributesService;
+import com.bervan.shstat.service.ProductSearchService;
+import com.bervan.shstat.service.ProductService;
 import com.bervan.shstat.tokens.ProductSimilarOffersService;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class AbstractProductView extends BaseProductPage implements HasUrlParameter<Long> {
     public static final String ROUTE_NAME = "/shopping/product/:productId";
@@ -248,22 +249,35 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
 
     private String buildBackLink(BeforeEvent beforeEvent) {
         QueryParameters queryParameters = beforeEvent.getLocation().getQueryParameters();
-        String source = getSingleParam(queryParameters, "source");
+        String source = (String) getParams(queryParameters, "source");
 
-        Map<String, String> params = queryParameters.getParameters()
+        Map<String, Object> params = queryParameters.getParameters()
                 .entrySet()
                 .stream()
-                .filter(e -> !e.getKey().equals("source"))
+                .filter(e -> !"source".equals(e.getKey()))
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> getSingleParam(queryParameters, e.getKey())
+                        e -> getParams(queryParameters, e.getKey())
                 ));
 
         String paramString = params.entrySet()
                 .stream()
-                .map(e -> e.getKey() + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
-                .collect(Collectors.joining("&"));
+                .flatMap(e -> {
+                    String key = e.getKey();
+                    Object value = e.getValue();
 
+                    if (value instanceof List) {
+                        @SuppressWarnings("unchecked")
+                        List<Object> list = (List<Object>) value;
+                        return list.stream()
+                                .map(item -> key + "=" + URLEncoder.encode(String.valueOf(item), StandardCharsets.UTF_8));
+                    } else if (value != null) {
+                        return Stream.of(key + "=" + URLEncoder.encode(String.valueOf(value), StandardCharsets.UTF_8));
+                    } else {
+                        return Stream.empty();
+                    }
+                })
+                .collect(Collectors.joining("&"));
         return source + "?" + paramString;
     }
 

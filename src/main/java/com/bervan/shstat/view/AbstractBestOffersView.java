@@ -1,6 +1,7 @@
 package com.bervan.shstat.view;
 
 import com.bervan.common.BervanButton;
+import com.bervan.common.BervanDynamicMultiDropdownController;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.queue.RefreshViewService;
 import com.bervan.shstat.response.ApiResponse;
@@ -20,9 +21,13 @@ import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.QueryParameters;
 import org.springframework.data.domain.Pageable;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class AbstractBestOffersView extends BaseProductsPage implements HasUrlParameter<Void> {
     public static final String ROUTE_NAME = "/shopping/best-offers";
@@ -37,7 +42,7 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
     private IntegerField prevPriceMax = new IntegerField("Previous Price Max:");
     private TextField productName = new TextField("Product Name:");
     private ComboBox<String> shopDropdown = new ComboBox<>("Shop:");
-    private ComboBox<String> categoryDropdown = new ComboBox<>("Category:");
+    private BervanDynamicMultiDropdownController categoryDropdown;
     private BervanButton searchButton;
     private BervanButton rebuildBestOffers;
 
@@ -56,7 +61,8 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
         this.productSearchService = productSearchService;
         this.log = log;
         Set<String> categories = this.productSearchService.findCategories();
-        categoryDropdown.setItems(categories);
+        categoryDropdown = new BervanDynamicMultiDropdownController("Categories", "Categories:",
+                categories, new ArrayList<>());
 
         shopDropdown.setItems(Arrays.asList("Media Expert", "RTV Euro AGD", "Morele", "Centrum Rowerowe"));
 
@@ -77,8 +83,11 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
 
     @Override
     protected String getBackLink(ProductDTO productDTO) {
+        String categories = categoryDropdown.getValue().stream()
+                .map(cat -> "category=" + URLEncoder.encode(cat, StandardCharsets.UTF_8))
+                .collect(Collectors.joining("&"));
         return AbstractProductView.ROUTE_NAME + "/" + productDTO.getId()
-                + "?category=" + categoryDropdown.getValue()
+                + "?" + categories
                 + "&shop=" + shopDropdown.getValue()
                 + "&discount-min=" + discountMin.getValue()
                 + "&discount-max=" + discountMax.getValue()
@@ -92,9 +101,9 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
     @Override
     public void setParameter(BeforeEvent event, @OptionalParameter Void parameter) {
         QueryParameters queryParameters = event.getLocation().getQueryParameters();
-        String category = getSingleParam(queryParameters, "category");
-        String shop = getSingleParam(queryParameters, "shop");
-        String productName = getSingleParam(queryParameters, "product-name");
+        List<String> categories = (List<String>) getParams(queryParameters, "category");
+        String shop = (String) getParams(queryParameters, "shop");
+        String productName = (String) getParams(queryParameters, "product-name");
         Double discountMin = getDoubleParam(queryParameters, "discount-min");
         Double discountMax = getDoubleParam(queryParameters, "discount-max");
         Integer months = getIntegerParam(queryParameters, "months");
@@ -103,7 +112,7 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
 
         boolean atLeastOneParameter = false;
 
-        atLeastOneParameter = updateField(category, categoryDropdown, atLeastOneParameter);
+        atLeastOneParameter = updateField(categories, categoryDropdown, atLeastOneParameter);
         atLeastOneParameter = updateField(shop, shopDropdown, atLeastOneParameter);
         atLeastOneParameter = updateField(productName, this.productName, atLeastOneParameter);
 
@@ -118,6 +127,15 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
         }
     }
 
+    private boolean updateField(List<String> fieldValues, BervanDynamicMultiDropdownController multiDropdown, boolean atLeastOneParameter) {
+        if (fieldValues != null) {
+            multiDropdown.setValue(fieldValues);
+            atLeastOneParameter = true;
+        }
+
+        return atLeastOneParameter;
+    }
+
     private ApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable,
                                                                                         Double discountMin,
                                                                                         Double discountMax,
@@ -125,14 +143,13 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
                                                                                         Integer prevPriceMin,
                                                                                         Integer prevPriceMax,
                                                                                         String name,
-                                                                                        String category,
+                                                                        List<String> category,
                                                                                         String shop) {
-        category = getString(category);
         shop = getString(shop);
         name = getString(name);
 
         return discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin,
-                discountMax, months, Collections.singletonList(category), shop, name, prevPriceMin, prevPriceMax);
+                discountMax, months, category, shop, name, prevPriceMin, prevPriceMax);
 
     }
 }

@@ -15,6 +15,7 @@ import com.bervan.shstat.response.SearchApiResponse;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
+@Slf4j
 public class DiscountsViewService extends ViewBuilder {
     private final ProductSearchService productSearchService;
     private final Map<DiscountQueryKey, SearchApiResponse> cache =
@@ -123,7 +125,8 @@ public class DiscountsViewService extends ViewBuilder {
                 ProductBasedOnDateAttributes productBasedOnDateAttributes = mapper.readValue(val, ProductBasedOnDateAttributes.class);
                 Product product = productSearchService.findProductByProductBasedOnDateAttributesId(productBasedOnDateAttributes.getId());
                 if (product == null) {
-                    throw new RuntimeException("Could not find product based on product attributes id!");
+                    log.warn("Could not find product based on product attributes id: {}", productBasedOnDateAttributes.getId());
+                    continue;
                 }
                 productBasedOnDateAttributes.setProduct(product);
                 res.add(productBasedOnDateAttributes);

@@ -56,9 +56,9 @@ public abstract class AbstractProductsView extends BaseProductsPage implements H
     @Override
     public void setParameter(BeforeEvent event, @OptionalParameter Void parameter) {
         QueryParameters queryParameters = event.getLocation().getQueryParameters();
-        String category = getSingleParam(queryParameters, "category");
-        String shop = getSingleParam(queryParameters, "shop");
-        String productName = getSingleParam(queryParameters, "product-name");
+        String category = (String) getParams(queryParameters, "category");
+        String shop = (String) getParams(queryParameters, "shop");
+        String productName = (String) getParams(queryParameters, "product-name");
 
         boolean atLeastOneParameter = false;
 
