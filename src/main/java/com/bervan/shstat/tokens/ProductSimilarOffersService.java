@@ -66,19 +66,23 @@ public class ProductSimilarOffersService {
         Set<ProductTokens> existingTokens = productTokensRepository.findByProductId(product.getId());
 
         Map<String, ProductTokens> existingTokenMap = existingTokens.stream()
-            .collect(Collectors.toMap(ProductTokens::getValue, t -> t));
+                .collect(Collectors.toMap(
+                        t -> t.getValue() + "|" + t.getFactor(),
+                        t -> t
+                ));
 
         List<ProductTokens> tokensToSave = new ArrayList<>();
-
         Map<String, Integer> newTokensWithFactors = new HashMap<>();
-        categoryTokens.forEach(token -> newTokensWithFactors.put(token, 3));
-        nameTokens.forEach(token -> newTokensWithFactors.put(token, 2));
-        attrNameTokens.forEach(token -> newTokensWithFactors.put(token, 1));
+        categoryTokens.forEach(token -> newTokensWithFactors.put(token.toLowerCase(), 3));
+        nameTokens.forEach(token -> newTokensWithFactors.put(token.toLowerCase(), 2));
+        attrNameTokens.forEach(token -> newTokensWithFactors.put(token.toLowerCase(), 1));
 
         for (Map.Entry<String, Integer> entry : newTokensWithFactors.entrySet()) {
             String tokenValue = entry.getKey();
             int newFactor = entry.getValue();
-            ProductTokens existing = existingTokenMap.remove(tokenValue);
+            String tokenKey = tokenValue + "|" + newFactor;
+
+            ProductTokens existing = existingTokenMap.remove(tokenKey);
 
             if (existing == null) {
                 ProductTokens token = new ProductTokens();
@@ -87,13 +91,9 @@ public class ProductSimilarOffersService {
                 token.setProductId(product.getId());
                 token.addOwner(commonUser);
                 tokensToSave.add(token);
-            } else if (existing.getFactor() != newFactor) {
-                existing.setFactor(newFactor);
-                tokensToSave.add(existing);
             }
         }
 
-        // Remaining tokens in map are no longer needed
         List<ProductTokens> tokensToDelete = new ArrayList<>(existingTokenMap.values());
 
         if (!tokensToDelete.isEmpty()) {
