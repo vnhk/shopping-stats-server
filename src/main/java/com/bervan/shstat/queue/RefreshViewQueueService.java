@@ -1,18 +1,17 @@
 package com.bervan.shstat.queue;
 
-import com.bervan.common.service.ApiKeyService;
-import com.bervan.core.model.BervanLogger;
-import com.bervan.shstat.service.ProductService;
 import com.bervan.shstat.repository.ProductRepository;
+import com.bervan.shstat.service.ProductService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.io.Serializable;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Service
-public class RefreshViewQueue extends AbstractQueue<RefreshViewQueueParam> {
+@Slf4j
+public class RefreshViewQueueService {
     private final ProductService productService;
     private final ProductRepository productRepository;
     public static final String historicalLowPrices = "HISTORICAL_LOW_PRICES";
@@ -27,18 +26,28 @@ public class RefreshViewQueue extends AbstractQueue<RefreshViewQueueParam> {
                     lowerThanAvgForLastXMonths
             );
 
-    public RefreshViewQueue(ProductService productService, ProductRepository productRepository, BervanLogger log, ApiKeyService apiKeyService) {
-        super(log, apiKeyService, "RefreshViewQueueParam");
+    public RefreshViewQueueService(ProductService productService, ProductRepository productRepository) {
         this.productService = productService;
         this.productRepository = productRepository;
     }
 
-    @Override
-    protected void process(Serializable object) {
-//        log.info("Currently no views are refreshed!");
+    @Scheduled(cron = "0 0 0,6,12,18 * * *")
+    public void refreshViewsScheduled() {
+        try {
+            refreshViews();
+        } catch (Exception e) {
+            log.error("RefreshingViews: FAILED!", e);
+        }
+    }
 
-        String viewName = ((LinkedHashMap<String, Object>) object).get("viewName").toString();
-//        log.info("Refreshing product {} view started...", param.getViewName());
+    private void refreshViews() {
+        process(historicalLowPrices);
+        process(lowerThanAvgForLastXMonths);
+    }
+
+    public void process(String viewName) {
+        log.info("Refreshing {} view started... ", viewName);
+
         switch (viewName) {
             case historicalLowPrices:
                 productRepository.refreshHistoricalLowPricesTable();
@@ -53,6 +62,6 @@ public class RefreshViewQueue extends AbstractQueue<RefreshViewQueueParam> {
                 productService.createLowerThanAVGForLastXMonths();
                 break;
         }
-        log.info("Refreshing product {} view completed... " + viewName);
+        log.info("Refreshing {} view completed... ", viewName);
     }
 }

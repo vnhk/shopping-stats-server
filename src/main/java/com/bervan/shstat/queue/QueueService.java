@@ -4,19 +4,23 @@ import com.bervan.common.service.ApiKeyService;
 import com.bervan.shstat.ScrapContext;
 import com.bervan.shstat.response.ApiResponse;
 import com.rabbitmq.client.Channel;
+import lombok.extern.slf4j.Slf4j;
 import org.jboss.logging.Logger;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Set;
 
 @Service
+@Slf4j
 public class QueueService {
     Logger logger = Logger.getLogger(QueueService.class);
     private final Set<AbstractQueue<?>> queueProcessors;
