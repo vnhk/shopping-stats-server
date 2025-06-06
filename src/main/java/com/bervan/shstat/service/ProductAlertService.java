@@ -15,6 +15,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,15 +34,22 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
 
     @Scheduled(cron = "0 0 9 * * *")
     public void notifyAboutProducts() {
-        log.info("notifyAboutProducts started");
+        log.info("notifyAboutProducts[scheduled] started");
 
-        Integer minDis = Integer.MAX_VALUE;
-        Integer maxDis = Integer.MIN_VALUE;
-        Set<String> categories = new HashSet<>();
         SearchRequest request = new SearchRequest();
         request.setAddOwnerCriterion(false);
         Set<ProductAlert> productAlerts = load(request, Pageable.ofSize(100000));
 
+        notifyAboutProducts(productAlerts);
+        log.info("notifyAboutProducts[scheduled] ended");
+    }
+
+    public void notifyAboutProducts(Set<ProductAlert> productAlerts) {
+        log.info("notifyAboutProducts started");
+        Set<String> categories = new HashSet<>();
+        Integer minDis = Integer.MAX_VALUE;
+        Integer maxDis = Integer.MIN_VALUE;
+        boolean useAllCategories = false;
         Map<String, List<ProductAlert>> alertsByEmail = new HashMap<>();
 
         for (ProductAlert alert : productAlerts) {
@@ -50,10 +59,12 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
             if (alert.getDiscountMax() != null) {
                 maxDis = Math.max(maxDis, alert.getDiscountMax());
             }
-            if (alert.getProductCategories() != null) {
+            if (alert.getProductCategories() != null && !alert.getProductCategories().isEmpty()) {
                 categories.addAll(alert.getProductCategories());
+            } else {
+                useAllCategories = true; //if alert has no categories it means, it should load all
             }
-            if (alert.getEmails() != null) {
+            if (alert.getEmails() != null && !alert.getEmails().isEmpty()) {
                 for (String email : alert.getEmails()) {
                     alertsByEmail.computeIfAbsent(email, e -> new ArrayList<>()).add(alert);
                 }
@@ -61,6 +72,7 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
         }
 
         if (productAlerts.isEmpty()) {
+            log.warn("notifyAboutProducts: No alerts");
             return;
         }
 
@@ -69,7 +81,7 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
                 minDis.doubleValue(),
                 maxDis.doubleValue(),
                 3,
-                new ArrayList<>(categories),
+                useAllCategories ? new ArrayList<>() : new ArrayList<>(categories),
                 null, null,
                 50, 1_000_000
         );
@@ -93,6 +105,8 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
                     price = product.getPrices().get(0).getPrice();
                 }
 
+                Double discount = getDiscountPercentage(product);
+
                 for (ProductAlert alert : alerts) {
                     boolean match = true;
 
@@ -107,10 +121,10 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
                         match = false;
                     }
 
-                    if (alert.getDiscountMin() != null && product.getDiscount() != null && product.getDiscount() < alert.getDiscountMin()) {
+                    if (alert.getDiscountMin() != null && discount < alert.getDiscountMin()) {
                         match = false;
                     }
-                    if (alert.getDiscountMax() != null && product.getDiscount() != null && product.getDiscount() > alert.getDiscountMax()) {
+                    if (alert.getDiscountMax() != null && discount > alert.getDiscountMax()) {
                         match = false;
                     }
 
@@ -129,7 +143,8 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
 
             if (!matchedProducts.isEmpty()) {
                 String message = buildHtmlProductList(matchedProducts.subList(0, Math.min(50, matchedProducts.size())));
-                emailService.sendEmail(email, "Product Alerts", message);
+                emailService.sendEmail(email, "Product Alerts "
+                        + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-uuuu")), message);
             }
         }
         log.info("notifyAboutProducts ended");

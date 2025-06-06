@@ -2,6 +2,7 @@ package com.bervan.shstat.view;
 
 import com.bervan.common.AbstractTableView;
 import com.bervan.common.BervanButton;
+import com.bervan.common.BervanButtonStyle;
 import com.bervan.common.search.SearchQueryOption;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.SearchService;
@@ -11,8 +12,12 @@ import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.entity.ProductAlert;
 import com.bervan.shstat.service.ProductAlertService;
 import com.bervan.shstat.service.ProductConfigService;
+import com.vaadin.flow.component.AbstractField;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -27,14 +32,52 @@ public abstract class AbstractProductAlertView extends AbstractTableView<Long, P
         super(new ShoppingLayout(ROUTE_NAME), service, log, ProductAlert.class);
         this.productConfigService = productConfigService;
         this.searchService = searchService;
-        notifyAboutProducts = new BervanButton("Force notification via email", (e) -> {
-            showPrimaryNotification("Notifying started...");
-            service.notifyAboutProducts();
-            showPrimaryNotification("Notifying ended!");
-        });
         renderCommonComponents();
         loadCategories();
-        add(notifyAboutProducts);
+
+        notifyAboutProducts = new BervanButton("Force notification via email", ev -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader("Confirm");
+            confirmDialog.setText("Are you sure you want to notify?");
+
+            confirmDialog.setConfirmText("Yes");
+            confirmDialog.setConfirmButtonTheme("primary");
+            confirmDialog.addConfirmListener(event -> {
+                Set<String> itemsId = getSelectedItemsByCheckbox();
+
+                List<ProductAlert> toSet = data.stream()
+                        .filter(e -> e.getId() != null)
+                        .filter(e -> itemsId.contains(e.getId().toString()))
+                        .toList();
+
+                Set<ProductAlert> originals = new HashSet<>();
+                for (ProductAlert alert : toSet) {
+                    originals.add(service.loadById(alert.getId()).get());
+                }
+
+                service.notifyAboutProducts(originals);
+
+                checkboxes.stream().filter(AbstractField::getValue).forEach(e -> e.setValue(false));
+                selectAllCheckbox.setValue(false);
+                showPrimaryNotification("Notifying ended!");
+            });
+
+            confirmDialog.setCancelText("Cancel");
+            confirmDialog.setCancelable(true);
+            confirmDialog.addCancelListener(event -> {
+            });
+
+            confirmDialog.open();
+        }, BervanButtonStyle.WARNING);
+
+        buttonsForCheckboxesForVisibilityChange.add(notifyAboutProducts);
+        for (Button button : buttonsForCheckboxesForVisibilityChange) {
+            button.setEnabled(false);
+        }
+
+        checkboxActions.remove(checkboxDeleteButton);
+        checkboxActions.add(notifyAboutProducts);
+        checkboxActions.add(checkboxDeleteButton);
     }
 
     @Override
