@@ -89,8 +89,8 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
         List<ProductDTO> discountedProducts = (List<ProductDTO>) discountsCompared.getItems().stream()
                 .map(item -> (ProductDTO) item)
                 .sorted((p1, p2) -> {
-                    Double discount1 = getDiscountPercentage((ProductDTO) p1);
-                    Double discount2 = getDiscountPercentage((ProductDTO) p2);
+                    Double discount1 = ((ProductDTO) p1).getDiscount();
+                    Double discount2 = ((ProductDTO) p2).getDiscount();
                     return discount2.compareTo(discount1);
                 }).collect(Collectors.toList());
 
@@ -105,7 +105,7 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
                     price = product.getPrices().get(0).getPrice();
                 }
 
-                Double discount = getDiscountPercentage(product);
+                Double discount = product.getDiscount();
 
                 for (ProductAlert alert : alerts) {
                     boolean match = true;
@@ -142,26 +142,12 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
             }
 
             if (!matchedProducts.isEmpty()) {
-                String message = buildHtmlProductList(matchedProducts.subList(0, Math.min(50, matchedProducts.size())));
+                String message = buildHtmlProductList(matchedProducts.subList(0, Math.min(100, matchedProducts.size())));
                 emailService.sendEmail(email, "Product Alerts "
                         + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-uuuu")), message);
             }
         }
         log.info("notifyAboutProducts ended");
-    }
-
-    private Double getDiscountPercentage(ProductDTO productDTO) {
-        List<PriceDTO> prices = productDTO.getPrices();
-        if (prices == null || prices.isEmpty()) {
-            return 0.0;
-        }
-        double averagePrice = productDTO.getAvgPrice().doubleValue();
-
-        double currentPrice = prices.get(0).getPrice().doubleValue();
-        if (averagePrice == 0.0) {
-            return 0.0;
-        }
-        return ((averagePrice - currentPrice) / averagePrice) * 100;
     }
 
     private String buildHtmlProductList(List<ProductDTO> products) {

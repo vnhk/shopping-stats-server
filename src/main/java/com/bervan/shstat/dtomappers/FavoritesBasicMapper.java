@@ -14,7 +14,7 @@ public class FavoritesBasicMapper implements DTOMapper<FavoriteProduct, ProductD
     public void map(DataHolder<FavoriteProduct> product, DataHolder<ProductDTO> productDTO) {
         productDTO.value.setName(product.value.getProductName());
         productDTO.value.setShop(product.value.getShop());
-        productDTO.value.setOfferLink(DTOMapper.getOfferUrl(product.value.getShop(), product.value.getOfferUrl()));
+//        productDTO.value.setOfferLink(DTOMapper.getOfferUrl(product.value.getShop(), product.value.getOfferUrl()));
         productDTO.value.setImgSrc(product.value.getImgSrc());
         PriceDTO priceDTO = new PriceDTO();
         priceDTO.setDate(product.value.getScrapDate());

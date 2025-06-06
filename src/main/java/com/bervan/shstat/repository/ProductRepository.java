@@ -2,7 +2,6 @@ package com.bervan.shstat.repository;
 
 import com.bervan.history.model.BaseRepository;
 import com.bervan.shstat.entity.Product;
-import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -63,9 +62,6 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
     )
     Page<ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String shop, String name, Integer prevPriceMin, Integer prevPriceMax);
 
-
-    @Query(value = "SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE :category = c")
-    Page<Product> findProductsByCategoriesIn(String category, Pageable pageable);
 
     @Query(nativeQuery = true, value =
             """
@@ -233,45 +229,4 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
             return price;
         }
     }
-
-    @Query(value = "SELECT DISTINCT new ProductBasedOnDateAttributes(pd.price, pd.scrapDate, pd.formattedScrapDate) " +
-            " FROM Product p " +
-            "   JOIN ProductBasedOnDateAttributes pd ON pd.product = p " +
-            " WHERE p.shop = :shop " +
-            "   AND p.name = :name " +
-            "   AND pd.price = " +
-            "     (SELECT min(pd.price) as price " +
-            "          FROM Product p " +
-            "             JOIN ProductBasedOnDateAttributes pd ON pd.product = p " +
-            " AND pd.deleted is not true " +
-            "          WHERE p.shop = :shop " +
-            "             AND pd.price <> -1" +
-            "             AND p.name = :name)" +
-            "   ORDER BY pd.scrapDate DESC LIMIT 1")
-    ProductBasedOnDateAttributes lastMinPrice(String name, String shop);
-
-    @Query(value = "SELECT DISTINCT new ProductBasedOnDateAttributes(pd.price, pd.scrapDate, pd.formattedScrapDate) " +
-            " FROM Product p " +
-            "   JOIN ProductBasedOnDateAttributes pd ON pd.product = p " +
-            " WHERE p.shop = :shop " +
-            "   AND p.name = :name " +
-            "   AND pd.price = " +
-            "     (SELECT max(pd.price) as price " +
-            "          FROM Product p " +
-            "             JOIN ProductBasedOnDateAttributes pd ON pd.product = p " +
-            "   AND pd.deleted is not true " +
-            "          WHERE p.shop = :shop " +
-            "             AND pd.price <> -1" +
-            "             AND p.name = :name)" +
-            "   ORDER BY pd.scrapDate DESC LIMIT 1")
-    ProductBasedOnDateAttributes lastMaxPrice(String name, String shop);
-
-
-    @Query(value = "SELECT DISTINCT avg(pd.price) FROM Product p " +
-            " JOIN ProductBasedOnDateAttributes pd ON " +
-            " pd.product = p WHERE p.shop = :shop " +
-            " AND p.deleted is not true " +
-            " AND pd.price <> -1" +
-            " AND p.name = :name")
-    Double avgPrice(String name, String shop);
 }

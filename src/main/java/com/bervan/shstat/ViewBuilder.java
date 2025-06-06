@@ -2,7 +2,6 @@ package com.bervan.shstat;
 
 import com.bervan.shstat.dtomappers.BaseProductAttributesMapper;
 import com.bervan.shstat.dtomappers.DTOMapper;
-import com.bervan.shstat.dtomappers.ProductPriceStatsMapper;
 import com.bervan.shstat.dtomappers.ProductPricesMapper;
 
 import java.util.Collection;
@@ -15,7 +14,7 @@ public abstract class ViewBuilder {
     protected final Set<? extends DTOMapper> mappers;
     protected final Map<Class<? extends DTOMapper>, DTOMapper> mappersMap = new HashMap<>();
     public static final Set<Class<? extends DTOMapper<?, ?>>> PRODUCT_WITH_DETAILS_AND_PRICE_HISTORY_MAPPERS
-            = Set.of(BaseProductAttributesMapper.class, ProductPricesMapper.class, ProductPriceStatsMapper.class);
+            = Set.of(BaseProductAttributesMapper.class, ProductPricesMapper.class);
 
     protected ViewBuilder(Collection<? extends DTOMapper<?, ?>> mappers) {
         this.mappers = mappers.stream().collect(Collectors.toSet());

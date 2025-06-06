@@ -24,8 +24,8 @@ public abstract class BaseProductsPage extends BaseProductPage {
         List<ProductDTO> sortedProducts = (List<ProductDTO>) products.getItems().stream()
                 .map(item -> (ProductDTO) item)
                 .sorted((p1, p2) -> {
-                    Double discount1 = getDiscountPercentage((ProductDTO) p1);
-                    Double discount2 = getDiscountPercentage((ProductDTO) p2);
+                    Double discount1 = ((ProductDTO) p1).getDiscount();
+                    Double discount2 = ((ProductDTO) p2).getDiscount();
                     return discount2.compareTo(discount1);
                 }).collect(Collectors.toList());
 
@@ -53,20 +53,6 @@ public abstract class BaseProductsPage extends BaseProductPage {
             tileContainer.add(productCard);
         }
         return tileContainer;
-    }
-
-    private Double getDiscountPercentage(ProductDTO productDTO) {
-        List<PriceDTO> prices = productDTO.getPrices();
-        if (prices == null || prices.isEmpty()) {
-            return 0.0;
-        }
-        double averagePrice = productDTO.getAvgPrice().doubleValue();
-
-        double currentPrice = prices.get(0).getPrice().doubleValue();
-        if (averagePrice == 0.0) {
-            return 0.0;
-        }
-        return ((averagePrice - currentPrice) / averagePrice) * 100;
     }
 
     protected abstract String getBackLink(ProductDTO productDTO);
