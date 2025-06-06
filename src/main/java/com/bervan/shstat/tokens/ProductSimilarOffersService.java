@@ -4,7 +4,6 @@ import com.bervan.common.user.User;
 import com.bervan.common.user.UserRepository;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductAttribute;
-import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +24,7 @@ public class ProductSimilarOffersService {
         this.userRepository = userRepository;
     }
 
-    @Transactional
-    public void createAndUpdateTokens(Product product) {
+    public synchronized void createAndUpdateTokens(Product product) {
         //if cache maybe here clear the cache
 
         //by category - 1

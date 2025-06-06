@@ -256,7 +256,6 @@ public class ProductService {
             productSimilarOffersService.createAndUpdateTokens(product);
         } catch (Exception e) {
             log.error("Failed to createAndUpdateTokens!", e);
-            throw new MapperException("Failed to createAndUpdateTokens!");
         }
     }
 
