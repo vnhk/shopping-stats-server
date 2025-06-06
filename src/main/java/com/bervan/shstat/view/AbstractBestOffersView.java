@@ -10,7 +10,6 @@ import com.bervan.shstat.service.DiscountsViewService;
 import com.bervan.shstat.service.ProductSearchService;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
@@ -73,7 +72,7 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
             productsLayout.add(tileContainer);
         });
 
-        add(new HorizontalLayout(shopDropdown, rebuildBestOffers), categoryDropdown, discountMin, discountMax, months, prevPriceMin, prevPriceMax, productName, searchButton, productsLayout);
+        add(rebuildBestOffers, shopDropdown, categoryDropdown, discountMin, discountMax, months, prevPriceMin, prevPriceMax, productName, searchButton, productsLayout);
     }
 
     @Override

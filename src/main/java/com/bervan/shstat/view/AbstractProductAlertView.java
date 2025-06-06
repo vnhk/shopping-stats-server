@@ -32,9 +32,9 @@ public abstract class AbstractProductAlertView extends AbstractTableView<Long, P
             service.notifyAboutProducts();
             showPrimaryNotification("Notifying ended!");
         });
-        this.add(notifyAboutProducts);
         renderCommonComponents();
         loadCategories();
+        add(notifyAboutProducts);
     }
 
     @Override
