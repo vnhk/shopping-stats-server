@@ -52,10 +52,12 @@ public class ProductSearchService {
         if (name != null) {
             name = name.toUpperCase();
         }
-        if (categories != null && categories.isEmpty()) {
-            categories = null;
+
+        if (categories == null || categories.isEmpty()) {
+            return productRepository.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin, discountMax, months, shop, name, prevPriceMin, prevPriceMax);
+        } else {
+            return productRepository.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin, discountMax, months, categories, shop, name, prevPriceMin, prevPriceMax);
         }
-        return productRepository.findDiscountsComparedToAVGOnPricesInLastXMonths(pageable, discountMin, discountMax, months, categories, shop, name, prevPriceMin, prevPriceMax);
     }
 
     public Page<Product> findProducts(String name, Pageable pageable) {

@@ -35,18 +35,34 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
 
     @Query(nativeQuery = true, value =
             """
-            SELECT DISTINCT id, scrap_date as scrapDate, price
-            FROM LOWER_THAN_AVG_FOR_X_MONTHS
-            WHERE (:categories IS NULL OR category IN (:categories))
-                AND shop = COALESCE(:shop, shop)
-                AND month_offset = :months
-                AND avgPrice >= :prevPriceMin AND avgPrice <= :prevPriceMax
-                AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
-                AND product_name LIKE CONCAT('%', COALESCE(:name, product_name), '%')
-            ORDER BY discount_in_percent DESC
-            """
+                    SELECT DISTINCT id, scrap_date as scrapDate, price
+                    FROM LOWER_THAN_AVG_FOR_X_MONTHS
+                    WHERE (:categories IS NULL OR category IN (:categories))
+                        AND shop = COALESCE(:shop, shop)
+                        AND month_offset = :months
+                        AND avgPrice >= :prevPriceMin AND avgPrice <= :prevPriceMax
+                        AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
+                        AND (:name IS NULL OR product_name LIKE CONCAT('%', :name, '%'))
+                    ORDER BY discount_in_percent DESC
+                    """
     )
     Page<ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, List<String> categories, String shop, String name, Integer prevPriceMin, Integer prevPriceMax);
+
+
+    @Query(nativeQuery = true, value =
+            """
+                    SELECT DISTINCT id, scrap_date as scrapDate, price
+                    FROM LOWER_THAN_AVG_FOR_X_MONTHS
+                    WHERE shop = COALESCE(:shop, shop)
+                        AND month_offset = :months
+                        AND avgPrice >= :prevPriceMin AND avgPrice <= :prevPriceMax
+                        AND discount_in_percent >= :discountMin AND discount_in_percent <= :discountMax
+                        AND (:name IS NULL OR product_name LIKE CONCAT('%', :name, '%'))
+                    ORDER BY discount_in_percent DESC
+                    """
+    )
+    Page<ProductBasedOnDateAttributesNativeResInterface> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, String shop, String name, Integer prevPriceMin, Integer prevPriceMax);
+
 
     @Query(value = "SELECT DISTINCT p FROM Product p JOIN p.categories c WHERE :category = c")
     Page<Product> findProductsByCategoriesIn(String category, Pageable pageable);
