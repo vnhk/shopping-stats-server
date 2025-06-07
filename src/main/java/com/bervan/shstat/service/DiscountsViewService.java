@@ -14,6 +14,7 @@ import com.bervan.shstat.response.SearchApiResponse;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,11 +35,6 @@ public class DiscountsViewService extends ViewBuilder {
                 }
             };
 
-    @Scheduled(cron = "0 0 * * * *")
-    public void clearCacheAtMidnight() {
-        cache.clear();
-    }
-
     public DiscountsViewService(ProductSearchService productSearchService,
                                 List<? extends DTOMapper<Product, ProductDTO>> productMappers,
                                 List<? extends DTOMapper<ProductBasedOnDateAttributes, PriceDTO>> productBasedOnDateAttributesToPrice) {
@@ -51,6 +47,11 @@ public class DiscountsViewService extends ViewBuilder {
         Set all = new HashSet<>(productMappers);
         all.addAll(productBasedOnDateAttributesToPrice);
         return all;
+    }
+
+    @Scheduled(cron = "0 0 * * * *")
+    public void clearCacheAtMidnight() {
+        cache.clear();
     }
 
     public SearchApiResponse findHistoricalLowPriceProducts(Pageable pageable, String category, String shop, String name) {
@@ -70,9 +71,12 @@ public class DiscountsViewService extends ViewBuilder {
     public SearchApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, List<String> categories, String shop, String name, Integer prevPriceMin, Integer prevPriceMax) {
         DiscountQueryKey key = new DiscountQueryKey(pageable.getPageNumber(), pageable.getPageSize(),
                 discountMin, discountMax, months, categories, shop, name, prevPriceMin, prevPriceMax);
+        log.debug("findDiscountsComparedToAVGOnPricesInLastXMonths: {}", key);
 
         if (cache.containsKey(key)) {
-            return cache.get(key);
+            SearchApiResponse searchApiResponse = cache.get(key);
+            log.debug("findDiscountsComparedToAVGOnPricesInLastXMonths: {}\n from cache: {} items", key, searchApiResponse.getAllFound());
+            return searchApiResponse;
         }
 
         Page<ProductRepository.ProductBasedOnDateAttributesNativeResInterface> historicalLowProducts =
@@ -81,6 +85,7 @@ public class DiscountsViewService extends ViewBuilder {
 
         SearchApiResponse response = buildResponse(pageable, historicalLowProducts);
         cache.put(key, response);
+        log.debug("findDiscountsComparedToAVGOnPricesInLastXMonths: {}\n from db: {} items", key, response.getAllFound());
         return response;
     }
 
@@ -137,6 +142,7 @@ public class DiscountsViewService extends ViewBuilder {
         return res;
     }
 
+    @ToString
     private static class DiscountQueryKey {
         private final int page;
         private final int size;
