@@ -48,7 +48,7 @@ public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
         }
 
         try {
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(1, TimeUnit.MINUTES);
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(10, TimeUnit.MINUTES);
 
             for (CompletableFuture<List<Product>> future : futures) {
                 allMapped.addAll(future.get());
