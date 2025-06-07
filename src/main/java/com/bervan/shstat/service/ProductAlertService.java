@@ -139,7 +139,6 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
 
             if (match) {
                 matchedProducts.add(product);
-                break;
             }
         }
 
