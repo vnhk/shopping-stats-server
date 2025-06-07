@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -32,6 +33,56 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
         this.discountsViewService = discountsViewService;
     }
 
+    private static boolean isMatch(ProductAlert alert, ProductDTO product) {
+        BigDecimal price = null;
+        if (product.getPrices() != null && !product.getPrices().isEmpty()) {
+            price = product.getPrices().get(0).getPrice();
+        }
+
+        Double discount = product.getDiscount();
+
+        boolean match = alert.getProductName() == null || product.getName().toLowerCase().contains(alert.getProductName().toLowerCase());
+
+        if (alert.getPriceMin() != null && (price == null || price.doubleValue() < alert.getPriceMin())) {
+            match = false;
+        }
+        if (alert.getPriceMax() != null && (price == null || price.doubleValue() > alert.getPriceMax())) {
+            match = false;
+        }
+
+        if (alert.getDiscountMin() != null && discount < alert.getDiscountMin()) {
+            match = false;
+        }
+        if (alert.getDiscountMax() != null && discount > alert.getDiscountMax()) {
+            match = false;
+        }
+
+        if (alert.getProductCategories() != null && !alert.getProductCategories().isEmpty()) {
+            if (Collections.disjoint(alert.getProductCategories(), product.getCategories())) {
+                match = false;
+            }
+        }
+        return match;
+    }
+
+    private static String getDiscountStr(ProductDTO product, PriceDTO latest) {
+        BigDecimal latestPrice = latest.getPrice();
+        BigDecimal avgPrice = product.getAvgPrice();
+
+        String discount = null;
+        if (avgPrice != null && latestPrice != null && avgPrice.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal diff = latestPrice.subtract(avgPrice);
+            BigDecimal percentage = diff.abs().divide(avgPrice, 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+
+            if (latestPrice.compareTo(avgPrice) > 0) {
+                discount = "+" + percentage;
+            } else if (latestPrice.compareTo(avgPrice) < 0) {
+                discount = "-" + percentage;
+            }
+        }
+        return discount;
+    }
+
     @Scheduled(cron = "0 0 9 * * *")
     public void notifyAboutProducts() {
         log.info("notifyAboutProducts[scheduled] started");
@@ -44,110 +95,60 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
         log.info("notifyAboutProducts[scheduled] ended");
     }
 
-    public void notifyAboutProducts(Set<ProductAlert> productAlerts) {
+    public void notifyAboutProducts(Collection<ProductAlert> alerts) {
         log.info("notifyAboutProducts started");
-        Set<String> categories = new HashSet<>();
-        Integer minDis = Integer.MAX_VALUE;
-        Integer maxDis = Integer.MIN_VALUE;
-        boolean useAllCategories = false;
-        Map<String, List<ProductAlert>> alertsByEmail = new HashMap<>();
-
-        for (ProductAlert alert : productAlerts) {
-            if (alert.getDiscountMin() != null) {
-                minDis = Math.min(minDis, alert.getDiscountMin());
-            }
-            if (alert.getDiscountMax() != null) {
-                maxDis = Math.max(maxDis, alert.getDiscountMax());
-            }
-            if (alert.getProductCategories() != null && !alert.getProductCategories().isEmpty()) {
-                categories.addAll(alert.getProductCategories());
-            } else {
-                useAllCategories = true; //if alert has no categories it means, it should load all
-            }
-            if (alert.getEmails() != null && !alert.getEmails().isEmpty()) {
-                for (String email : alert.getEmails()) {
-                    alertsByEmail.computeIfAbsent(email, e -> new ArrayList<>()).add(alert);
-                }
-            }
+        for (ProductAlert alert : alerts) {
+            notifyAboutProducts(alert);
         }
+        log.info("notifyAboutProducts ended");
+    }
 
-        if (productAlerts.isEmpty()) {
-            log.warn("notifyAboutProducts: No alerts");
+    private void notifyAboutProducts(ProductAlert alert) {
+        if (alert.getEmails() == null || alert.getEmails().isEmpty()) {
+            log.warn("Alert without emails. Skipping.");
             return;
         }
 
-        SearchApiResponse discountsCompared = discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths(
-                Pageable.ofSize(1000),
-                minDis.doubleValue(),
-                maxDis.doubleValue(),
-                3,
-                useAllCategories ? new ArrayList<>() : new ArrayList<>(categories),
-                null, null,
-                50, 1_000_000
-        );
+        Set<String> categories = new HashSet<>();
+        int minDis = Integer.MAX_VALUE;
+        int maxDis = Integer.MIN_VALUE;
+        boolean useAllCategories = false;
 
-        List<ProductDTO> discountedProducts = (List<ProductDTO>) discountsCompared.getItems().stream()
-                .map(item -> (ProductDTO) item)
-                .sorted((p1, p2) -> {
-                    Double discount1 = ((ProductDTO) p1).getDiscount();
-                    Double discount2 = ((ProductDTO) p2).getDiscount();
-                    return discount2.compareTo(discount1);
-                }).collect(Collectors.toList());
+        if (alert.getDiscountMin() != null) {
+            minDis = alert.getDiscountMin();
+        }
+        if (alert.getDiscountMax() != null) {
+            maxDis = alert.getDiscountMax();
+        }
+        if (alert.getProductCategories() != null && !alert.getProductCategories().isEmpty()) {
+            categories.addAll(alert.getProductCategories());
+        }
 
-        for (Map.Entry<String, List<ProductAlert>> entry : alertsByEmail.entrySet()) {
-            String email = entry.getKey();
-            List<ProductAlert> alerts = entry.getValue();
-            List<ProductDTO> matchedProducts = new ArrayList<>();
+        SearchApiResponse discountsCompared = discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable.ofSize(100000), (double) minDis, (double) maxDis, 3, useAllCategories ? new ArrayList<>() : new ArrayList<>(categories), null, null, 50, 1_000_000);
 
-            for (ProductDTO product : discountedProducts) {
-                BigDecimal price = null;
-                if (product.getPrices() != null && !product.getPrices().isEmpty()) {
-                    price = product.getPrices().get(0).getPrice();
-                }
+        List<ProductDTO> discountedProducts = (List<ProductDTO>) discountsCompared.getItems().stream().sorted((p1, p2) -> {
+            Double discount1 = ((ProductDTO) p1).getDiscount();
+            Double discount2 = ((ProductDTO) p2).getDiscount();
+            return discount2.compareTo(discount1);
+        }).collect(Collectors.toList());
 
-                Double discount = product.getDiscount();
+        List<ProductDTO> matchedProducts = new ArrayList<>();
 
-                for (ProductAlert alert : alerts) {
-                    boolean match = true;
+        for (ProductDTO product : discountedProducts) {
+            boolean match = isMatch(alert, product);
 
-                    if (alert.getProductName() != null && !product.getName().toLowerCase().contains(alert.getProductName().toLowerCase())) {
-                        match = false;
-                    }
-
-                    if (alert.getPriceMin() != null && (price == null || price.doubleValue() < alert.getPriceMin())) {
-                        match = false;
-                    }
-                    if (alert.getPriceMax() != null && (price == null || price.doubleValue() > alert.getPriceMax())) {
-                        match = false;
-                    }
-
-                    if (alert.getDiscountMin() != null && discount < alert.getDiscountMin()) {
-                        match = false;
-                    }
-                    if (alert.getDiscountMax() != null && discount > alert.getDiscountMax()) {
-                        match = false;
-                    }
-
-                    if (alert.getProductCategories() != null && !alert.getProductCategories().isEmpty()) {
-                        if (Collections.disjoint(alert.getProductCategories(), product.getCategories())) {
-                            match = false;
-                        }
-                    }
-
-                    if (match) {
-                        matchedProducts.add(product);
-                        break;
-                    }
-                }
-            }
-
-            if (!matchedProducts.isEmpty()) {
-                String message = buildHtmlProductList(matchedProducts.subList(0, Math.min(100, matchedProducts.size())));
-                emailService.sendEmail(email, "Product Alerts "
-                        + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-uuuu")), message);
+            if (match) {
+                matchedProducts.add(product);
+                break;
             }
         }
-        log.info("notifyAboutProducts ended");
+
+        if (!matchedProducts.isEmpty()) {
+            String message = buildHtmlProductList(matchedProducts.subList(0, Math.min(100, matchedProducts.size())));
+            for (String email : alert.getEmails()) {
+                emailService.sendEmail(email, "Product Alerts " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-uuuu")), message);
+            }
+        }
     }
 
     private String buildHtmlProductList(List<ProductDTO> products) {
@@ -165,29 +166,14 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
 
             List<PriceDTO> prices = product.getPrices();
             PriceDTO latest = prices.get(0);
-            BigDecimal latestPrice = latest.getPrice();
-            BigDecimal avgPrice = product.getAvgPrice();
-
-            String discount = null;
-            if (avgPrice != null && latestPrice != null && avgPrice.compareTo(BigDecimal.ZERO) > 0) {
-                BigDecimal diff = latestPrice.subtract(avgPrice);
-                BigDecimal percentage = diff.abs().divide(avgPrice, 2, BigDecimal.ROUND_HALF_UP)
-                        .multiply(BigDecimal.valueOf(100));
-
-                if (latestPrice.compareTo(avgPrice) > 0) {
-                    discount = "+" + percentage;
-                } else if (latestPrice.compareTo(avgPrice) < 0) {
-                    discount = "-" + percentage;
-                }
-            }
+            String discount = getDiscountStr(product, latest);
 
             html.append(String.format("""
-                                <li>
-                                    <a href="%s">%s</a> – <strong>%.2f PLN</strong>
-                                    %s
-                                </li>
-                            """, link, name, latest.getPrice() != null ? latest.getPrice() : BigDecimal.ZERO,
-                    discount != null ? String.format(" (%s%%) ", discount) : "?"));
+                        <li>
+                            <a href="%s">%s</a> – <strong>%.2f PLN</strong>
+                            %s
+                        </li>
+                    """, link, name, latest.getPrice() != null ? latest.getPrice() : BigDecimal.ZERO, discount != null ? String.format(" (%s%%) ", discount) : "?"));
         }
 
         html.append("""
@@ -199,7 +185,6 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
 
         return html.toString();
     }
-
 
     public List<String> loadAllCategories(ProductAlert productAlert) {
         return ((ProductAlertRepository) repository).loadAllCategories(productAlert);
