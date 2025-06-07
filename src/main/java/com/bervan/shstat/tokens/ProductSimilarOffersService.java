@@ -4,16 +4,24 @@ import com.bervan.common.user.User;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductAttribute;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class ProductSimilarOffersService {
     private final List<? extends TokenConverter> tokenConverters;
     private final ProductTokensRepository productTokensRepository;
+    private final List<ProductTokens> tokensToSave = new ArrayList<>();
+    private final List<ProductTokens> tokensToDelete = new ArrayList<>();
+    private final ReentrantLock lock = new ReentrantLock();
 
     public ProductSimilarOffersService(List<? extends TokenConverter> tokenConverters,
                                        ProductTokensRepository productTokensRepository) {
@@ -22,7 +30,7 @@ public class ProductSimilarOffersService {
     }
 
     @Transactional
-    public synchronized void createAndUpdateTokens(Product product, User commonUser) {
+    public void createAndUpdateTokens(Product product, User commonUser) {
         //if cache maybe here clear the cache
 
         //by category - 1
@@ -63,41 +71,62 @@ public class ProductSimilarOffersService {
                         t -> t
                 ));
 
-        List<ProductTokens> tokensToSave = new ArrayList<>();
         Map<String, Integer> newTokensWithFactors = new HashMap<>();
         categoryTokens.forEach(token -> newTokensWithFactors.put(token.toLowerCase(), 3));
         nameTokens.forEach(token -> newTokensWithFactors.put(token.toLowerCase(), 2));
         attrNameTokens.forEach(token -> newTokensWithFactors.put(token.toLowerCase(), 1));
 
-        for (Map.Entry<String, Integer> entry : newTokensWithFactors.entrySet()) {
-            String tokenValue = entry.getKey();
-            int newFactor = entry.getValue();
-            String tokenKey = tokenValue + "|" + newFactor;
+        lock.lock();
+        try {
+            for (Map.Entry<String, Integer> entry : newTokensWithFactors.entrySet()) {
+                String tokenValue = entry.getKey();
+                int newFactor = entry.getValue();
+                String tokenKey = tokenValue + "|" + newFactor;
 
-            ProductTokens existing = existingTokenMap.remove(tokenKey);
+                ProductTokens existing = existingTokenMap.remove(tokenKey);
 
-            if (existing == null) {
-                ProductTokens token = new ProductTokens();
-                token.setValue(tokenValue);
-                token.setFactor(newFactor);
-                token.setProductId(product.getId());
-                token.addOwner(commonUser);
-                tokensToSave.add(token);
+                if (existing == null) {
+                    ProductTokens token = new ProductTokens();
+                    token.setValue(tokenValue);
+                    token.setFactor(newFactor);
+                    token.setProductId(product.getId());
+                    token.addOwner(commonUser);
+                    tokensToSave.add(token);
+                }
             }
+
+            tokensToDelete.addAll(existingTokenMap.values());
+        } finally {
+            lock.unlock();
         }
+    }
 
-        List<ProductTokens> tokensToDelete = new ArrayList<>(existingTokenMap.values());
+    @Scheduled(cron = "0 0 * * * *")
+    public void processTokensInDb() {
+        try {
+            if (lock.tryLock(5, TimeUnit.MINUTES)) {
+                try {
+                    if (!tokensToDelete.isEmpty()) {
+                        List<Long> tokensId = tokensToDelete.stream().map(ProductTokens::getId).collect(Collectors.toList());
+                        productTokensRepository.deleteOwnersTokens(tokensId);
+                        productTokensRepository.deleteTokens(tokensId);
+                        tokensToDelete.clear();
+                    }
 
-        if (!tokensToDelete.isEmpty()) {
-            List<Long> tokensId = tokensToDelete.stream().map(ProductTokens::getId).collect(Collectors.toList());
-            productTokensRepository.deleteOwnersTokens(tokensId);
-            productTokensRepository.deleteTokens(tokensId);
-        }
-
-        if (!tokensToSave.isEmpty()) {
-            synchronized (this) {
-                productTokensRepository.saveAll(tokensToSave);
+                    if (!tokensToSave.isEmpty()) {
+                        productTokensRepository.saveAll(tokensToSave);
+                        tokensToSave.clear();
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to flush product tokens", e);
+                } finally {
+                    lock.unlock();
+                }
+            } else {
+                log.warn("Flush skipped due to active write lock");
             }
+        } catch (InterruptedException e) {
+            log.warn("InterruptedException for write lock");
         }
     }
 

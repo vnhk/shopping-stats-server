@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.bervan.shstat.service.ProductService.productPerDateAttributeProperties;
@@ -61,22 +62,26 @@ public class ActualProductService {
 
     @Scheduled(cron = "0 0 * * * *")
     public void flushActualProductsToDb() {
-        if (lock.tryLock()) {
-            try {
-                if (!delayedToBeSaved.isEmpty()) {
-                    for (int i = 0; i < delayedToBeSaved.size(); i += BATCH_SIZE) {
-                        int end = Math.min(i + BATCH_SIZE, delayedToBeSaved.size());
-                        actualProductsRepository.saveAll(delayedToBeSaved.subList(i, end));
+        try {
+            if (lock.tryLock(5, TimeUnit.MINUTES)) {
+                try {
+                    if (!delayedToBeSaved.isEmpty()) {
+                        for (int i = 0; i < delayedToBeSaved.size(); i += BATCH_SIZE) {
+                            int end = Math.min(i + BATCH_SIZE, delayedToBeSaved.size());
+                            actualProductsRepository.saveAll(delayedToBeSaved.subList(i, end));
+                        }
+                        delayedToBeSaved.clear();
                     }
-                    delayedToBeSaved.clear();
+                } catch (Exception e) {
+                    log.error("Failed to flush actual products", e);
+                } finally {
+                    lock.unlock();
                 }
-            } catch (Exception e) {
-                log.error("Failed to flush actual products", e);
-            } finally {
-                lock.unlock();
+            } else {
+                log.warn("Flush skipped due to active write lock");
             }
-        } else {
-            log.warn("Flush skipped due to active write lock");
+        } catch (InterruptedException e) {
+            log.error("flushActualProductsToDb InterruptedException for write lock");
         }
     }
 
