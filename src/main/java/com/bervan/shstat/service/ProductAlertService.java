@@ -142,6 +142,8 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
             }
         }
 
+        log.info("notifyAboutProducts - found {} matched products for alert {} id", matchedProducts.size(), alert.getId());
+
         if (!matchedProducts.isEmpty()) {
             String message = buildHtmlProductList(matchedProducts.subList(0, Math.min(100, matchedProducts.size())));
             for (String email : alert.getEmails()) {
