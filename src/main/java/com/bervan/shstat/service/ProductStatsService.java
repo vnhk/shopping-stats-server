@@ -6,11 +6,13 @@ import com.bervan.shstat.entity.ProductStats;
 import com.bervan.shstat.repository.ActualProductsRepository;
 import com.bervan.shstat.repository.ProductStatsRepository;
 import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class ProductStatsService {
     private final ProductStatsRepository productStatsRepository;
@@ -26,7 +28,12 @@ public class ProductStatsService {
             return;
         }
 
-        BigDecimal price = (BigDecimal) ProductService.productPerDateAttributeProperties.stream().filter(e -> e.attr.equals("Price")).findFirst()
+        if (mappedProduct.getProductBasedOnDateAttributes() == null || mappedProduct.getProductBasedOnDateAttributes().stream().filter(e -> !e.isDeleted()).count() < 2) {
+            log.warn("updateProductStats - No sense to create stats because there is no enough historical data for product: {} id", mappedProduct.getId());
+            return;
+        }
+
+        BigDecimal lastPrice = (BigDecimal) ProductService.productPerDateAttributeProperties.stream().filter(e -> e.attr.equals("Price")).findFirst()
                 .get().mapper.map(priceObj);
         Long id = mappedProduct.getId();
         Optional<ProductStats> byProductId = productStatsRepository.findByProductId(id);
@@ -36,7 +43,7 @@ public class ProductStatsService {
             byProductId = Optional.of(productStats);
         }
 
-        if (price.compareTo(BigDecimal.ZERO) > 0) {
+        if (lastPrice.compareTo(BigDecimal.ZERO) > 0) {
             updateStats(byProductId);
 
             if (byProductId.get().getOwners().isEmpty()) {
@@ -102,17 +109,7 @@ public class ProductStatsService {
     }
 
     private BigDecimal calculateAvgForMonths(@NotNull Long productId, int offset) {
-        //It doesnt make sense to update previous AVG, because if avg is for 1 month it can't be updated after 1 month....
-        //to make it work in that way the stat should have start and end date fex:
-        //- 2 month avg: start [01.01) - end (01.03) and price should be updated only in this range if after then create new avg for next 2 month
-        //but it also has low sense.... beacuse avg in that case will be for 1 day... so the best idea is to calculate it EVERY TIME.....
-//        if (avg == null || avg.equals(BigDecimal.ZERO)) {
         return createAvgForXMonth(productId, offset);
-//        } else {
-//            Long amountOfPrices = productStatsRepository.countAllPricesForXMonths(offset, productId); //previous avg was created for amountOfPrices - 1
-//            avg = avg.add(price).divide(BigDecimal.valueOf(amountOfPrices), 2, RoundingMode.HALF_UP);
-//            return avg;
-//        }
     }
 
     private BigDecimal createHistoricalLowForXMonth(Long productId, int offset) {
