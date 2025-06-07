@@ -253,7 +253,7 @@ public class ProductService {
 
     private void createAndUpdateTokens(Product product) {
         try {
-            productSimilarOffersService.createAndUpdateTokens(product);
+            productSimilarOffersService.createAndUpdateTokens(product, commonUser);
         } catch (Exception e) {
             log.error("Failed to createAndUpdateTokens!", e);
         }

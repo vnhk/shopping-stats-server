@@ -1,7 +1,6 @@
 package com.bervan.shstat.tokens;
 
 import com.bervan.common.user.User;
-import com.bervan.common.user.UserRepository;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductAttribute;
 import jakarta.transaction.Transactional;
@@ -15,18 +14,15 @@ import java.util.stream.Collectors;
 public class ProductSimilarOffersService {
     private final List<? extends TokenConverter> tokenConverters;
     private final ProductTokensRepository productTokensRepository;
-    private final UserRepository userRepository;
-    private User commonUser;
 
     public ProductSimilarOffersService(List<? extends TokenConverter> tokenConverters,
-                                       ProductTokensRepository productTokensRepository, UserRepository userRepository) {
+                                       ProductTokensRepository productTokensRepository) {
         this.tokenConverters = tokenConverters;
         this.productTokensRepository = productTokensRepository;
-        this.userRepository = userRepository;
     }
 
     @Transactional
-    public synchronized void createAndUpdateTokens(Product product) {
+    public synchronized void createAndUpdateTokens(Product product, User commonUser) {
         //if cache maybe here clear the cache
 
         //by category - 1
@@ -57,10 +53,6 @@ public class ProductSimilarOffersService {
                     attrNameTokens.add(converted.get());
                 }
             }
-        }
-
-        if (commonUser == null) {
-            commonUser = userRepository.findByUsername("COMMON_USER").get();
         }
 
         Set<ProductTokens> existingTokens = productTokensRepository.findByProductId(product.getId());

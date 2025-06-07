@@ -9,7 +9,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.bervan.shstat.service.ProductService.productPerDateAttributeProperties;
 
@@ -17,34 +20,67 @@ import static com.bervan.shstat.service.ProductService.productPerDateAttributePr
 @Service
 public class ActualProductService {
     private static final Integer currentDateOffsetInDays = 2; //is ok, good offers will not last forever!
+    private static final int BATCH_SIZE = 1000;
     private final ActualProductsRepository actualProductsRepository;
+    private final List<ActualProduct> delayedToBeSaved = new LinkedList<>();
+    private final ReentrantLock lock = new ReentrantLock();
 
     public ActualProductService(ActualProductsRepository actualProductsRepository) {
         this.actualProductsRepository = actualProductsRepository;
     }
 
-    public synchronized void updateActualProducts(Object date, Product mappedProduct, User commonUser) {
-        Date scrapDate = (Date) productPerDateAttributeProperties.stream().filter(e -> e.attr.equals("Date")).findFirst()
+    public void updateActualProducts(Object date, Product mappedProduct, User commonUser) {
+        Date scrapDate = (Date) productPerDateAttributeProperties.stream()
+                .filter(e -> e.attr.equals("Date")).findFirst()
                 .get().mapper.map(date);
+
         Optional<ActualProduct> actualProduct = actualProductsRepository.findByProductId(mappedProduct.getId());
-        if (actualProduct.isPresent()) {
-            if (actualProduct.get().getScrapDate().before(scrapDate)) {
-                actualProduct.get().setScrapDate(scrapDate);
-                if (!actualProduct.get().getOwners().contains(commonUser)) {
-                    actualProduct.get().addOwner(commonUser);
+
+        lock.lock();
+        try {
+            if (actualProduct.isPresent()) {
+                ActualProduct ap = actualProduct.get();
+                if (ap.getScrapDate().before(scrapDate)) {
+                    ap.setScrapDate(scrapDate);
+                    if (!ap.getOwners().contains(commonUser)) {
+                        ap.addOwner(commonUser);
+                    }
+                    delayedToBeSaved.add(ap);
                 }
-                actualProductsRepository.save(actualProduct.get());
+            } else {
+                ActualProduct newAP = new ActualProduct();
+                newAP.addOwner(commonUser);
+                newAP.setProductId(mappedProduct.getId());
+                newAP.setScrapDate(scrapDate);
+                delayedToBeSaved.add(newAP);
             }
-        } else {
-            ActualProduct newAP = new ActualProduct();
-            newAP.addOwner(commonUser);
-            newAP.setProductId(mappedProduct.getId());
-            newAP.setScrapDate(scrapDate);
-            actualProductsRepository.save(newAP);
+        } finally {
+            lock.unlock();
         }
     }
 
     @Scheduled(cron = "0 0 * * * *")
+    public void flushActualProductsToDb() {
+        if (lock.tryLock()) {
+            try {
+                if (!delayedToBeSaved.isEmpty()) {
+                    for (int i = 0; i < delayedToBeSaved.size(); i += BATCH_SIZE) {
+                        int end = Math.min(i + BATCH_SIZE, delayedToBeSaved.size());
+                        actualProductsRepository.saveAll(delayedToBeSaved.subList(i, end));
+                    }
+                    delayedToBeSaved.clear();
+                }
+            } catch (Exception e) {
+                log.error("Failed to flush actual products", e);
+            } finally {
+                lock.unlock();
+            }
+        } else {
+            log.warn("Flush skipped due to active write lock");
+        }
+    }
+
+    @Scheduled(cron = "0 15 0 * * *")
     public void deleteActualProducts() {
         try {
             actualProductsRepository.deleteRelatedProductOwners(currentDateOffsetInDays);
