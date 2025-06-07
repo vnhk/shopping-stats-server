@@ -110,9 +110,8 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
         }
 
         Set<String> categories = new HashSet<>();
-        int minDis = Integer.MAX_VALUE;
-        int maxDis = Integer.MIN_VALUE;
-        boolean useAllCategories = false;
+        int minDis = 0;
+        int maxDis = 100;
 
         if (alert.getDiscountMin() != null) {
             minDis = alert.getDiscountMin();
@@ -124,7 +123,8 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
             categories.addAll(alert.getProductCategories());
         }
 
-        SearchApiResponse discountsCompared = discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable.ofSize(100000), (double) minDis, (double) maxDis, 3, new ArrayList<>(categories), null, null, 50, 1_000_000);
+        SearchApiResponse discountsCompared = discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths
+                (Pageable.ofSize(100000), (double) minDis, (double) maxDis, 3, new ArrayList<>(categories), null, null, 10, 1_000_000);
 
         List<ProductDTO> discountedProducts = (List<ProductDTO>) discountsCompared.getItems().stream().sorted((p1, p2) -> {
             Double discount1 = ((ProductDTO) p1).getDiscount();
