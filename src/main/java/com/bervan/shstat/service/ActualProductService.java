@@ -8,10 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -24,6 +21,7 @@ public class ActualProductService {
     private static final int BATCH_SIZE = 1000;
     private final ActualProductsRepository actualProductsRepository;
     private final List<ActualProduct> delayedToBeSaved = new LinkedList<>();
+    private final Map<Long, Set<Date>> inMemoryData = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
 
     public ActualProductService(ActualProductsRepository actualProductsRepository) {
@@ -35,10 +33,19 @@ public class ActualProductService {
                 .filter(e -> e.attr.equals("Date")).findFirst()
                 .get().mapper.map(date);
 
-        Optional<ActualProduct> actualProduct = actualProductsRepository.findByProductId(mappedProduct.getId());
+        Long productId = mappedProduct.getId();
+        Optional<ActualProduct> actualProduct = actualProductsRepository.findByProductId(productId);
 
         lock.lock();
         try {
+            if (inMemoryData.containsKey(productId)) {
+                if (inMemoryData.get(productId).contains(scrapDate)) {
+                    return;
+                }
+            } else {
+                inMemoryData.put(productId, new HashSet<>());
+            }
+
             if (actualProduct.isPresent()) {
                 ActualProduct ap = actualProduct.get();
                 if (ap.getScrapDate().before(scrapDate)) {
@@ -51,10 +58,12 @@ public class ActualProductService {
             } else {
                 ActualProduct newAP = new ActualProduct();
                 newAP.addOwner(commonUser);
-                newAP.setProductId(mappedProduct.getId());
+                newAP.setProductId(productId);
                 newAP.setScrapDate(scrapDate);
                 delayedToBeSaved.add(newAP);
             }
+
+            inMemoryData.get(productId).add(scrapDate);
         } finally {
             lock.unlock();
         }
@@ -71,6 +80,7 @@ public class ActualProductService {
                             actualProductsRepository.saveAll(delayedToBeSaved.subList(i, end));
                         }
                         delayedToBeSaved.clear();
+                        inMemoryData.clear();
                     }
                 } catch (Exception e) {
                     log.error("Failed to flush actual products", e);
