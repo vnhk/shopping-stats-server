@@ -23,7 +23,7 @@ public class ActualProductService {
         this.actualProductsRepository = actualProductsRepository;
     }
 
-    public void updateActualProducts(Object date, Product mappedProduct, User commonUser) {
+    public synchronized void updateActualProducts(Object date, Product mappedProduct, User commonUser) {
         Date scrapDate = (Date) productPerDateAttributeProperties.stream().filter(e -> e.attr.equals("Date")).findFirst()
                 .get().mapper.map(date);
         Optional<ActualProduct> actualProduct = actualProductsRepository.findByProductId(mappedProduct.getId());
@@ -40,14 +40,12 @@ public class ActualProductService {
             newAP.addOwner(commonUser);
             newAP.setProductId(mappedProduct.getId());
             newAP.setScrapDate(scrapDate);
-            synchronized (this) {
-                actualProductsRepository.save(newAP);
-            }
+            actualProductsRepository.save(newAP);
         }
     }
 
     @Scheduled(cron = "0 0 * * * *")
-    public void updateActualProducts() {
+    public void deleteActualProducts() {
         try {
             actualProductsRepository.deleteRelatedProductOwners(currentDateOffsetInDays);
             actualProductsRepository.deleteNotActualProducts(currentDateOffsetInDays);
