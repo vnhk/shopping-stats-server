@@ -30,21 +30,20 @@ public class ActualProductService {
 
     public void updateActualProducts(Object date, Product mappedProduct, User commonUser) {
         Date scrapDate = (Date) productPerDateAttributeProperties.stream()
-                .filter(e -> e.attr.equals("Date")).findFirst()
+                .filter(e -> e.attr.equals("Date"))
+                .findFirst()
                 .get().mapper.map(date);
 
         Long productId = mappedProduct.getId();
-        Optional<ActualProduct> actualProduct = actualProductsRepository.findByProductId(productId);
 
         lock.lock();
         try {
-            if (inMemoryData.containsKey(productId)) {
-                if (inMemoryData.get(productId).contains(scrapDate)) {
-                    return;
-                }
-            } else {
-                inMemoryData.put(productId, new HashSet<>());
+            Set<Date> knownDates = inMemoryData.computeIfAbsent(productId, k -> new HashSet<>());
+            if (knownDates.contains(scrapDate)) {
+                return;
             }
+
+            Optional<ActualProduct> actualProduct = actualProductsRepository.findByProductId(productId);
 
             if (actualProduct.isPresent()) {
                 ActualProduct ap = actualProduct.get();
@@ -63,7 +62,7 @@ public class ActualProductService {
                 delayedToBeSaved.add(newAP);
             }
 
-            inMemoryData.get(productId).add(scrapDate);
+            knownDates.add(scrapDate);
         } finally {
             lock.unlock();
         }
