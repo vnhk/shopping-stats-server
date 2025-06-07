@@ -68,7 +68,8 @@ public class ProductSimilarOffersService {
         Map<String, ProductTokens> existingTokenMap = existingTokens.stream()
                 .collect(Collectors.toMap(
                         t -> t.getValue() + "|" + t.getFactor(),
-                        t -> t
+                        t -> t,
+                        (existing, duplicate) -> existing
                 ));
 
         Map<String, Integer> newTokensWithFactors = new HashMap<>();
