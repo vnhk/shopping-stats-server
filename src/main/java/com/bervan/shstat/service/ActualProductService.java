@@ -72,6 +72,7 @@ public class ActualProductService {
     public void flushActualProductsToDb() {
         try {
             if (lock.tryLock(5, TimeUnit.MINUTES)) {
+                log.info("flushActualProductsToDb started!");
                 try {
                     if (!delayedToBeSaved.isEmpty()) {
                         for (int i = 0; i < delayedToBeSaved.size(); i += BATCH_SIZE) {
@@ -81,6 +82,7 @@ public class ActualProductService {
                         delayedToBeSaved.clear();
                         inMemoryData.clear();
                     }
+                    log.info("flushActualProductsToDb ended!");
                 } catch (Exception e) {
                     log.error("Failed to flush actual products", e);
                 } finally {

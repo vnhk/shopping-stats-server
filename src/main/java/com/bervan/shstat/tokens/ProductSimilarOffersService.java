@@ -106,6 +106,7 @@ public class ProductSimilarOffersService {
     public void processTokensInDb() {
         try {
             if (lock.tryLock(5, TimeUnit.MINUTES)) {
+                log.info("processTokensInDb started");
                 try {
                     if (!tokensToDelete.isEmpty()) {
                         List<Long> tokensId = tokensToDelete.stream().map(ProductTokens::getId).collect(Collectors.toList());
@@ -118,6 +119,7 @@ public class ProductSimilarOffersService {
                         productTokensRepository.saveAll(tokensToSave);
                         tokensToSave.clear();
                     }
+                    log.info("processTokensInDb ended");
                 } catch (Exception e) {
                     log.error("Failed to flush product tokens", e);
                 } finally {
