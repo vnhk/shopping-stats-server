@@ -17,7 +17,6 @@ import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -32,18 +31,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class ProductService {
-    private final ProductRepository productRepository;
-    private final ActualProductService actualProductService;
-    private final ProductStatsService productStatsService;
-    private final ProductSimilarOffersService productSimilarOffersService;
-    private final UserRepository userRepository;
-    private final ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository;
     public static final List<AttrFieldMappingVal<Field>> commonProductProperties;
     public static final List<AttrFieldMappingVal<Field>> productPerDateAttributeProperties;
-    @PersistenceContext
-    private EntityManager entityManager;
-    private User commonUser;
-    private final ScrapAuditService scrapAuditService;
 
     static {
         try {
@@ -97,6 +86,17 @@ public class ProductService {
         }
     }
 
+    private final ProductRepository productRepository;
+    private final ActualProductService actualProductService;
+    private final ProductStatsService productStatsService;
+    private final ProductSimilarOffersService productSimilarOffersService;
+    private final UserRepository userRepository;
+    private final ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository;
+    private final ScrapAuditService scrapAuditService;
+    @PersistenceContext
+    private EntityManager entityManager;
+    private User commonUser;
+
     public ProductService(ProductRepository productRepository,
                           ActualProductService actualProductService,
                           ProductStatsService productStatsService, ProductSimilarOffersService productSimilarOffersService,
@@ -112,6 +112,11 @@ public class ProductService {
         this.scrapAuditService = scrapAuditService;
     }
 
+    private static <T> Optional<T> findProductAttr(Product product, String key, Class<T> productAttrClass) {
+        return (Optional<T>) product.getAttributes().stream().filter(e -> e.getName().equals(key))
+                .filter(e -> e.getClass().isAssignableFrom(productAttrClass)).findFirst();
+    }
+
     @Async("productTaskExecutor")
     public CompletableFuture<List<Product>> addProductsAsync(List<Map<String, Object>> products) {
         List<Product> allMapped = new LinkedList<>();
@@ -120,7 +125,7 @@ public class ProductService {
             try {
                 Product product = mapProductCommonAttr(productMap);
                 ProductBasedOnDateAttributes perDateAttributes = mapProductPerDateAttributes(productMap, product);
-                
+
                 boolean productDateAttributeAdded = addProductDateAttribute(product, perDateAttributes);
 
                 Set<ProductAttribute> resAttributes = new HashSet<>();
@@ -216,7 +221,6 @@ public class ProductService {
         return CompletableFuture.completedFuture(allMapped);
     }
 
-
     public void updateScrapAudit(List<Product> allMapped) {
         String delimiter = "___";
 
@@ -297,9 +301,11 @@ public class ProductService {
             BigDecimal previousPrice = lastAttr.getPrice();
             BigDecimal currentPrice = newPerDateAttribute.getPrice();
             BigDecimal difference = previousPrice.subtract(currentPrice).abs();
-            BigDecimal threshold = previousPrice.multiply(BigDecimal.valueOf(0.05)); // 5% threshold
+            BigDecimal threshold = previousPrice.multiply(BigDecimal.valueOf(0.009)); // 0.9% threshold
 
             if (difference.compareTo(threshold) < 0) {
+                log.warn("ProductBasedOnDateAttribute skipped because new price is almost the same as previous one (less than 1% change). Product: {}, Old price {}, new price: {}",
+                        product.getName(), previousPrice, currentPrice);
                 return false;
             }
         }
@@ -313,8 +319,8 @@ public class ProductService {
             if (newPerDateAttribute.getPrice().compareTo(BigDecimal.valueOf(2)
                     .multiply(sum.divide(BigDecimal.valueOf(product.getProductBasedOnDateAttributes().size()),
                             RoundingMode.CEILING))) >= 0
-                    && newPerDateAttribute.getPrice().subtract(BigDecimal.valueOf(2000)).compareTo(BigDecimal.ONE) >= 0) {
-                //if product has at least 10 prices and new price is much bigger than previous, and newPrice - 2000 >= 1 - we skip adding the price
+                    && newPerDateAttribute.getPrice().subtract(BigDecimal.valueOf(10000)).compareTo(BigDecimal.ONE) >= 0) {
+                //if product has at least 10 prices and new price is much bigger than previous, and newPrice - 10000 >= 1 - we skip adding the price
                 log.warn("ProductBasedOnDateAttribute skipped because the new price is much bigger than average: {} -> {}",
                         product.getName(), newPerDateAttribute.getPrice());
                 return false;
@@ -327,12 +333,6 @@ public class ProductService {
             return true;
         }
         return false;
-    }
-
-
-    private static <T> Optional<T> findProductAttr(Product product, String key, Class<T> productAttrClass) {
-        return (Optional<T>) product.getAttributes().stream().filter(e -> e.getName().equals(key))
-                .filter(e -> e.getClass().isAssignableFrom(productAttrClass)).findFirst();
     }
 
     private ProductBasedOnDateAttributes mapProductPerDateAttributes(Map<String, Object> productToMap, Product product) {
@@ -368,8 +368,8 @@ public class ProductService {
 
     private Product findProductBasedOnAttributes(Product res) {
         Optional<Product> product = productRepository.findByNameAndShopAndProductListNameAndProductListUrlAndOfferUrl(res.getName(), res.getShop(),
-                        res.getProductListName(), res.getProductListUrl()
-                        , res.getOfferUrl());
+                res.getProductListName(), res.getProductListUrl()
+                , res.getOfferUrl());
 
         return product.orElse(res);
     }
@@ -392,7 +392,7 @@ public class ProductService {
         Product res = (Product) wrapper.getWrappedInstance();
 
         Product productBasedOnAttributes = findProductBasedOnAttributes(res);
-        if(productBasedOnAttributes.getId() != null) {
+        if (productBasedOnAttributes.getId() != null) {
             //update categories
             productBasedOnAttributes.setCategories(res.getCategories());
             if (res.getImgSrc() != null && res.getImgSrc().length() > 10) {
