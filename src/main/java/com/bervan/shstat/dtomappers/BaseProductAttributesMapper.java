@@ -25,7 +25,7 @@ public class BaseProductAttributesMapper implements DTOMapper<Product, ProductDT
 
     @Override
     public void map(DataHolder<Product> product, DataHolder<ProductDTO> productDTO) {
-        Set<ProductBasedOnDateAttributes> productBasedOnDateAttributes = product.value.getProductBasedOnDateAttributes();
+        List<ProductBasedOnDateAttributes> productBasedOnDateAttributes = product.value.getProductBasedOnDateAttributes();
         List<ProductBasedOnDateAttributes> sortedPrices = productBasedOnDateAttributes.stream().sorted(Comparator.comparing(ProductBasedOnDateAttributes::getScrapDate).reversed()).toList();
 
         Optional<ProductBasedOnDateAttributes> min = sortedPrices.stream().min(Comparator.comparingInt(e -> e.getPrice().intValue()));

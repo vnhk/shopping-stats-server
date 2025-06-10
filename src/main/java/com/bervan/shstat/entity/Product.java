@@ -6,7 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -39,14 +41,16 @@ public class Product extends BervanBaseEntity<Long> {
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER, mappedBy = "product")
     private Set<ProductAttribute> attributes = new HashSet<>();
     @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "product", fetch = FetchType.EAGER)
-    private Set<ProductBasedOnDateAttributes> productBasedOnDateAttributes = new HashSet<>();
+    private List<ProductBasedOnDateAttributes> productBasedOnDateAttributes = new ArrayList<>();
+    private Boolean deleted = false;
 
     public Long getId() {
         return id;
     }
 
-
-    private Boolean deleted = false;
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     @Override
     public Boolean isDeleted() {
@@ -56,10 +60,6 @@ public class Product extends BervanBaseEntity<Long> {
     @Override
     public void setDeleted(Boolean value) {
         this.deleted = value;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -118,11 +118,11 @@ public class Product extends BervanBaseEntity<Long> {
         this.attributes = attributes;
     }
 
-    public Set<ProductBasedOnDateAttributes> getProductBasedOnDateAttributes() {
+    public List<ProductBasedOnDateAttributes> getProductBasedOnDateAttributes() {
         return productBasedOnDateAttributes;
     }
 
-    public void setProductBasedOnDateAttributes(Set<ProductBasedOnDateAttributes> productBasedOnDateAttributes) {
+    public void setProductBasedOnDateAttributes(List<ProductBasedOnDateAttributes> productBasedOnDateAttributes) {
         this.productBasedOnDateAttributes = productBasedOnDateAttributes;
     }
 

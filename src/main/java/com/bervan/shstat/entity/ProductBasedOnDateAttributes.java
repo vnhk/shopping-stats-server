@@ -6,6 +6,8 @@ import com.bervan.common.model.VaadinTableColumn;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,6 +17,8 @@ import java.util.Date;
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "scrapDate"})},
         indexes = {@Index(columnList = "formattedScrapDate"), @Index(columnList = "scrapDate")})
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Getter
+@Setter
 public class ProductBasedOnDateAttributes extends BervanBaseEntity<Long> implements PersistableTableData<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,12 +31,20 @@ public class ProductBasedOnDateAttributes extends BervanBaseEntity<Long> impleme
     private BigDecimal price;
     @NotNull
     @Size(min = 3, max = 300)
-    @VaadinTableColumn(internalName = "formattedScrapDate", displayName = "Formatted  Scrap Date")
+    @VaadinTableColumn(internalName = "formattedScrapDate", displayName = "Formatted Scrap Date End")
     private String formattedScrapDate;
     @NotNull
     @VaadinTableColumn(internalName = "scrapDate", displayName = "Scrap Date")
     private Date scrapDate;
+    @VaadinTableColumn(internalName = "scrapDateEnd", displayName = "Scrap Date End")
+    private Date scrapDateEnd;
+    @VaadinTableColumn(internalName = "formattedScrapDateEnd", displayName = "Formatted Scrap Date End")
+    private String formattedScrapDateEnd;
     private Boolean deleted = false;
+
+    public ProductBasedOnDateAttributes() {
+
+    }
 
     @Override
     public Boolean isDeleted() {
@@ -41,57 +53,7 @@ public class ProductBasedOnDateAttributes extends BervanBaseEntity<Long> impleme
 
     @Override
     public void setDeleted(Boolean value) {
-        this.deleted = value;
-    }
-
-    public ProductBasedOnDateAttributes() {
-
-    }
-
-    public ProductBasedOnDateAttributes(@NotNull BigDecimal price, @NotNull Date scrapDate, @NotNull String formattedScrapDate) {
-        this.price = price;
-        this.scrapDate = scrapDate;
-        this.formattedScrapDate = formattedScrapDate;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public String getFormattedScrapDate() {
-        return formattedScrapDate;
-    }
-
-    public void setFormattedScrapDate(String formattedScrapDate) {
-        this.formattedScrapDate = formattedScrapDate;
-    }
-
-    public Date getScrapDate() {
-        return scrapDate;
-    }
-
-    public void setScrapDate(Date scrapDate) {
-        this.scrapDate = scrapDate;
+        throw new RuntimeException("ProductBasedOnDateAttributes does not use 'deleted'!");
     }
 
     @Override

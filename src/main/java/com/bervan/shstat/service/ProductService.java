@@ -6,7 +6,6 @@ import com.bervan.shstat.AttrFieldMappingVal;
 import com.bervan.shstat.AttrMapper;
 import com.bervan.shstat.MapperException;
 import com.bervan.shstat.entity.*;
-import com.bervan.shstat.repository.ProductBasedOnDateAttributesRepository;
 import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.tokens.ProductSimilarOffersService;
 import jakarta.persistence.EntityManager;
@@ -91,7 +90,7 @@ public class ProductService {
     private final ProductStatsService productStatsService;
     private final ProductSimilarOffersService productSimilarOffersService;
     private final UserRepository userRepository;
-    private final ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository;
+    private final ProductBasedOnDateAttributesService productBasedOnDateAttributesService;
     private final ScrapAuditService scrapAuditService;
     @PersistenceContext
     private EntityManager entityManager;
@@ -101,14 +100,14 @@ public class ProductService {
                           ActualProductService actualProductService,
                           ProductStatsService productStatsService, ProductSimilarOffersService productSimilarOffersService,
                           UserRepository userRepository,
-                          ProductBasedOnDateAttributesRepository productBasedOnDateAttributesRepository,
+                          ProductBasedOnDateAttributesService productBasedOnDateAttributesService,
                           ScrapAuditService scrapAuditService) {
         this.productRepository = productRepository;
         this.actualProductService = actualProductService;
         this.productStatsService = productStatsService;
         this.productSimilarOffersService = productSimilarOffersService;
         this.userRepository = userRepository;
-        this.productBasedOnDateAttributesRepository = productBasedOnDateAttributesRepository;
+        this.productBasedOnDateAttributesService = productBasedOnDateAttributesService;
         this.scrapAuditService = scrapAuditService;
     }
 
@@ -201,10 +200,7 @@ public class ProductService {
                 product = save(product);
                 createAndUpdateTokens(product);
                 updateActualProducts(perDateAttributes, product);
-
-                if (productDateAttributeAdded) {
-                    updateProductStats(product, perDateAttributes);
-                }
+                updateProductStats(product);
 
                 allMapped.add(product);
             } catch (MapperException e) {
@@ -237,9 +233,9 @@ public class ProductService {
         });
     }
 
-    private void updateProductStats(Product product, ProductBasedOnDateAttributes perDateAttributes) {
+    private void updateProductStats(Product product) {
         try {
-            productStatsService.updateProductStats(product, perDateAttributes.getPrice(), commonUser);
+            productStatsService.updateProductStats(product, commonUser);
         } catch (Exception e) {
             log.error("Failed to updateProductStats!", e);
             throw new MapperException("Failed to updateProductStats!");
@@ -279,7 +275,7 @@ public class ProductService {
 
     public void updateStats(Product product) {
         Optional<ProductStats> byProductId = productStatsService.findByProductId(product.getId());
-        productStatsService.updateStatsAndSave(byProductId, product.getId());
+        productStatsService.updateStatsAndSave(byProductId, product);
     }
 
     private void loadCommonUserIfNotLoaded() {
@@ -289,13 +285,22 @@ public class ProductService {
     }
 
     private boolean addProductDateAttribute(Product product, ProductBasedOnDateAttributes newPerDateAttribute) {
-        List<ProductBasedOnDateAttributes> sortedPrices = new ArrayList<>();
-        if (product.getProductBasedOnDateAttributes() != null) {
-            sortedPrices = product.getProductBasedOnDateAttributes().stream()
-                    .sorted(Comparator.comparing(ProductBasedOnDateAttributes::getScrapDate).reversed())
-                    .toList();
+        List<ProductBasedOnDateAttributes> sortedPrices = product.getProductBasedOnDateAttributes().stream()
+                .sorted(Comparator.comparing(ProductBasedOnDateAttributes::getScrapDate).reversed())
+                .toList();
+        product.setProductBasedOnDateAttributes(sortedPrices);
+
+        boolean shouldNewProductBaseOnDateAttributeCreated = shouldNewProductBaseOnDateAttributeCreated(product, sortedPrices, newPerDateAttribute);
+        if (shouldNewProductBaseOnDateAttributeCreated) {
+            product.addAttribute(newPerDateAttribute);
         }
 
+        ProductBasedOnDateAttributesService.moveScrapDates(product.getProductBasedOnDateAttributes());
+
+        return shouldNewProductBaseOnDateAttributeCreated;
+    }
+
+    private boolean shouldNewProductBaseOnDateAttributeCreated(Product product, List<ProductBasedOnDateAttributes> sortedPrices, ProductBasedOnDateAttributes newPerDateAttribute) {
         if (!sortedPrices.isEmpty()) {
             ProductBasedOnDateAttributes lastAttr = sortedPrices.get(0);
             BigDecimal previousPrice = lastAttr.getPrice();
@@ -304,7 +309,7 @@ public class ProductService {
             BigDecimal threshold = previousPrice.multiply(BigDecimal.valueOf(0.009)); // 0.9% threshold
 
             if (difference.compareTo(threshold) < 0) {
-                log.warn("ProductBasedOnDateAttribute skipped because new price is almost the same as previous one (less than 1% change). Product: {}, Old price {}, new price: {}",
+                log.warn("New ProductBasedOnDateAttribute will not be created because new price is almost the same as previous one (less than 1% change). Product: {}, Old price {}, new price: {}",
                         product.getName(), previousPrice, currentPrice);
                 return false;
             }
@@ -329,7 +334,6 @@ public class ProductService {
 
 
         if (newPerDateAttribute.getPrice().compareTo(BigDecimal.ONE) >= 0) {
-            product.addAttribute(newPerDateAttribute);
             return true;
         }
         return false;
@@ -354,7 +358,7 @@ public class ProductService {
         ProductBasedOnDateAttributes res = (ProductBasedOnDateAttributes) wrapper.getWrappedInstance();
 
         if (product.getId() != null &&
-                productBasedOnDateAttributesRepository.existsByProductIdAndFormattedScrapDate(product.getId(), res.getFormattedScrapDate())) {
+                productBasedOnDateAttributesService.existsByProductIdAndFormattedScrapDate(product.getId(), res.getFormattedScrapDate())) {
             log.warn("Product {} ({}) was already mapped for given date!\nShop:{}\nProductListName:{}\nScrapDate:{}",
                     product.getName(),
                     product.getId(),

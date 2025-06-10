@@ -2,125 +2,168 @@ package com.bervan.shstat.service;
 
 import com.bervan.common.user.User;
 import com.bervan.shstat.entity.Product;
+import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.entity.ProductStats;
-import com.bervan.shstat.repository.ActualProductsRepository;
 import com.bervan.shstat.repository.ProductStatsRepository;
-import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Slf4j
 @Service
 public class ProductStatsService {
+    private static final int BATCH_SIZE = 1000;
     private final ProductStatsRepository productStatsRepository;
-    private final ActualProductsRepository actualProductsRepository;
+    private final List<ProductStats> delayedToBeSaved = new LinkedList<>();
+    private final ReentrantLock lock = new ReentrantLock();
 
-    public ProductStatsService(ProductStatsRepository productStatsRepository, ActualProductsRepository actualProductsRepository) {
+    public ProductStatsService(ProductStatsRepository productStatsRepository) {
         this.productStatsRepository = productStatsRepository;
-        this.actualProductsRepository = actualProductsRepository;
     }
 
-    public void updateProductStats(Product mappedProduct, Object priceObj, User commonUser) {
-        if (actualProductsRepository.findByProductId(mappedProduct.getId()).isEmpty()) {
-            return;
-        }
-
+    public void updateProductStats(Product mappedProduct, User commonUser) {
         if (mappedProduct.getProductBasedOnDateAttributes() == null || mappedProduct.getProductBasedOnDateAttributes().stream().filter(e -> !e.isDeleted()).count() < 2) {
             log.warn("updateProductStats - No sense to create stats because there is no enough historical data for product: {} id", mappedProduct.getId());
             return;
         }
 
-        BigDecimal lastPrice = (BigDecimal) ProductService.productPerDateAttributeProperties.stream().filter(e -> e.attr.equals("Price")).findFirst()
-                .get().mapper.map(priceObj);
-        Long id = mappedProduct.getId();
-        Optional<ProductStats> byProductId = productStatsRepository.findByProductId(id);
-        if (byProductId.isEmpty()) {
-            ProductStats productStats = new ProductStats();
-            productStats.setProductId(id);
-            byProductId = Optional.of(productStats);
-        }
-
-        if (lastPrice.compareTo(BigDecimal.ZERO) > 0) {
-            updateStats(byProductId);
-
-            if (byProductId.get().getOwners().isEmpty()) {
-                byProductId.get().addOwner(commonUser);
-            }
-
-            synchronized (this) {
-                productStatsRepository.save(byProductId.get());
-            }
-        }
-    }
-
-    public void updateStatsAndSave(Optional<ProductStats> byProductId, Long productId) {
+        Long productId = mappedProduct.getId();
+        Optional<ProductStats> byProductId = productStatsRepository.findByProductId(productId);
         if (byProductId.isEmpty()) {
             ProductStats productStats = new ProductStats();
             productStats.setProductId(productId);
             byProductId = Optional.of(productStats);
         }
-        updateStats(byProductId);
+
+        if (byProductId.get().getOwners().isEmpty()) {
+            byProductId.get().addOwner(commonUser);
+        }
+
+        updateStats(byProductId, mappedProduct.getProductBasedOnDateAttributes());
+        lock.lock();
+        try {
+            delayedToBeSaved.add(byProductId.get());
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @Scheduled(cron = "0 0 * * * *")
+    public void flushStatsToDb() {
+        try {
+            if (lock.tryLock(5, TimeUnit.MINUTES)) {
+                log.info("flushStatsToDb started!");
+                try {
+                    if (!delayedToBeSaved.isEmpty()) {
+                        for (int i = 0; i < delayedToBeSaved.size(); i += BATCH_SIZE) {
+                            int end = Math.min(i + BATCH_SIZE, delayedToBeSaved.size());
+                            productStatsRepository.saveAll(delayedToBeSaved.subList(i, end));
+                        }
+                        delayedToBeSaved.clear();
+                    }
+                    log.info("flushStatsToDb ended!");
+                } catch (Exception e) {
+                    log.error("Failed to flush stats", e);
+                } finally {
+                    lock.unlock();
+                }
+            } else {
+                log.warn("Flush skipped due to active write lock");
+            }
+        } catch (InterruptedException e) {
+            log.error("flushStatsToDb InterruptedException for write lock");
+        }
+    }
+
+    public void updateStatsAndSave(Optional<ProductStats> byProductId, Product product) {
+        if (byProductId.isEmpty()) {
+            ProductStats productStats = new ProductStats();
+            productStats.setProductId(product.getId());
+            byProductId = Optional.of(productStats);
+        }
+        updateStats(byProductId, product.getProductBasedOnDateAttributes());
         productStatsRepository.save(byProductId.get());
     }
 
-    private void updateStats(Optional<ProductStats> byProductId) {
-        updateHistoricalLow(byProductId.get());
-        updateAvgWholeHistory(byProductId.get());
-        updateAvgLast1Month(byProductId.get());
-        updateAvgLast2Month(byProductId.get());
-        updateAvgLast3Month(byProductId.get());
-        updateAvgLast6Month(byProductId.get());
-        updateAvgLast12Month(byProductId.get());
+    private void updateStats(Optional<ProductStats> byProductId, List<ProductBasedOnDateAttributes> productBasedOnDateAttributes) {
+        List<ProductBasedOnDateAttributes> sortedPrices = productBasedOnDateAttributes.stream()
+                .sorted(Comparator.comparing(ProductBasedOnDateAttributes::getScrapDate).reversed())
+                .toList();
+        updateHistoricalLow(byProductId.get(), sortedPrices);
+        updateAvgWholeHistory(byProductId.get(), sortedPrices);
+        updateAvgLastXMonth(byProductId.get(), sortedPrices, 1);
+        updateAvgLastXMonth(byProductId.get(), sortedPrices, 2);
+        updateAvgLastXMonth(byProductId.get(), sortedPrices, 3);
+        updateAvgLastXMonth(byProductId.get(), sortedPrices, 6);
+        updateAvgLastXMonth(byProductId.get(), sortedPrices, 12);
     }
 
-    private void updateHistoricalLow(ProductStats productStats) {
-        productStats.setHistoricalLow(findHistoricalLowForMonths(productStats.getProductId(), 12000));
+    private void updateHistoricalLow(ProductStats productStats, List<ProductBasedOnDateAttributes> sortedPrices) {
+        OptionalDouble min = sortedPrices.stream().filter(e -> !e.isDeleted()).mapToDouble(e -> e.getPrice().doubleValue())
+                .min();
+        if (min.isPresent()) {
+            productStats.setHistoricalLow(BigDecimal.valueOf(min.getAsDouble()));
+        }
     }
 
-    private void updateAvgWholeHistory(ProductStats productStats) {
-        productStats.setAvgWholeHistory(calculateAvgForMonths(productStats.getProductId(), 12000));
+    private void updateAvgWholeHistory(ProductStats productStats, List<ProductBasedOnDateAttributes> sortedPrices) {
+        BigDecimal avg = calculateAvgForMonthsInMemory(sortedPrices, 12000);
+        productStats.setAvgWholeHistory(avg);
     }
 
-    private void updateAvgLast12Month(ProductStats productStats) {
-        productStats.setAvg12Month(calculateAvgForMonths(productStats.getProductId(), 12));
-    }
-
-    private void updateAvgLast6Month(ProductStats productStats) {
-        productStats.setAvg6Month(calculateAvgForMonths(productStats.getProductId(), 6));
-    }
-
-    private void updateAvgLast3Month(ProductStats productStats) {
-        productStats.setAvg3Month(calculateAvgForMonths(productStats.getProductId(), 3));
-    }
-
-    private void updateAvgLast2Month(ProductStats productStats) {
-        productStats.setAvg2Month(calculateAvgForMonths(productStats.getProductId(), 2));
-    }
-
-    private void updateAvgLast1Month(ProductStats productStats) {
-        productStats.setAvg1Month(calculateAvgForMonths(productStats.getProductId(), 1));
-    }
-
-    private BigDecimal findHistoricalLowForMonths(Long productId, int offset) {
-        return createHistoricalLowForXMonth(productId, offset);
-    }
-
-    private BigDecimal calculateAvgForMonths(@NotNull Long productId, int offset) {
-        return createAvgForXMonth(productId, offset);
-    }
-
-    private BigDecimal createHistoricalLowForXMonth(Long productId, int offset) {
-        return productStatsRepository.findHistoricalLowForXMonths(offset, productId);
-    }
-
-    private BigDecimal createAvgForXMonth(Long productId, int offset) {
-        return productStatsRepository.calculateAvgForXMonths(offset, productId);
+    private void updateAvgLastXMonth(ProductStats productStats, List<ProductBasedOnDateAttributes> sortedPrices, int months) {
+        BigDecimal avg = calculateAvgForMonthsInMemory(sortedPrices, months);
+        switch (months) {
+            case 1 -> productStats.setAvg1Month(avg);
+            case 2 -> productStats.setAvg2Month(avg);
+            case 3 -> productStats.setAvg3Month(avg);
+            case 6 -> productStats.setAvg6Month(avg);
+            case 12 -> productStats.setAvg12Month(avg);
+            default -> throw new IllegalArgumentException("Unsupported month range: " + months);
+        }
     }
 
     public Optional<ProductStats> findByProductId(Long id) {
         return productStatsRepository.findByProductId(id);
+    }
+
+    private BigDecimal calculateAvgForMonthsInMemory(List<ProductBasedOnDateAttributes> attributes, int monthOffset) {
+        LocalDate today = LocalDate.now();
+        LocalDate fromDate = today.minusMonths(monthOffset);
+        BigDecimal total = BigDecimal.ZERO;
+        long totalDays = 0;
+
+        for (ProductBasedOnDateAttributes attr : attributes) {
+            if (attr.getPrice().compareTo(BigDecimal.ZERO) <= 0) continue;
+            if (Boolean.TRUE.equals(attr.getDeleted())) continue;
+
+            LocalDate start = toLocalDate(attr.getScrapDate());
+            LocalDate end = Optional.ofNullable(toLocalDate(attr.getScrapDateEnd())).orElse(today);
+            if (end.isAfter(today)) end = today;
+
+            if (end.isBefore(fromDate)) continue;
+
+            LocalDate effectiveStart = start.isBefore(fromDate) ? fromDate : start;
+            long days = ChronoUnit.DAYS.between(effectiveStart, end);
+            if (days <= 0) continue;
+
+            total = total.add(attr.getPrice().multiply(BigDecimal.valueOf(days)));
+            totalDays += days;
+        }
+
+        return totalDays > 0 ? total.divide(BigDecimal.valueOf(totalDays), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+    }
+
+    private LocalDate toLocalDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 }

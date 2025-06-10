@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ProductBasedOnDateAttributesRepository extends BaseRepository<ProductBasedOnDateAttributes, Long> {
     Boolean existsByProductIdAndFormattedScrapDate(Long productId, String formattedScrapDate);
@@ -26,4 +28,6 @@ public interface ProductBasedOnDateAttributesRepository extends BaseRepository<P
                 WHERE id = :itemId
             """, nativeQuery = true)
     void deleteItem(Long itemId);
+
+    List<ProductBasedOnDateAttributes> findAllByProductIdOrderByScrapDateDesc(Long productId);
 }
