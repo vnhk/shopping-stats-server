@@ -285,9 +285,9 @@ public class ProductService {
     }
 
     private boolean addProductDateAttribute(Product product, ProductBasedOnDateAttributes newPerDateAttribute) {
-        List<ProductBasedOnDateAttributes> sortedPrices = product.getProductBasedOnDateAttributes().stream()
+        List<ProductBasedOnDateAttributes> sortedPrices = new ArrayList<>(product.getProductBasedOnDateAttributes().stream()
                 .sorted(Comparator.comparing(ProductBasedOnDateAttributes::getScrapDate).reversed())
-                .toList();
+                .toList());
         product.setProductBasedOnDateAttributes(sortedPrices);
 
         boolean shouldNewProductBaseOnDateAttributeCreated = shouldNewProductBaseOnDateAttributeCreated(product, sortedPrices, newPerDateAttribute);
