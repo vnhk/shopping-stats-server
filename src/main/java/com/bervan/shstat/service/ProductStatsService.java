@@ -147,7 +147,9 @@ public class ProductStatsService {
             if (Boolean.TRUE.equals(attr.getDeleted())) continue;
 
             LocalDate start = toLocalDate(attr.getScrapDate());
-            LocalDate end = Optional.ofNullable(toLocalDate(attr.getScrapDateEnd())).orElse(today);
+            LocalDate end = Optional.ofNullable(attr.getScrapDateEnd())
+                    .map(this::toLocalDate)
+                    .orElse(today);
             if (end.isAfter(today)) end = today;
 
             if (end.isBefore(fromDate)) continue;
