@@ -3,9 +3,9 @@ package com.bervan.shstat.repository;
 import com.bervan.history.model.BaseRepository;
 import com.bervan.shstat.entity.ActualProduct;
 import jakarta.transaction.Transactional;
-import nonapi.io.github.classgraph.utils.LogNode;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
@@ -14,7 +14,8 @@ import java.util.Optional;
 
 @Repository
 public interface ActualProductsRepository extends BaseRepository<ActualProduct, Long> {
-    Optional<ActualProduct> findByProductId(Long productId);
+    @Query(value = "SELECT * FROM actual_product WHERE product_id = :productId AND deleted != true LIMIT 1", nativeQuery = true)
+    Optional<ActualProduct> findByProductId(@Param("productId") Long productId);
 
     @Modifying
     @Query(value = """
