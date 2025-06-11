@@ -50,9 +50,7 @@ public class ProductBasedOnDateAttributesService extends BaseService<Long, Produ
             productBasedOnDateAttributes = ((ProductBasedOnDateAttributesRepository) repository).findAllByProductIdOrderByScrapDateDesc(item.getProduct().getId());
         }
 
-        for (ProductBasedOnDateAttributes productBasedOnDateAttribute : productBasedOnDateAttributes) {
-            //to do
-        }
+        moveScrapDates(productBasedOnDateAttributes);
     }
 
     public boolean existsByProductIdAndFormattedScrapDate(Long id, String formattedScrapDate) {
