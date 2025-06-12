@@ -51,6 +51,7 @@ public class ProductBasedOnDateAttributesService extends BaseService<Long, Produ
         }
 
         moveScrapDates(productBasedOnDateAttributes);
+        save(productBasedOnDateAttributes);
     }
 
     public boolean existsByProductIdAndFormattedScrapDate(Long id, String formattedScrapDate) {
