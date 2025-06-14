@@ -51,6 +51,7 @@ public class ProductStatsService {
         updateStats(byProductId, mappedProduct.getProductBasedOnDateAttributes());
         lock.lock();
         try {
+            delayedToBeSaved.removeIf(p -> p.getProductId().equals(productId));
             delayedToBeSaved.add(byProductId.get());
         } finally {
             lock.unlock();
