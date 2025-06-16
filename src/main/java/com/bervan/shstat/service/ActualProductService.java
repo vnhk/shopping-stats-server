@@ -52,6 +52,7 @@ public class ActualProductService {
                     if (!ap.getOwners().contains(commonUser)) {
                         ap.addOwner(commonUser);
                     }
+                    delayedToBeSaved.removeIf(p -> p.getProductId().equals(productId));
                     delayedToBeSaved.add(ap);
                 }
             } else {
@@ -59,6 +60,7 @@ public class ActualProductService {
                 newAP.addOwner(commonUser);
                 newAP.setProductId(productId);
                 newAP.setScrapDate(scrapDate);
+                delayedToBeSaved.removeIf(p -> p.getProductId().equals(productId));
                 delayedToBeSaved.add(newAP);
             }
 
