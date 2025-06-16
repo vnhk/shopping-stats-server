@@ -259,12 +259,11 @@ public class ProductService {
         }
     }
 
-    private Product save(Product product) {
+
+    private synchronized Product save(Product product) {
         try {
             if (product.getId() == null) {
-                synchronized (this) {
-                    return productRepository.save(product);
-                }
+                return productRepository.save(product);
             }
             return productRepository.save(product);
         } catch (Exception e) {
