@@ -37,7 +37,7 @@ public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
         }
     }
 
-    private void addProductsByPartitions(List<Map<String, Object>> products) {
+    public void addProductsByPartitions(List<Map<String, Object>> products) {
         log.info("Processing started for: {} products", products.size());
         List<List<Map<String, Object>>> partition = Lists.partition(products, 3);
         List<CompletableFuture<List<Product>>> futures = new ArrayList<>();

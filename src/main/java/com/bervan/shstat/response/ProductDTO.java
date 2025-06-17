@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 public class ProductDTO {
+    private boolean isActual;
     private Long id;
     private String name;
     private String shop;
@@ -103,5 +104,13 @@ public class ProductDTO {
 
     public void setPrices(List<PriceDTO> prices) {
         this.prices = prices;
+    }
+
+    public boolean isActual() {
+        return isActual;
+    }
+
+    public void setActual(boolean actual) {
+        isActual = actual;
     }
 }

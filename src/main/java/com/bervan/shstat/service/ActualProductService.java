@@ -5,6 +5,7 @@ import com.bervan.shstat.entity.ActualProduct;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.repository.ActualProductsRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,9 @@ public class ActualProductService {
     private final List<ActualProduct> delayedToBeSaved = new LinkedList<>();
     private final Map<Long, Set<Date>> inMemoryData = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
+
+    @Value("${product-update.delayed-save}")
+    private boolean delayedSave = true;
 
     public ActualProductService(ActualProductsRepository actualProductsRepository) {
         this.actualProductsRepository = actualProductsRepository;
@@ -67,6 +71,10 @@ public class ActualProductService {
             knownDates.add(scrapDate);
         } finally {
             lock.unlock();
+        }
+
+        if(!delayedSave) {
+            flushActualProductsToDb();
         }
     }
 

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface ActualProductsRepository extends BaseRepository<ActualProduct, Long> {
@@ -39,4 +40,7 @@ public interface ActualProductsRepository extends BaseRepository<ActualProduct, 
     @Transactional
     @Query(value = "UPDATE actual_product SET scrap_date = :today WHERE product_id IN (:ids)", nativeQuery = true)
     void updateScrapDate(List<Long> ids, Date today);
+
+    @Query(value = "SELECT productId from ActualProduct")
+    Set<Long> findProductIds();
 }

@@ -5,6 +5,7 @@ import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductAttribute;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,9 @@ public class ProductSimilarOffersService {
     private final List<ProductTokens> tokensToSave = new ArrayList<>();
     private final List<ProductTokens> tokensToDelete = new ArrayList<>();
     private final ReentrantLock lock = new ReentrantLock();
+
+    @Value("${product-update.delayed-save}")
+    private boolean delayedSave = true;
 
     public ProductSimilarOffersService(List<? extends TokenConverter> tokenConverters,
                                        ProductTokensRepository productTokensRepository) {
@@ -99,6 +103,10 @@ public class ProductSimilarOffersService {
             tokensToDelete.addAll(existingTokenMap.values());
         } finally {
             lock.unlock();
+        }
+
+        if(!delayedSave) {
+            processTokensInDb();
         }
     }
 

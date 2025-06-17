@@ -262,6 +262,9 @@ public class ProductService {
 
     private synchronized Product save(Product product) {
         try {
+            // if in 1 portion of data we will have the same product that has not been added to db, then it will be added more than 1 times,
+            // and org.hibernate.exception.ConstraintViolationException will be thrown
+            // in standard flow it should not happen...
             if (product.getId() == null) {
                 return productRepository.save(product);
             }

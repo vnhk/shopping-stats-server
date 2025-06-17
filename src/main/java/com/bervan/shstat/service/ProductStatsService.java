@@ -6,6 +6,7 @@ import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.entity.ProductStats;
 import com.bervan.shstat.repository.ProductStatsRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,9 @@ public class ProductStatsService {
     private final ProductStatsRepository productStatsRepository;
     private final List<ProductStats> delayedToBeSaved = new LinkedList<>();
     private final ReentrantLock lock = new ReentrantLock();
+
+    @Value("${product-update.delayed-save}")
+    private boolean delayedSave = true;
 
     public ProductStatsService(ProductStatsRepository productStatsRepository) {
         this.productStatsRepository = productStatsRepository;
@@ -55,6 +59,10 @@ public class ProductStatsService {
             delayedToBeSaved.add(byProductId.get());
         } finally {
             lock.unlock();
+        }
+
+        if (!delayedSave) {
+            flushStatsToDb();
         }
     }
 

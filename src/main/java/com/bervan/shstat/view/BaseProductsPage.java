@@ -9,11 +9,13 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public abstract class BaseProductsPage extends BaseProductPage {
-    protected FlexLayout getProductsLayout(SearchApiResponse products) {
+    protected FlexLayout getProductsLayout(SearchApiResponse products , Map<VerticalLayout, ProductDTO> productCardMap) {
         FlexLayout tileContainer = new FlexLayout();
         tileContainer.setJustifyContentMode(JustifyContentMode.START);
         tileContainer.getStyle().set("display", "flex");
@@ -34,6 +36,12 @@ public abstract class BaseProductsPage extends BaseProductPage {
             productCard.setWidth("350px");
             setProductCardStyle(productCard);
 
+            if (productDTO.isActual()) {
+                productCard.setClassName("actual-product");
+            } else {
+                productCard.setClassName("out-of-date-product");
+            }
+
             Image image = getProductImage(productDTO);
 
             image.setWidth("300px");
@@ -49,8 +57,13 @@ public abstract class BaseProductsPage extends BaseProductPage {
                 priceText = getLatestPriceText(prices, productDTO);
             }
 
+            if (!productDTO.isActual()) {
+                priceText.setText(priceText.getText() + " - out of date");
+            }
+
             productCard.add(image, nameText, priceText);
             tileContainer.add(productCard);
+            productCardMap.put(productCard, productDTO);
         }
         return tileContainer;
     }

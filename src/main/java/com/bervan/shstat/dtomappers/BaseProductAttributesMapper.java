@@ -5,8 +5,10 @@ import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductAttribute;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.entity.ProductListTextAttribute;
+import com.bervan.shstat.repository.ActualProductsRepository;
 import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.response.ProductDTO;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -18,9 +20,17 @@ import static com.bervan.shstat.dtomappers.CommonUtils.buildPrice;
 @Service
 public class BaseProductAttributesMapper implements DTOMapper<Product, ProductDTO> {
     private final ProductRepository productRepository;
+    private final ActualProductsRepository actualProductsRepository;
+    private Set<Long> actualProducts = new HashSet<>();
 
-    public BaseProductAttributesMapper(ProductRepository productRepository) {
+    public BaseProductAttributesMapper(ProductRepository productRepository, ActualProductsRepository actualProductsRepository) {
         this.productRepository = productRepository;
+        this.actualProductsRepository = actualProductsRepository;
+    }
+
+    @Scheduled(cron = "0 15 * * * *")
+    public void refreshActualProducts() {
+        actualProducts = new HashSet<>(actualProductsRepository.findProductIds());
     }
 
     @Override
@@ -63,6 +73,7 @@ public class BaseProductAttributesMapper implements DTOMapper<Product, ProductDT
         productDTO.value.setImgSrc(product.value.getImgSrc());
         productDTO.value.setCategories(product.value.getCategories());
         productDTO.value.setDiscount(getDiscountPercentage(sortedPrices, productDTO.value.getAvgPrice()));
+        productDTO.value.setActual(actualProducts.contains(product.value.getId()));
     }
 
     private Double getDiscountPercentage(List<ProductBasedOnDateAttributes> prices, BigDecimal averagePrice) {
@@ -77,7 +88,7 @@ public class BaseProductAttributesMapper implements DTOMapper<Product, ProductDT
         return percentage.doubleValue();
     }
 
-    private static String getOfferUrl(String shop, String offerUrl) {
+    private String getOfferUrl(String shop, String offerUrl) {
         if (offerUrl.startsWith("http")) {
             return offerUrl;
         }

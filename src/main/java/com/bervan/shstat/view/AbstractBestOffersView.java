@@ -9,6 +9,7 @@ import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
 import com.bervan.shstat.service.DiscountsViewService;
 import com.bervan.shstat.service.ProductSearchService;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -23,10 +24,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class AbstractBestOffersView extends BaseProductsPage implements HasUrlParameter<Void> {
@@ -45,7 +43,6 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
     private BervanDynamicMultiDropdownController categoryDropdown;
     private BervanButton searchButton;
     private BervanButton rebuildBestOffers;
-
 
     public AbstractBestOffersView(DiscountsViewService discountsViewService, RefreshViewService refreshViewService, ProductSearchService productSearchService, BervanLogger log) {
         super();
@@ -71,11 +68,21 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
         searchButton = new BervanButton("Search");
         searchButton.addClickListener(buttonClickEvent -> {
             productsLayout.removeAll();
-            SearchApiResponse body = (SearchApiResponse) findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable.ofSize(500),
+            SearchApiResponse products = (SearchApiResponse) findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable.ofSize(500),
                     discountMin.getValue(), discountMax.getValue(), months.getValue(), prevPriceMin.getValue(), prevPriceMax.getValue(), productName.getValue(), categoryDropdown.getValue(), shopDropdown.getValue());
 
-            FlexLayout tileContainer = getProductsLayout(body);
-            productsLayout.add(tileContainer);
+            Map<VerticalLayout, ProductDTO> productCardMap = new HashMap<>();
+            FlexLayout tileContainer = getProductsLayout(products, productCardMap);
+
+            Checkbox showOnlyActualCheckbox = new Checkbox("Show only actual products");
+            showOnlyActualCheckbox.addValueChangeListener(event -> {
+                boolean onlyActual = event.getValue();
+                productCardMap.forEach((productCard, dto) -> {
+                    productCard.setVisible(!onlyActual || dto.isActual());
+                });
+            });
+
+            productsLayout.add(showOnlyActualCheckbox, tileContainer);
         });
 
         add(rebuildBestOffers, shopDropdown, categoryDropdown, discountMin, discountMax, months, prevPriceMin, prevPriceMax, productName, searchButton, productsLayout);
@@ -137,14 +144,14 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
     }
 
     private ApiResponse findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable,
-                                                                                        Double discountMin,
-                                                                                        Double discountMax,
-                                                                                        Integer months,
-                                                                                        Integer prevPriceMin,
-                                                                                        Integer prevPriceMax,
-                                                                                        String name,
+                                                                        Double discountMin,
+                                                                        Double discountMax,
+                                                                        Integer months,
+                                                                        Integer prevPriceMin,
+                                                                        Integer prevPriceMax,
+                                                                        String name,
                                                                         List<String> category,
-                                                                                        String shop) {
+                                                                        String shop) {
         shop = getString(shop);
         name = getString(name);
 

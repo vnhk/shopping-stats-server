@@ -6,6 +6,7 @@ import com.bervan.shstat.service.ProductSearchService;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -17,6 +18,8 @@ import com.vaadin.flow.router.QueryParameters;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class AbstractProductsView extends BaseProductsPage implements HasUrlParameter<Void> {
@@ -46,8 +49,18 @@ public abstract class AbstractProductsView extends BaseProductsPage implements H
             SearchApiResponse products = getProductList(categoryDropdown.getValue(), shopDropdown.getValue(), productName.getValue(), Pageable.ofSize(500));
             productsLayout.removeAll();
 
-            FlexLayout tileContainer = getProductsLayout(products);
-            productsLayout.add(tileContainer);
+            Map<VerticalLayout, ProductDTO> productCardMap = new HashMap<>();
+            FlexLayout tileContainer = getProductsLayout(products, productCardMap);
+
+            Checkbox showOnlyActualCheckbox = new Checkbox("Show only actual products");
+            showOnlyActualCheckbox.addValueChangeListener(event -> {
+                boolean onlyActual = event.getValue();
+                productCardMap.forEach((productCard, dto) -> {
+                    productCard.setVisible(!onlyActual || dto.isActual());
+                });
+            });
+
+            productsLayout.add(showOnlyActualCheckbox, tileContainer);
         });
 
         add(shopDropdown, categoryDropdown, productName, searchButton, productsLayout);
