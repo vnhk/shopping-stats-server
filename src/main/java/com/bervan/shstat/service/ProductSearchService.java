@@ -87,7 +87,7 @@ public class ProductSearchService {
             sql.append("AND pbo.product_name LIKE CONCAT('%', :name, '%') ");
         }
 
-        sql.append("ORDER BY pbo.discount_in_percent DESC");
+        sql.append("ORDER BY " + discountColumn + " DESC");
 
         Query query = entityManager.createNativeQuery(sql.toString());
 
