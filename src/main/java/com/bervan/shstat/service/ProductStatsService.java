@@ -4,6 +4,7 @@ import com.bervan.common.user.User;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.entity.ProductStats;
+import com.bervan.shstat.repository.ProductBestOfferRepository;
 import com.bervan.shstat.repository.ProductStatsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,14 +25,49 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ProductStatsService {
     private static final int BATCH_SIZE = 1000;
     private final ProductStatsRepository productStatsRepository;
+    private final ProductBestOfferRepository productBestOfferRepository;
     private final List<ProductStats> delayedToBeSaved = new LinkedList<>();
     private final ReentrantLock lock = new ReentrantLock();
 
     @Value("${product-update.delayed-save}")
     private boolean delayedSave = true;
 
-    public ProductStatsService(ProductStatsRepository productStatsRepository) {
+    public ProductStatsService(ProductStatsRepository productStatsRepository, ProductBestOfferRepository productBestOfferRepository) {
         this.productStatsRepository = productStatsRepository;
+        this.productBestOfferRepository = productBestOfferRepository;
+    }
+
+    public static BigDecimal calculateAvgForMonthsInMemory(List<ProductBasedOnDateAttributes> attributes, int monthOffset) {
+        LocalDate today = LocalDate.now();
+        LocalDate fromDate = today.minusMonths(monthOffset);
+        BigDecimal total = BigDecimal.ZERO;
+        long totalDays = 0;
+
+        for (ProductBasedOnDateAttributes attr : attributes) {
+            if (attr.getPrice().compareTo(BigDecimal.ZERO) <= 0) continue;
+            if (Boolean.TRUE.equals(attr.getDeleted())) continue;
+
+            LocalDate start = toLocalDate(attr.getScrapDate());
+            LocalDate end = Optional.ofNullable(attr.getScrapDateEnd())
+                    .map(ProductStatsService::toLocalDate)
+                    .orElse(today);
+            if (end.isAfter(today)) end = today;
+
+            if (end.isBefore(fromDate)) continue;
+
+            LocalDate effectiveStart = start.isBefore(fromDate) ? fromDate : start;
+            long days = ChronoUnit.DAYS.between(effectiveStart, end);
+            if (days <= 0) continue;
+
+            total = total.add(attr.getPrice().multiply(BigDecimal.valueOf(days)));
+            totalDays += days;
+        }
+
+        return totalDays > 0 ? total.divide(BigDecimal.valueOf(totalDays), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+    }
+
+    private static LocalDate toLocalDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
     public void updateProductStats(Product mappedProduct, User commonUser) {
@@ -145,36 +181,7 @@ public class ProductStatsService {
         return productStatsRepository.findByProductId(id);
     }
 
-    public static BigDecimal calculateAvgForMonthsInMemory(List<ProductBasedOnDateAttributes> attributes, int monthOffset) {
-        LocalDate today = LocalDate.now();
-        LocalDate fromDate = today.minusMonths(monthOffset);
-        BigDecimal total = BigDecimal.ZERO;
-        long totalDays = 0;
-
-        for (ProductBasedOnDateAttributes attr : attributes) {
-            if (attr.getPrice().compareTo(BigDecimal.ZERO) <= 0) continue;
-            if (Boolean.TRUE.equals(attr.getDeleted())) continue;
-
-            LocalDate start = toLocalDate(attr.getScrapDate());
-            LocalDate end = Optional.ofNullable(attr.getScrapDateEnd())
-                    .map(ProductStatsService::toLocalDate)
-                    .orElse(today);
-            if (end.isAfter(today)) end = today;
-
-            if (end.isBefore(fromDate)) continue;
-
-            LocalDate effectiveStart = start.isBefore(fromDate) ? fromDate : start;
-            long days = ChronoUnit.DAYS.between(effectiveStart, end);
-            if (days <= 0) continue;
-
-            total = total.add(attr.getPrice().multiply(BigDecimal.valueOf(days)));
-            totalDays += days;
-        }
-
-        return totalDays > 0 ? total.divide(BigDecimal.valueOf(totalDays), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
-    }
-
-    private static LocalDate toLocalDate(Date date) {
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    public List<ProductStats> findAllByProductId(Collection<Long> productIds) {
+        return productStatsRepository.findAllByProductIdIn(productIds);
     }
 }

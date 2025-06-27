@@ -1,7 +1,6 @@
 package com.bervan.shstat.entity;
 
 import com.bervan.common.model.BervanBaseEntity;
-import com.bervan.history.model.AbstractBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -9,25 +8,26 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"productId", "scrapDate"})})
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Getter
 @Setter
-public class ActualProduct extends BervanBaseEntity<Long> {
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public class ProductBestOffer extends BervanBaseEntity<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotNull
     private Long productId;
-    @NotNull
-    private Date scrapDate;
     private String productName;
     private String shop;
     private String productImageSrc;
     private BigDecimal price;
+    private BigDecimal discount1Month;
+    private BigDecimal discount2Month;
+    private BigDecimal discount3Month;
+    private BigDecimal discount6Month;
+    private BigDecimal discount12Month;
     private Boolean deleted = false;
 
     @Override

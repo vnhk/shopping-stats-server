@@ -7,11 +7,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ProductStatsRepository extends BaseRepository<ProductStats, Long> {
     Optional<ProductStats> findByProductId(Long productId);
+
+    List<ProductStats> findAllByProductIdIn(Collection<Long> productIds);
 
 //    @Query(nativeQuery = true, value = """
 //            SELECT

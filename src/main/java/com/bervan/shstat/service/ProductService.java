@@ -5,7 +5,9 @@ import com.bervan.common.user.UserRepository;
 import com.bervan.shstat.AttrFieldMappingVal;
 import com.bervan.shstat.AttrMapper;
 import com.bervan.shstat.MapperException;
+import com.bervan.shstat.ShopSchedulerTasks;
 import com.bervan.shstat.entity.*;
+import com.bervan.shstat.repository.ProductBestOfferRepository;
 import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.tokens.ProductSimilarOffersService;
 import jakarta.persistence.EntityManager;
@@ -15,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +29,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -92,6 +97,8 @@ public class ProductService {
     private final UserRepository userRepository;
     private final ProductBasedOnDateAttributesService productBasedOnDateAttributesService;
     private final ScrapAuditService scrapAuditService;
+    private final ShopSchedulerTasks shopSchedulerTasks;
+    private final ProductBestOfferRepository productBestOfferRepository;
     @PersistenceContext
     private EntityManager entityManager;
     private User commonUser;
@@ -101,7 +108,7 @@ public class ProductService {
                           ProductStatsService productStatsService, ProductSimilarOffersService productSimilarOffersService,
                           UserRepository userRepository,
                           ProductBasedOnDateAttributesService productBasedOnDateAttributesService,
-                          ScrapAuditService scrapAuditService) {
+                          ScrapAuditService scrapAuditService, ShopSchedulerTasks shopSchedulerTasks, ProductBestOfferRepository productBestOfferRepository) {
         this.productRepository = productRepository;
         this.actualProductService = actualProductService;
         this.productStatsService = productStatsService;
@@ -109,11 +116,26 @@ public class ProductService {
         this.userRepository = userRepository;
         this.productBasedOnDateAttributesService = productBasedOnDateAttributesService;
         this.scrapAuditService = scrapAuditService;
+        this.shopSchedulerTasks = shopSchedulerTasks;
+        this.productBestOfferRepository = productBestOfferRepository;
     }
 
     private static <T> Optional<T> findProductAttr(Product product, String key, Class<T> productAttrClass) {
         return (Optional<T>) product.getAttributes().stream().filter(e -> e.getName().equals(key))
                 .filter(e -> e.getClass().isAssignableFrom(productAttrClass)).findFirst();
+    }
+
+    private static BigDecimal getDiscount(BigDecimal avg, BigDecimal price) {
+        if (avg == null || avg.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        } else {
+            BigDecimal discount = BigDecimal.ONE
+                    .subtract(price.divide(avg, 10, RoundingMode.HALF_UP))
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(2, RoundingMode.HALF_UP);
+
+            return discount;
+        }
     }
 
     @Async("productTaskExecutor")
@@ -258,7 +280,6 @@ public class ProductService {
             log.error("Failed to createAndUpdateTokens!", e);
         }
     }
-
 
     private synchronized Product save(Product product) {
         try {
@@ -412,43 +433,111 @@ public class ProductService {
 
     @Transactional
     public void createLowerThanAVGForLastXMonths() {
-        List<Integer> monthOffsets = List.of(1, 2, 3, 6, 12);
+        productBestOfferRepository.deleteAll();
 
-        // CREATE OR REPLACE TABLE with first offset
-        String createTableQuery = "CREATE OR REPLACE TABLE LOWER_THAN_AVG_FOR_X_MONTHS AS ";
-        entityManager.createNativeQuery(createTableQuery + getSql(monthOffsets.get(0))).executeUpdate();
+        long totalActualProducts = actualProductService.count();
+        int pageSize = 1000;
+        for (int offset = 0; offset < totalActualProducts; offset += pageSize) {
+            int pageNumber = offset / pageSize;
+            List<ActualProduct> actualProducts = actualProductService.findAll(PageRequest.of(pageNumber, pageSize, Sort.by("id"))); // fix page number should not be offset
+            Set<Long> productIds = actualProducts.stream().map(ActualProduct::getProductId).collect(Collectors.toSet());
+            List<ProductStats> stats = productStatsService.findAllByProductId(productIds);
 
-        // INSERT INTO with remaining offsets
-        String insertIntoQuery = "INSERT INTO LOWER_THAN_AVG_FOR_X_MONTHS ";
-        for (int i = 1; i < monthOffsets.size(); i++) {
-            entityManager.createNativeQuery(insertIntoQuery + getSql(monthOffsets.get(i))).executeUpdate();
+            Map<Long, ActualProduct> actualProductMap = actualProducts.stream()
+                    .collect(Collectors.toMap(
+                            ActualProduct::getProductId,
+                            Function.identity()
+                    ));
+
+            Map<Long, ProductStats> productStatsMap = stats.stream()
+                    .collect(Collectors.toMap(
+                            ProductStats::getProductId,
+                            Function.identity()
+                    ));
+
+            List<ProductBestOffer> toBeSaved = new ArrayList<>();
+
+            for (Long productId : productIds) {
+                ActualProduct actualProduct = actualProductMap.get(productId);
+                ProductStats productStats = productStatsMap.get(productId);
+
+                if (productStats == null) continue;
+
+                ProductBestOffer productBestOffer = new ProductBestOffer();
+                productBestOffer.setProductId(actualProduct.getProductId());
+                productBestOffer.setProductName(actualProduct.getProductName());
+                productBestOffer.setPrice(actualProduct.getPrice());
+                productBestOffer.setProductImageSrc(actualProduct.getProductImageSrc());
+                productBestOffer.setShop(actualProduct.getShop());
+                BigDecimal price = actualProduct.getPrice();
+
+                BigDecimal avg = productStats.getAvg1Month();
+                productBestOffer.setDiscount1Month(getDiscount(avg, price));
+
+                avg = productStats.getAvg2Month();
+                productBestOffer.setDiscount2Month(getDiscount(avg, price));
+
+                avg = productStats.getAvg3Month();
+                productBestOffer.setDiscount3Month(getDiscount(avg, price));
+
+                avg = productStats.getAvg6Month();
+                productBestOffer.setDiscount6Month(getDiscount(avg, price));
+
+                avg = productStats.getAvg12Month();
+                productBestOffer.setDiscount12Month(getDiscount(avg, price));
+
+                toBeSaved.add(productBestOffer);
+            }
+
+            productBestOfferRepository.saveAll(toBeSaved);
         }
-
-        // Create indexes (re-created each time table is replaced)
-        entityManager.createNativeQuery("CREATE INDEX idx_ltafxm_main_filter_full ON LOWER_THAN_AVG_FOR_X_MONTHS(month_offset, avgPrice, discount_in_percent, category, shop)").executeUpdate();
-        entityManager.createNativeQuery("CREATE INDEX idx_ltafxm_main_filter_partial ON LOWER_THAN_AVG_FOR_X_MONTHS(month_offset, avgPrice, discount_in_percent)").executeUpdate();
-        entityManager.createNativeQuery("CREATE INDEX idx_ltafxm_id ON LOWER_THAN_AVG_FOR_X_MONTHS(id)").executeUpdate();
     }
 
-    private String getSql(int months) {
-        return "WITH RankedPrices AS (" +
-                "    SELECT DISTINCT product_id, avg" + months + "month AS average_price FROM product_stats" +
-                ") " +
-                "SELECT DISTINCT pda.id AS id, pda.scrap_date AS scrap_date, pda.price AS price, " +
-                "       rp.average_price AS avgPrice, " + months + " AS month_offset, " +
-                "       UPPER(p.name) AS product_name, p.shop AS shop, pc.categories AS category, " +
-                "       p.img_src AS product_image_src, " +
-                "       (IF(pda.price >= rp.average_price, 0, (1 - pda.price / rp.average_price) * 100)) AS discount_in_percent " +
-                "FROM product_based_on_date_attributes pda " +
-                "JOIN product p ON p.id = pda.product_id " +
-                "JOIN RankedPrices rp ON p.id = rp.product_id " +
-                "LEFT JOIN product_categories pc ON pda.product_id = pc.product_id " +
-                "JOIN actual_product ap ON ap.product_id = pda.product_id " +
-                "WHERE pda.price < rp.average_price " +
-                "  AND pda.price > 0 " +
-                "  AND ((1 - pda.price / rp.average_price) * 100) >= 5 " +
-                "ORDER BY pda.id";
-    }
+//    @Transactional
+//    public void createLowerThanAVGForLastXMonths() {
+//        List<Integer> monthOffsets = List.of(1, 2, 3, 6, 12);
+//
+//        // CREATE OR REPLACE TABLE with first offset
+//        String createTableQuery = "CREATE OR REPLACE TABLE LOWER_THAN_AVG_FOR_X_MONTHS AS ";
+//        entityManager.createNativeQuery(createTableQuery + getSql(monthOffsets.get(0))).executeUpdate();
+//
+//        // INSERT INTO with remaining offsets
+//        String insertIntoQuery = "INSERT INTO LOWER_THAN_AVG_FOR_X_MONTHS ";
+//        for (int i = 1; i < monthOffsets.size(); i++) {
+//            entityManager.createNativeQuery(insertIntoQuery + getSql(monthOffsets.get(i))).executeUpdate();
+//        }
+//
+//        // Create indexes (re-created each time table is replaced)
+//        entityManager.createNativeQuery("CREATE INDEX idx_ltafxm_main_filter_full ON LOWER_THAN_AVG_FOR_X_MONTHS(month_offset, avgPrice, discount_in_percent, category, shop)").executeUpdate();
+//        entityManager.createNativeQuery("CREATE INDEX idx_ltafxm_main_filter_partial ON LOWER_THAN_AVG_FOR_X_MONTHS(month_offset, avgPrice, discount_in_percent)").executeUpdate();
+//        entityManager.createNativeQuery("CREATE INDEX idx_ltafxm_id ON LOWER_THAN_AVG_FOR_X_MONTHS(id)").executeUpdate();
+//    }
+
+//    private String getSql(int months) {
+//        return "WITH RankedPrices AS (" +
+//                "    SELECT DISTINCT product_id, avg" + months + "month AS average_price FROM product_stats" +
+//                "), " +
+//                "LatestPDA AS (" +
+//                "    SELECT pda.*, " +
+//                "           ROW_NUMBER() OVER (PARTITION BY pda.product_id ORDER BY pda.scrap_date DESC) AS row_num " +
+//                "    FROM product_based_on_date_attributes pda" +
+//                ") " +
+//                "SELECT DISTINCT pda.id AS id, pda.scrap_date AS scrap_date, pda.price AS price, " +
+//                "       rp.average_price AS avgPrice, " + months + " AS month_offset, " +
+//                "       UPPER(p.name) AS product_name, p.shop AS shop, pc.categories AS category, " +
+//                "       p.img_src AS product_image_src, " +
+//                "       (IF(pda.price >= rp.average_price, 0, (1 - pda.price / rp.average_price) * 100)) AS discount_in_percent " +
+//                "FROM LatestPDA pda " +
+//                "JOIN product p ON p.id = pda.product_id " +
+//                "JOIN RankedPrices rp ON p.id = rp.product_id " +
+//                "LEFT JOIN product_categories pc ON pda.product_id = pc.product_id " +
+//                "JOIN actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date " +
+//                "WHERE pda.row_num = 1 " +
+//                "  AND pda.price < rp.average_price " +
+//                "  AND pda.price > 0 " +
+//                "  AND ((1 - pda.price / rp.average_price) * 100) >= 5 " +
+//                "ORDER BY pda.id";
+//    }
 
     public void update(Long id, String name, String link, String finalImage) {
         Product product = productRepository.findById(id).get();

@@ -3,9 +3,11 @@ package com.bervan.shstat.service;
 import com.bervan.common.user.User;
 import com.bervan.shstat.entity.ActualProduct;
 import com.bervan.shstat.entity.Product;
+import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.repository.ActualProductsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -47,12 +49,23 @@ public class ActualProductService {
                 return;
             }
 
+            List<ProductBasedOnDateAttributes> sortedPrices = mappedProduct.getProductBasedOnDateAttributes().stream()
+                    .sorted(Comparator.comparing(ProductBasedOnDateAttributes::getScrapDate).reversed())
+                    .toList();
+
             Optional<ActualProduct> actualProduct = actualProductsRepository.findByProductId(productId);
 
             if (actualProduct.isPresent()) {
                 ActualProduct ap = actualProduct.get();
                 if (ap.getScrapDate().before(scrapDate)) {
                     ap.setScrapDate(scrapDate);
+                    //remove it later
+                    ap.setProductId(productId);
+                    ap.setProductName(mappedProduct.getName());
+                    ap.setProductImageSrc(mappedProduct.getImgSrc());
+                    ap.setShop(mappedProduct.getShop());
+                    ap.setPrice(sortedPrices.get(0).getPrice());
+                    //
                     if (!ap.getOwners().contains(commonUser)) {
                         ap.addOwner(commonUser);
                     }
@@ -63,6 +76,10 @@ public class ActualProductService {
                 ActualProduct newAP = new ActualProduct();
                 newAP.addOwner(commonUser);
                 newAP.setProductId(productId);
+                newAP.setProductName(mappedProduct.getName());
+                newAP.setProductImageSrc(mappedProduct.getImgSrc());
+                newAP.setShop(mappedProduct.getShop());
+                newAP.setPrice(sortedPrices.get(0).getPrice());
                 newAP.setScrapDate(scrapDate);
                 delayedToBeSaved.removeIf(p -> p.getProductId().equals(productId));
                 delayedToBeSaved.add(newAP);
@@ -73,7 +90,7 @@ public class ActualProductService {
             lock.unlock();
         }
 
-        if(!delayedSave) {
+        if (!delayedSave) {
             flushActualProductsToDb();
         }
     }
@@ -114,5 +131,13 @@ public class ActualProductService {
         } catch (Exception e) {
             log.error("Failed to updateActualProducts!", e);
         }
+    }
+
+    public long count() {
+        return actualProductsRepository.count();
+    }
+
+    public List<ActualProduct> findAll(Pageable pageable) {
+        return actualProductsRepository.findAll(pageable).toList();
     }
 }
