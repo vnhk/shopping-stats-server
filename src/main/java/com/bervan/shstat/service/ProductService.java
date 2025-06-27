@@ -461,7 +461,6 @@ public class ProductService {
                 productBestOffer.setProductId(actualProduct.getProductId());
                 productBestOffer.setProductName(actualProduct.getProductName());
                 productBestOffer.setPrice(actualProduct.getPrice());
-                productBestOffer.setProductImageSrc(actualProduct.getProductImageSrc());
                 productBestOffer.setShop(actualProduct.getShop());
                 BigDecimal price = actualProduct.getPrice();
 

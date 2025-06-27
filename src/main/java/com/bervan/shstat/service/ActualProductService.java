@@ -62,7 +62,6 @@ public class ActualProductService {
                     //remove it later
                     ap.setProductId(productId);
                     ap.setProductName(mappedProduct.getName());
-                    ap.setProductImageSrc(mappedProduct.getImgSrc());
                     ap.setShop(mappedProduct.getShop());
                     ap.setPrice(sortedPrices.get(0).getPrice());
                     //
@@ -77,7 +76,6 @@ public class ActualProductService {
                 newAP.addOwner(commonUser);
                 newAP.setProductId(productId);
                 newAP.setProductName(mappedProduct.getName());
-                newAP.setProductImageSrc(mappedProduct.getImgSrc());
                 newAP.setShop(mappedProduct.getShop());
                 newAP.setPrice(sortedPrices.get(0).getPrice());
                 newAP.setScrapDate(scrapDate);

@@ -21,7 +21,6 @@ public class ProductBestOffer extends BervanBaseEntity<Long> {
     private Long productId;
     private String productName;
     private String shop;
-    private String productImageSrc;
     private BigDecimal price;
     private BigDecimal discount1Month;
     private BigDecimal discount2Month;

@@ -26,7 +26,6 @@ public class ActualProduct extends BervanBaseEntity<Long> {
     private Date scrapDate;
     private String productName;
     private String shop;
-    private String productImageSrc;
     private BigDecimal price;
     private Boolean deleted = false;
 
