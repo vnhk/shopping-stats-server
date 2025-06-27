@@ -53,11 +53,11 @@ public class ProductSearchService {
 
         String discountColumn;
         switch (months) {
-            case 1 -> discountColumn = "pbo.discount_1_month";
-            case 2 -> discountColumn = "pbo.discount_2_month";
-            case 3 -> discountColumn = "pbo.discount_3_month";
-            case 6 -> discountColumn = "pbo.discount_6_month";
-            case 12 -> discountColumn = "pbo.discount_12_month";
+            case 1 -> discountColumn = "pbo.discount1month";
+            case 2 -> discountColumn = "pbo.discount2month";
+            case 3 -> discountColumn = "pbo.discount3month";
+            case 6 -> discountColumn = "pbo.discount6month";
+            case 12 -> discountColumn = "pbo.discount12month";
             default -> throw new IllegalArgumentException("Unsupported months: " + months);
         }
 
