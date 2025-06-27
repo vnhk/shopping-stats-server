@@ -5,13 +5,10 @@ import com.bervan.common.user.UserRepository;
 import com.bervan.shstat.AttrFieldMappingVal;
 import com.bervan.shstat.AttrMapper;
 import com.bervan.shstat.MapperException;
-import com.bervan.shstat.ShopSchedulerTasks;
 import com.bervan.shstat.entity.*;
 import com.bervan.shstat.repository.ProductBestOfferRepository;
 import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.tokens.ProductSimilarOffersService;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.message.StringFormattedMessage;
@@ -97,10 +94,7 @@ public class ProductService {
     private final UserRepository userRepository;
     private final ProductBasedOnDateAttributesService productBasedOnDateAttributesService;
     private final ScrapAuditService scrapAuditService;
-    private final ShopSchedulerTasks shopSchedulerTasks;
     private final ProductBestOfferRepository productBestOfferRepository;
-    @PersistenceContext
-    private EntityManager entityManager;
     private User commonUser;
 
     public ProductService(ProductRepository productRepository,
@@ -108,7 +102,8 @@ public class ProductService {
                           ProductStatsService productStatsService, ProductSimilarOffersService productSimilarOffersService,
                           UserRepository userRepository,
                           ProductBasedOnDateAttributesService productBasedOnDateAttributesService,
-                          ScrapAuditService scrapAuditService, ShopSchedulerTasks shopSchedulerTasks, ProductBestOfferRepository productBestOfferRepository) {
+                          ScrapAuditService scrapAuditService,
+                          ProductBestOfferRepository productBestOfferRepository) {
         this.productRepository = productRepository;
         this.actualProductService = actualProductService;
         this.productStatsService = productStatsService;
@@ -116,7 +111,6 @@ public class ProductService {
         this.userRepository = userRepository;
         this.productBasedOnDateAttributesService = productBasedOnDateAttributesService;
         this.scrapAuditService = scrapAuditService;
-        this.shopSchedulerTasks = shopSchedulerTasks;
         this.productBestOfferRepository = productBestOfferRepository;
     }
 
@@ -432,7 +426,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void createLowerThanAVGForLastXMonths() {
+    public void createBestOffers() {
         productBestOfferRepository.deleteAll();
 
         long totalActualProducts = actualProductService.count();
