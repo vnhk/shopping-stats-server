@@ -145,7 +145,7 @@ public class ProductStatsService {
         return productStatsRepository.findByProductId(id);
     }
 
-    private BigDecimal calculateAvgForMonthsInMemory(List<ProductBasedOnDateAttributes> attributes, int monthOffset) {
+    public static BigDecimal calculateAvgForMonthsInMemory(List<ProductBasedOnDateAttributes> attributes, int monthOffset) {
         LocalDate today = LocalDate.now();
         LocalDate fromDate = today.minusMonths(monthOffset);
         BigDecimal total = BigDecimal.ZERO;
@@ -157,7 +157,7 @@ public class ProductStatsService {
 
             LocalDate start = toLocalDate(attr.getScrapDate());
             LocalDate end = Optional.ofNullable(attr.getScrapDateEnd())
-                    .map(this::toLocalDate)
+                    .map(ProductStatsService::toLocalDate)
                     .orElse(today);
             if (end.isAfter(today)) end = today;
 
@@ -174,7 +174,7 @@ public class ProductStatsService {
         return totalDays > 0 ? total.divide(BigDecimal.valueOf(totalDays), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
     }
 
-    private LocalDate toLocalDate(Date date) {
+    private static LocalDate toLocalDate(Date date) {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 }

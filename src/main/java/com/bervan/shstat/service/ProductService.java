@@ -443,7 +443,7 @@ public class ProductService {
                 "JOIN product p ON p.id = pda.product_id " +
                 "JOIN RankedPrices rp ON p.id = rp.product_id " +
                 "LEFT JOIN product_categories pc ON pda.product_id = pc.product_id " +
-                "JOIN actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date " +
+                "JOIN actual_product ap ON ap.product_id = pda.product_id " +
                 "WHERE pda.price < rp.average_price " +
                 "  AND pda.price > 0 " +
                 "  AND ((1 - pda.price / rp.average_price) * 100) >= 5 " +

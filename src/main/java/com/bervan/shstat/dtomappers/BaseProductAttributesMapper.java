@@ -6,8 +6,8 @@ import com.bervan.shstat.entity.ProductAttribute;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.entity.ProductListTextAttribute;
 import com.bervan.shstat.repository.ActualProductsRepository;
-import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.response.ProductDTO;
+import com.bervan.shstat.service.ProductStatsService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -19,12 +19,10 @@ import static com.bervan.shstat.dtomappers.CommonUtils.buildPrice;
 
 @Service
 public class BaseProductAttributesMapper implements DTOMapper<Product, ProductDTO> {
-    private final ProductRepository productRepository;
     private final ActualProductsRepository actualProductsRepository;
     private Set<Long> actualProducts = new HashSet<>();
 
-    public BaseProductAttributesMapper(ProductRepository productRepository, ActualProductsRepository actualProductsRepository) {
-        this.productRepository = productRepository;
+    public BaseProductAttributesMapper(ActualProductsRepository actualProductsRepository) {
         this.actualProductsRepository = actualProductsRepository;
     }
 
@@ -38,23 +36,14 @@ public class BaseProductAttributesMapper implements DTOMapper<Product, ProductDT
         List<ProductBasedOnDateAttributes> productBasedOnDateAttributes = product.value.getProductBasedOnDateAttributes();
         List<ProductBasedOnDateAttributes> sortedPrices = productBasedOnDateAttributes.stream().sorted(Comparator.comparing(ProductBasedOnDateAttributes::getScrapDate).reversed()).toList();
 
+        BigDecimal avg = ProductStatsService.calculateAvgForMonthsInMemory(sortedPrices, 240);//20years...
+
         Optional<ProductBasedOnDateAttributes> min = sortedPrices.stream().min(Comparator.comparingInt(e -> e.getPrice().intValue()));
         Optional<ProductBasedOnDateAttributes> max = sortedPrices.stream().max(Comparator.comparingInt(e -> e.getPrice().intValue()));
 
-        List<ProductBasedOnDateAttributes> forAverage = new ArrayList<>();
-        if (!sortedPrices.isEmpty()) {
-            for (int i = 1; i < sortedPrices.size(); i++) {
-                forAverage.add(sortedPrices.get(i));
-            }
-        }
-        OptionalDouble avg = forAverage.stream().mapToInt(e -> e.getPrice().intValue()).average();
         min.ifPresent(basedOnDateAttributes -> productDTO.value.setMinPrice(buildPrice(basedOnDateAttributes)));
         max.ifPresent(basedOnDateAttributes -> productDTO.value.setMaxPrice(buildPrice(basedOnDateAttributes)));
-        if (avg.isPresent()) {
-            productDTO.value.setAvgPrice(BigDecimal.valueOf(avg.getAsDouble()));
-        } else {
-            productDTO.value.setAvgPrice(BigDecimal.valueOf(-1));
-        }
+        productDTO.value.setAvgPrice(avg);
 
         productDTO.value.setId(product.value.getId());
         productDTO.value.setName(product.value.getName());
