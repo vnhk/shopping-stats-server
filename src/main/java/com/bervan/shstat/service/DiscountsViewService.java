@@ -4,16 +4,11 @@ import com.bervan.shstat.DataHolder;
 import com.bervan.shstat.ViewBuilder;
 import com.bervan.shstat.dtomappers.BaseProductAttributesMapper;
 import com.bervan.shstat.dtomappers.DTOMapper;
-import com.bervan.shstat.dtomappers.ProductBasedOnDateAttributePriceMapper;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
-import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -81,15 +76,6 @@ public class DiscountsViewService extends ViewBuilder {
         for (Product product : queryResult) {
             ProductDTO productDTO = new ProductDTO();
             mappersMap.get(BaseProductAttributesMapper.class).map(DataHolder.of(product), DataHolder.of(productDTO));
-
-            List<PriceDTO> prices = new ArrayList<>();
-            for (ProductBasedOnDateAttributes attr : product.getProductBasedOnDateAttributes()) {
-                DataHolder<PriceDTO> priceHolder = DataHolder.of(new PriceDTO());
-                mappersMap.get(ProductBasedOnDateAttributePriceMapper.class).map(DataHolder.of(attr), priceHolder);
-                prices.add(priceHolder.value);
-            }
-            productDTO.setPrices(prices);
-
             result.add(productDTO);
         }
 

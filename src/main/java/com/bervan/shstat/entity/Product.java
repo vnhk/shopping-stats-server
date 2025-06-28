@@ -41,6 +41,7 @@ public class Product extends BervanBaseEntity<Long> {
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER, mappedBy = "product")
     private Set<ProductAttribute> attributes = new HashSet<>();
     @OneToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "product", fetch = FetchType.EAGER)
+    @OrderBy("scrapDate DESC")
     private List<ProductBasedOnDateAttributes> productBasedOnDateAttributes = new ArrayList<>();
     private Boolean deleted = false;
 
