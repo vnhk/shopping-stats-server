@@ -20,6 +20,7 @@ import java.util.Set;
 public class ProductSearchService {
     @Autowired
     private ProductRepository productRepository;
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -31,12 +32,10 @@ public class ProductSearchService {
         return productRepository.findCategories();
     }
 
-
     public Page<Product> findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable pageable, Double discountMin, Double discountMax, Integer months, List<String> categories, String shop, String name, Integer prevPriceMin, Integer prevPriceMax) {
         if (name != null) {
             name = name.toUpperCase();
         }
-
         return findBestOffers(categories, shop, Double.valueOf(prevPriceMin), Double.valueOf(prevPriceMax), discountMin, discountMax, name, months, pageable);
     }
 
@@ -51,18 +50,17 @@ public class ProductSearchService {
             Integer months,
             Pageable pageable) {
 
-        String discountColumn;
-        switch (months) {
-            case 1 -> discountColumn = "pbo.discount1month";
-            case 2 -> discountColumn = "pbo.discount2month";
-            case 3 -> discountColumn = "pbo.discount3month";
-            case 6 -> discountColumn = "pbo.discount6month";
-            case 12 -> discountColumn = "pbo.discount12month";
+        String discountColumn = switch (months) {
+            case 1 -> "pbo.discount1month";
+            case 2 -> "pbo.discount2month";
+            case 3 -> "pbo.discount3month";
+            case 6 -> "pbo.discount6month";
+            case 12 -> "pbo.discount12month";
             default -> throw new IllegalArgumentException("Unsupported months: " + months);
-        }
+        };
 
         StringBuilder sql = new StringBuilder("""
-                SELECT DISTINCT pbo.product_id as productId
+                SELECT DISTINCT pbo.product_id AS productId
                 FROM product_best_offer pbo
                 """);
 
@@ -87,7 +85,7 @@ public class ProductSearchService {
             sql.append("AND pbo.product_name LIKE CONCAT('%', :name, '%') ");
         }
 
-        sql.append("ORDER BY " + discountColumn + " DESC");
+        sql.append("ORDER BY ").append(discountColumn).append(" DESC");
 
         Query query = entityManager.createNativeQuery(sql.toString());
 
@@ -107,11 +105,10 @@ public class ProductSearchService {
         query.setMaxResults(pageable.getPageSize());
 
         @SuppressWarnings("unchecked")
-        List<Object[]> resultList = query.getResultList();
+        List<Number> resultList = query.getResultList();
 
         List<Long> productIds = resultList.stream()
-                .map(row ->
-                        ((Number) row[0]).longValue())
+                .map(Number::longValue)
                 .toList();
 
         StringBuilder countSql = new StringBuilder("""
@@ -171,7 +168,7 @@ public class ProductSearchService {
 
     public Page<Product> findById(Long id, Pageable pageable) {
         Optional<Product> byId = productRepository.findById(id);
-        return byId.map(product -> new PageImpl(Collections.singletonList(product), pageable, 1)).orElseGet(() ->
-                new PageImpl(Collections.emptyList(), pageable, 0));
+        return byId.map(product -> new PageImpl<>(Collections.singletonList(product), pageable, 1))
+                .orElseGet(() -> new PageImpl<>(Collections.emptyList(), pageable, 0));
     }
 }
