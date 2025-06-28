@@ -73,7 +73,7 @@ public class ProductSearchService {
         sql.append("WHERE 1=1 ");
 
         if (categories != null && !categories.isEmpty()) {
-            sql.append("AND pc.category IN :categories ");
+            sql.append("AND pc.categories IN :categories ");
         }
 
         sql.append("""
@@ -126,7 +126,7 @@ public class ProductSearchService {
         countSql.append("WHERE 1=1 ");
 
         if (categories != null && !categories.isEmpty()) {
-            countSql.append("AND pc.category IN :categories ");
+            countSql.append("AND pc.categories IN :categories ");
         }
 
         countSql.append("""
