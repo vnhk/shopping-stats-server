@@ -14,7 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -428,13 +431,17 @@ public class ProductService {
     @Transactional
     public void createBestOffers() {
         productBestOfferRepository.deleteAll();
-
-        long totalActualProducts = actualProductService.count();
         int pageSize = 1000;
-        for (int offset = 0; offset < totalActualProducts; offset += pageSize) {
-            int pageNumber = offset / pageSize;
-            List<ActualProduct> actualProducts = actualProductService.findAll(PageRequest.of(pageNumber, pageSize, Sort.by("id"))); // fix page number should not be offset
-            Set<Long> productIds = actualProducts.stream().map(ActualProduct::getProductId).collect(Collectors.toSet());
+        Pageable pageable = PageRequest.of(0, pageSize, Sort.by("id"));
+        Page<ActualProduct> page;
+
+        do {
+            page = actualProductService.findAll(pageable);
+            List<ActualProduct> actualProducts = page.getContent();
+            Set<Long> productIds = actualProducts.stream()
+                    .map(ActualProduct::getProductId)
+                    .collect(Collectors.toSet());
+
             List<ProductStats> stats = productStatsService.findAllByProductId(productIds);
 
             Map<Long, ActualProduct> actualProductMap = actualProducts.stream()
@@ -462,27 +469,38 @@ public class ProductService {
                 productBestOffer.setProductName(actualProduct.getProductName());
                 productBestOffer.setPrice(actualProduct.getPrice());
                 productBestOffer.setShop(actualProduct.getShop());
+
                 BigDecimal price = actualProduct.getPrice();
+                boolean atLeastOneDiscount = false;
 
-                BigDecimal avg = productStats.getAvg1Month();
-                productBestOffer.setDiscount1Month(getDiscount(avg, price));
+                atLeastOneDiscount |= calculateDiscount(productStats.getAvg1Month(), price, productBestOffer::setDiscount1Month);
+                atLeastOneDiscount |= calculateDiscount(productStats.getAvg2Month(), price, productBestOffer::setDiscount2Month);
+                atLeastOneDiscount |= calculateDiscount(productStats.getAvg3Month(), price, productBestOffer::setDiscount3Month);
+                atLeastOneDiscount |= calculateDiscount(productStats.getAvg6Month(), price, productBestOffer::setDiscount6Month);
+                atLeastOneDiscount |= calculateDiscount(productStats.getAvg12Month(), price, productBestOffer::setDiscount12Month);
 
-                avg = productStats.getAvg2Month();
-                productBestOffer.setDiscount2Month(getDiscount(avg, price));
-
-                avg = productStats.getAvg3Month();
-                productBestOffer.setDiscount3Month(getDiscount(avg, price));
-
-                avg = productStats.getAvg6Month();
-                productBestOffer.setDiscount6Month(getDiscount(avg, price));
-
-                avg = productStats.getAvg12Month();
-                productBestOffer.setDiscount12Month(getDiscount(avg, price));
-
-                toBeSaved.add(productBestOffer);
+                if (atLeastOneDiscount) {
+                    toBeSaved.add(productBestOffer);
+                }
             }
 
             productBestOfferRepository.saveAll(toBeSaved);
+            pageable = page.nextPageable();
+        } while (page.hasNext());
+    }
+
+    private boolean calculateDiscount(BigDecimal avg, BigDecimal price, Consumer<BigDecimal> setter) {
+        if (avg == null || price == null) {
+            setter.accept(BigDecimal.ZERO);
+            return false;
+        }
+        BigDecimal discount = getDiscount(avg, price);
+        if (discount.doubleValue() > 0) {
+            setter.accept(discount);
+            return true;
+        } else {
+            setter.accept(BigDecimal.ZERO);
+            return false;
         }
     }
 

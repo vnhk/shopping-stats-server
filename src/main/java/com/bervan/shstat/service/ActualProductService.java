@@ -7,6 +7,7 @@ import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.repository.ActualProductsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -135,7 +136,7 @@ public class ActualProductService {
         return actualProductsRepository.count();
     }
 
-    public List<ActualProduct> findAll(Pageable pageable) {
-        return actualProductsRepository.findAll(pageable).toList();
+    public Page<ActualProduct> findAll(Pageable pageable) {
+        return actualProductsRepository.findAll(pageable);
     }
 }
