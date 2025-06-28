@@ -4,6 +4,7 @@ import com.bervan.shstat.DataHolder;
 import com.bervan.shstat.ViewBuilder;
 import com.bervan.shstat.dtomappers.BaseProductAttributesMapper;
 import com.bervan.shstat.dtomappers.DTOMapper;
+import com.bervan.shstat.dtomappers.ProductPricesMapper;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.response.PriceDTO;
@@ -76,6 +77,7 @@ public class DiscountsViewService extends ViewBuilder {
         for (Product product : queryResult) {
             ProductDTO productDTO = new ProductDTO();
             mappersMap.get(BaseProductAttributesMapper.class).map(DataHolder.of(product), DataHolder.of(productDTO));
+            mappersMap.get(ProductPricesMapper.class).map(DataHolder.of(product), DataHolder.of(productDTO));
             result.add(productDTO);
         }
 
