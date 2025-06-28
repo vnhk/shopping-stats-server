@@ -81,9 +81,15 @@ public class DiscountsViewService extends ViewBuilder {
         for (Product product : queryResult) {
             ProductDTO productDTO = new ProductDTO();
             mappersMap.get(BaseProductAttributesMapper.class).map(DataHolder.of(product), DataHolder.of(productDTO));
-            DataHolder<PriceDTO> priceHolder = DataHolder.of(new PriceDTO());
-            mappersMap.get(ProductBasedOnDateAttributePriceMapper.class).map(DataHolder.of(product.getProductBasedOnDateAttributes()), priceHolder);
-            productDTO.setPrices(Collections.singletonList(priceHolder.value));
+
+            List<PriceDTO> prices = new ArrayList<>();
+            for (ProductBasedOnDateAttributes attr : product.getProductBasedOnDateAttributes()) {
+                DataHolder<PriceDTO> priceHolder = DataHolder.of(new PriceDTO());
+                mappersMap.get(ProductBasedOnDateAttributePriceMapper.class).map(DataHolder.of(attr), priceHolder);
+                prices.add(priceHolder.value);
+            }
+            productDTO.setPrices(prices);
+
             result.add(productDTO);
         }
 
