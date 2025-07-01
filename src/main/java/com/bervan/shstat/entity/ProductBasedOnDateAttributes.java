@@ -14,8 +14,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "scrapDate"})},
-        indexes = {@Index(columnList = "formattedScrapDate"), @Index(columnList = "scrapDate")})
+@Table(indexes = {@Index(columnList = "formattedScrapDate"), @Index(columnList = "scrapDate")})
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Getter
 @Setter
