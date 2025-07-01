@@ -167,14 +167,29 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
 
             List<PriceDTO> prices = product.getPrices();
             PriceDTO latest = prices.get(0);
+            PriceDTO previous = prices.size() > 1 ? prices.get(1) : null;
+            PriceDTO minPrice = product.getMinPrice();
+
             String discount = getDiscountStr(product, latest);
 
             html.append(String.format("""
-                        <li>
-                            <a href="%s">%s</a> – <strong>%.2f PLN</strong>
-                            %s
-                        </li>
-                    """, link, name, latest.getPrice() != null ? latest.getPrice() : BigDecimal.ZERO, discount != null ? String.format(" (%s%%) ", discount) : "?"));
+                                <li>
+                                    <a href="%s">%s</a><br/>
+                                    <strong>Current price:</strong> %.2f PLN<br/>
+                                    %s
+                                    %s
+                                    <strong>Min price:</strong> %.2f PLN
+                                </li>
+                            """,
+                    link,
+                    name,
+                    latest.getPrice() != null ? latest.getPrice() : BigDecimal.ZERO,
+                    previous != null && previous.getPrice() != null
+                            ? String.format("<strong>Previous price:</strong> %.2f PLN<br/>", previous.getPrice())
+                            : "",
+                    discount != null ? String.format("<strong>Discount:</strong> %s%%<br/>", discount) : "",
+                    minPrice != null && minPrice.getPrice() != null ? minPrice.getPrice() : BigDecimal.ZERO
+            ));
         }
 
         html.append("""
