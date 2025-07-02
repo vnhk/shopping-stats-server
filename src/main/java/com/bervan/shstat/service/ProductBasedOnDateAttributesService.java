@@ -4,6 +4,7 @@ import com.bervan.common.search.SearchService;
 import com.bervan.common.service.BaseService;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.repository.ProductBasedOnDateAttributesRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -12,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class ProductBasedOnDateAttributesService extends BaseService<Long, ProductBasedOnDateAttributes> {
     protected ProductBasedOnDateAttributesService(ProductBasedOnDateAttributesRepository repository, SearchService searchService) {
         super(repository, searchService);
@@ -42,8 +44,13 @@ public class ProductBasedOnDateAttributesService extends BaseService<Long, Produ
     @Override
     public void delete(ProductBasedOnDateAttributes item) {
         List<ProductBasedOnDateAttributes> productBasedOnDateAttributes = item.getProduct().getProductBasedOnDateAttributes();
-        ((ProductBasedOnDateAttributesRepository) repository).deleteOwners(item.getId());
-        ((ProductBasedOnDateAttributesRepository) repository).deleteItem(item.getId());
+        int deletedOwners = ((ProductBasedOnDateAttributesRepository) repository).deleteOwners(item.getId());
+        int deletedItems = ((ProductBasedOnDateAttributesRepository) repository).deleteItem(item.getId());
+        if (deletedOwners == 0 || deletedItems == 0) {
+            String message = "ProductBasedOnDateAttributes was not correctly deleted! Deleted Owners: " + deletedOwners + ", deleted items: " + deletedItems;
+            log.error(message);
+            throw new RuntimeException(message);
+        }
         productBasedOnDateAttributes.removeIf(e -> Objects.equals(e.getId(), item.getId()));
 
         //update scrapStart scrapEnd in existing

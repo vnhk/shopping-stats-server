@@ -19,7 +19,7 @@ public interface ProductBasedOnDateAttributesRepository extends BaseRepository<P
             DELETE FROM product_based_on_date_attributes_owners
                 WHERE product_based_on_date_attributes_id = :itemId
             """, nativeQuery = true)
-    void deleteOwners(Long itemId);
+    int deleteOwners(Long itemId);
 
     @Modifying
     @Transactional
@@ -27,7 +27,7 @@ public interface ProductBasedOnDateAttributesRepository extends BaseRepository<P
             DELETE FROM product_based_on_date_attributes
                 WHERE id = :itemId
             """, nativeQuery = true)
-    void deleteItem(Long itemId);
+    int deleteItem(Long itemId);
 
     List<ProductBasedOnDateAttributes> findAllByProductIdOrderByScrapDateDesc(Long productId);
 }
