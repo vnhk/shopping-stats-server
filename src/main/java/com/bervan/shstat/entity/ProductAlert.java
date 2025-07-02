@@ -21,6 +21,8 @@ public class ProductAlert extends BervanBaseEntity<Long> implements PersistableT
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @VaadinTableColumn(displayName = "Alert Name", internalName = "alertName")
+    private String name;
     @VaadinTableColumn(displayName = "Price Min", internalName = "priceMin")
     private Integer priceMin;
     @VaadinTableColumn(displayName = "Price Max", internalName = "priceMax")

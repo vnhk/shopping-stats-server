@@ -98,7 +98,11 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
     public void notifyAboutProducts(Collection<ProductAlert> alerts) {
         log.info("notifyAboutProducts started");
         for (ProductAlert alert : alerts) {
-            notifyAboutProducts(alert);
+            try {
+                notifyAboutProducts(alert);
+            } catch (Exception e) {
+                log.error("Could not notify about product prices: alert id = {}", alert.getId(), e);
+            }
         }
         log.info("notifyAboutProducts ended");
     }
@@ -123,8 +127,7 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
             categories.addAll(alert.getProductCategories());
         }
 
-        SearchApiResponse discountsCompared = discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths
-                (Pageable.ofSize(100000), (double) minDis, (double) maxDis, 3, new ArrayList<>(categories), null, null, 10, 1_000_000);
+        SearchApiResponse discountsCompared = discountsViewService.findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable.ofSize(100000), (double) minDis, (double) maxDis, 3, new ArrayList<>(categories), null, null, 10, 1_000_000);
 
         List<ProductDTO> discountedProducts = (List<ProductDTO>) discountsCompared.getItems().stream().sorted((p1, p2) -> {
             Double discount1 = ((ProductDTO) p1).getDiscount();
@@ -145,21 +148,20 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
         log.info("notifyAboutProducts - found {} matched products for alert {} id", matchedProducts.size(), alert.getId());
 
         if (!matchedProducts.isEmpty()) {
-            String message = buildHtmlProductList(matchedProducts.subList(0, Math.min(100, matchedProducts.size())));
+            String message = buildHtmlProductList(alert, matchedProducts.subList(0, Math.min(100, matchedProducts.size())));
             for (String email : alert.getEmails()) {
                 emailService.sendEmail(email, "Product Alerts " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-uuuu")), message);
             }
         }
     }
 
-    private String buildHtmlProductList(List<ProductDTO> products) {
+    private String buildHtmlProductList(ProductAlert alert, List<ProductDTO> products) {
         StringBuilder html = new StringBuilder();
         html.append("""
-                    <html>
-                    <body>
-                        <h2>🔥 New Product Alerts</h2>
-                        <ul>
+                <html>
+                <body>
                 """);
+        html.append("<h2>🔥 New Product Alerts - ").append(alert.getName()).append("</h2> <ul>");
 
         for (ProductDTO product : products) {
             String name = product.getName();
@@ -173,23 +175,14 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
             String discount = getDiscountStr(product, latest);
 
             html.append(String.format("""
-                                <li>
-                                    <a href="%s">%s</a><br/>
-                                    <strong>Current price:</strong> %.2f PLN<br/>
-                                    %s
-                                    %s
-                                    <strong>Min price:</strong> %.2f PLN
-                                </li>
-                            """,
-                    link,
-                    name,
-                    latest.getPrice() != null ? latest.getPrice() : BigDecimal.ZERO,
-                    previous != null && previous.getPrice() != null
-                            ? String.format("<strong>Previous price:</strong> %.2f PLN<br/>", previous.getPrice())
-                            : "",
-                    discount != null ? String.format("<strong>Discount:</strong> %s%%<br/>", discount) : "",
-                    minPrice != null && minPrice.getPrice() != null ? minPrice.getPrice() : BigDecimal.ZERO
-            ));
+                        <li>
+                            <a href="%s">%s</a><br/>
+                            <strong>Current price:</strong> %.2f PLN<br/>
+                            %s
+                            %s
+                            <strong>Min price:</strong> %.2f PLN
+                        </li>
+                    """, link, name, latest.getPrice() != null ? latest.getPrice() : BigDecimal.ZERO, previous != null && previous.getPrice() != null ? String.format("<strong>Previous price:</strong> %.2f PLN<br/>", previous.getPrice()) : "", discount != null ? String.format("<strong>Discount:</strong> %s%%<br/>", discount) : "", minPrice != null && minPrice.getPrice() != null ? minPrice.getPrice() : BigDecimal.ZERO));
         }
 
         html.append("""
