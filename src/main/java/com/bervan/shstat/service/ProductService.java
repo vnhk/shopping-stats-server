@@ -430,6 +430,7 @@ public class ProductService {
 
     @Transactional
     public void createBestOffers() {
+        log.info("createBestOffers started");
         productBestOfferRepository.deleteAllOwners();
         productBestOfferRepository.deleteAllItems();
         int pageSize = 1000;
@@ -491,6 +492,7 @@ public class ProductService {
             productBestOfferRepository.saveAll(toBeSaved);
             pageable = page.nextPageable();
         } while (page.hasNext());
+        log.info("createBestOffers ended");
     }
 
     private boolean calculateDiscount(BigDecimal avg, BigDecimal price, Consumer<BigDecimal> setter) {
