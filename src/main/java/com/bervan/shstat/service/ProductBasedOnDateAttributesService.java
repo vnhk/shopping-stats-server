@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -40,11 +41,12 @@ public class ProductBasedOnDateAttributesService extends BaseService<Long, Produ
 
     @Override
     public void delete(ProductBasedOnDateAttributes item) {
+        List<ProductBasedOnDateAttributes> productBasedOnDateAttributes = item.getProduct().getProductBasedOnDateAttributes();
         ((ProductBasedOnDateAttributesRepository) repository).deleteOwners(item.getId());
         ((ProductBasedOnDateAttributesRepository) repository).deleteItem(item.getId());
+        productBasedOnDateAttributes.removeIf(e -> Objects.equals(e.getId(), item.getId()));
 
         //update scrapStart scrapEnd in existing
-        List<ProductBasedOnDateAttributes> productBasedOnDateAttributes = item.getProduct().getProductBasedOnDateAttributes();
         boolean empty = productBasedOnDateAttributes.isEmpty();
         if (empty) {
             productBasedOnDateAttributes = ((ProductBasedOnDateAttributesRepository) repository).findAllByProductIdOrderByScrapDateDesc(item.getProduct().getId());
