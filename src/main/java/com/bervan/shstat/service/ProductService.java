@@ -430,10 +430,13 @@ public class ProductService {
 
     @Transactional
     public void createBestOffers() {
-        productBestOfferRepository.deleteAll();
+        productBestOfferRepository.deleteAllOwners();
+        productBestOfferRepository.deleteAllItems();
         int pageSize = 1000;
         Pageable pageable = PageRequest.of(0, pageSize, Sort.by("id"));
         Page<ActualProduct> page;
+
+        loadCommonUserIfNotLoaded();
 
         do {
             page = actualProductService.findAll(pageable);
@@ -480,6 +483,7 @@ public class ProductService {
                 atLeastOneDiscount |= calculateDiscount(productStats.getAvg12Month(), price, productBestOffer::setDiscount12Month);
 
                 if (atLeastOneDiscount) {
+                    productBestOffer.addOwner(commonUser);
                     toBeSaved.add(productBestOffer);
                 }
             }

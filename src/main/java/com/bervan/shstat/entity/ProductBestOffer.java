@@ -36,7 +36,7 @@ public class ProductBestOffer extends BervanBaseEntity<Long> {
 
     @Override
     public void setDeleted(Boolean value) {
-        this.deleted = value;
+        throw new RuntimeException("Deleted flag is not supported for " + this.getClass().getSimpleName());
     }
 
     @Override

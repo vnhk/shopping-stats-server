@@ -41,7 +41,7 @@ public class RefreshViewService {
     }
 
     private void refreshViews() {
-        process(historicalLowPrices);
+//        process(historicalLowPrices);
         process(lowerThanAvgForLastXMonths);
     }
 
