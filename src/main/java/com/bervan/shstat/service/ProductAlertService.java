@@ -101,7 +101,7 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
             try {
                 notifyAboutProducts(alert);
             } catch (Exception e) {
-                log.error("Could not notify about product prices: alert id = {}", alert.getId(), e);
+                log.error("Could not notify about product prices: alert name = {}", alert.getName(), e);
             }
         }
         log.info("notifyAboutProducts ended");
