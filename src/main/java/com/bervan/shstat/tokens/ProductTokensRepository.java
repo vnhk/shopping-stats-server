@@ -40,7 +40,7 @@ public interface ProductTokensRepository extends BaseRepository<ProductTokens, L
                     ProductTokens pt
                 WHERE
                     pt.value IN :tokens
-                AND pt.productId != :productId
+                AND pt.productId != :productIdToBeExcludedFromSearch
                 GROUP BY
                     pt.productId
                 ORDER BY
