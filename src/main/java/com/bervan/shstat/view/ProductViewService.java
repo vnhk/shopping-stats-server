@@ -1,12 +1,12 @@
 package com.bervan.shstat.view;
 
 import com.bervan.shstat.DataHolder;
-import com.bervan.shstat.service.ProductSearchService;
 import com.bervan.shstat.ViewBuilder;
 import com.bervan.shstat.dtomappers.DTOMapper;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
+import com.bervan.shstat.service.ProductSearchService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -26,15 +26,15 @@ public class ProductViewService extends ViewBuilder {
                 }
             };
 
-    @Scheduled(cron = "0 0 * * * *")
-    public void clearCache() {
-        cache.clear();
-    }
-
     public ProductViewService(ProductSearchService productSearchService,
                               List<? extends DTOMapper<Product, ProductDTO>> productMappers) {
         super(productMappers);
         this.productSearchService = productSearchService;
+    }
+
+    @Scheduled(cron = "0 0 * * * *")
+    public void clearCache() {
+        cache.clear();
     }
 
     public SearchApiResponse findById(Long id, Pageable pageable) {
@@ -66,7 +66,7 @@ public class ProductViewService extends ViewBuilder {
             return cache.get(key);
         }
 
-        Page<Product> productsByCategory = productSearchService.findProducts(category, shop, productName, pageable);
+        Page<Product> productsByCategory = productSearchService.findProductsByTokens(category, shop, productName, pageable);
         SearchApiResponse response = SearchApiResponse.builder()
                 .ofPage(productsByCategory)
                 .build();

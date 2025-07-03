@@ -46,7 +46,7 @@ public interface ProductTokensRepository extends BaseRepository<ProductTokens, L
                 ORDER BY
                     score DESC, matchedTokens DESC
             """)
-    List<Object[]> findByTokens(@Param("tokens") Set<String> tokens, Pageable pageable, Long productId);
+    List<Object[]> findByTokens(@Param("tokens") Set<String> tokens, Pageable pageable, Long productIdToBeExcludedFromSearch);
 
     @Modifying
     @Transactional

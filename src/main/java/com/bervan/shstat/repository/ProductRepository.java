@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -35,6 +36,14 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
             " c = COALESCE(:category, c) AND p.shop = COALESCE(:shop, p.shop) AND p.name LIKE %:productName%")
     Page<Product> findProductsBy(String category, String shop, String productName, Pageable pageable);
 
+    @Query("SELECT DISTINCT p FROM Product p " +
+            "WHERE p.shop = COALESCE(:shop, p.shop) " +
+            "AND p.id IN :commonProductIds")
+    Page<Product> findByShopAndIdsIn(@Param("commonProductIds") Set<Long> commonProductIds,
+                                     @Param("shop") String shop,
+                                     Pageable pageable);
+
+
     @Query(value = "SELECT DISTINCT p.categories FROM Product p")
     Set<String> findCategories();
 
@@ -51,6 +60,7 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
             """, nativeQuery = true)
     @Transactional
     void refreshHistoricalLowPricesTable();
+
 }
 
 

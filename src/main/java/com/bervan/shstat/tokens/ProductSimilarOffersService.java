@@ -38,20 +38,9 @@ public class ProductSimilarOffersService {
         //if cache maybe here clear the cache
 
         //by category - 1
-        Set<String> categoryTokens = product.getCategories().stream().map(String::toLowerCase).collect(Collectors.toSet());
+        Set<String> categoryTokens = buildCategoryTokens(product.getCategories());
         //by name - 0.8
-        Set<String> nameTokens = new HashSet<>();
-        String[] split = product.getName().toLowerCase().split(" ");
-        for (TokenConverter tokenConverter : tokenConverters) {
-            for (String s : split) {
-                Optional<String> converted = tokenConverter.convert(s);
-                if (converted.isEmpty()) {
-                    nameTokens.add(s);
-                } else {
-                    nameTokens.add(converted.get());
-                }
-            }
-        }
+        Set<String> nameTokens = buildNameTokens(product.getName());
 
         //by attr name - 0.3
         Set<String> attrNameTokens = new HashSet<>();
@@ -105,9 +94,33 @@ public class ProductSimilarOffersService {
             lock.unlock();
         }
 
-        if(!delayedSave) {
+        if (!delayedSave) {
             processTokensInDb();
         }
+    }
+
+    public Set<String> buildCategoryTokens(Collection<String> categories) {
+        return categories.stream().filter(Objects::nonNull).map(String::toLowerCase).map(String::trim).collect(Collectors.toSet());
+    }
+
+    public Set<String> buildNameTokens(String name) {
+        if (name == null || name.isBlank()) {
+            return new HashSet<>();
+        }
+
+        Set<String> nameTokens = new HashSet<>();
+        String[] split = name.toLowerCase().split(" ");
+        for (TokenConverter tokenConverter : tokenConverters) {
+            for (String s : split) {
+                Optional<String> converted = tokenConverter.convert(s);
+                if (converted.isEmpty()) {
+                    nameTokens.add(s);
+                } else {
+                    nameTokens.add(converted.get());
+                }
+            }
+        }
+        return nameTokens;
     }
 
     @Scheduled(cron = "0 0 * * * *")
