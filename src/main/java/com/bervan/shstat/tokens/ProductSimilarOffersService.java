@@ -132,6 +132,7 @@ public class ProductSimilarOffersService {
             if (lock.tryLock(5, TimeUnit.MINUTES)) {
                 log.info("processTokensInDb started");
                 try {
+                    log.info("Tokens to delete: count={}, ids={}", tokensToDelete.size(), tokensToDelete.stream().map(ProductTokens::getId).collect(Collectors.toList()));
                     if (!tokensToDelete.isEmpty()) {
                         List<Long> tokensId = tokensToDelete.stream().map(ProductTokens::getId).collect(Collectors.toList());
                         productTokensRepository.deleteOwnersTokens(tokensId);
