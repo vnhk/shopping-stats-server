@@ -47,6 +47,9 @@ public class ProductSimilarOffersService {
         for (TokenConverter tokenConverter : tokenConverters) {
             for (ProductAttribute attribute : product.getAttributes()) {
                 String name = attribute.getName();
+                if ("Offer Url".equalsIgnoreCase(name)) {
+                    continue;
+                }
                 Optional<String> converted = tokenConverter.convert(name);
                 if (converted.isEmpty()) {
                     attrNameTokens.add(name);
