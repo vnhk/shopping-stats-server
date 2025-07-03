@@ -1,11 +1,9 @@
 package com.bervan.shstat.tokens;
 
-
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
@@ -24,9 +22,38 @@ public class RomanNumeralConverter extends TokenConverter {
 
     @Override
     protected String convertInternal(String text) {
-        return convertRomanNumeralsInText(text.toUpperCase());
+        String upperText = text.toUpperCase();
+
+        // If the entire input matches a valid Roman numeral, process it
+        if (isOnlyRomanNumeral(upperText)) {
+            int arabic = romanToArabic(upperText);
+            return String.valueOf(arabic);
+        }
+
+        // If the input contains only letters but not a valid Roman numeral, return empty
+        // Or if it contains letters + other characters, also return empty
+        return "";
     }
 
+    /**
+     * Checks if the entire string is a valid Roman numeral.
+     *
+     * @param text Input text to check
+     * @return true if text is a valid Roman numeral, false otherwise
+     */
+    private boolean isOnlyRomanNumeral(String text) {
+        Pattern pattern = Pattern.compile("^M{0,4}(CM|CD|D?C{0,3})"
+                + "(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$", Pattern.CASE_INSENSITIVE);
+
+        return pattern.matcher(text).matches();
+    }
+
+    /**
+     * Converts a Roman numeral string to its Arabic integer equivalent.
+     *
+     * @param roman The Roman numeral string
+     * @return Arabic number equivalent
+     */
     private int romanToArabic(String roman) {
         int total = 0;
         int prevValue = 0;
@@ -43,22 +70,5 @@ public class RomanNumeralConverter extends TokenConverter {
         }
 
         return total;
-    }
-
-    private String convertRomanNumeralsInText(String text) {
-        Pattern pattern = Pattern.compile("\\bM{0,4}(CM|CD|D?C{0,3})"
-                + "(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})\\b", Pattern.CASE_INSENSITIVE);
-
-        Matcher matcher = pattern.matcher(text);
-        StringBuffer result = new StringBuffer();
-
-        while (matcher.find()) {
-            String roman = matcher.group();
-            int arabic = romanToArabic(roman.toUpperCase());
-            matcher.appendReplacement(result, String.valueOf(arabic));
-        }
-
-        matcher.appendTail(result);
-        return result.toString();
     }
 }
