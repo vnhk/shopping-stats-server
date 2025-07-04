@@ -2,8 +2,8 @@ package com.bervan.shstat.entity;
 
 import com.bervan.common.model.BervanBaseEntity;
 import com.bervan.common.model.PersistableTableData;
-import com.bervan.common.model.VaadinDynamicMultiDropdownTableColumn;
-import com.bervan.common.model.VaadinTableColumn;
+import com.bervan.common.model.VaadinDynamicMultiDropdownBervanColumn;
+import com.bervan.common.model.VaadinBervanColumn;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,19 +21,19 @@ public class ProductAlert extends BervanBaseEntity<Long> implements PersistableT
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @VaadinTableColumn(displayName = "Alert Name", internalName = "alertName")
+    @VaadinBervanColumn(displayName = "Alert Name", internalName = "alertName")
     private String name;
-    @VaadinTableColumn(displayName = "Price Min", internalName = "priceMin")
+    @VaadinBervanColumn(displayName = "Price Min", internalName = "priceMin")
     private Integer priceMin;
-    @VaadinTableColumn(displayName = "Price Max", internalName = "priceMax")
+    @VaadinBervanColumn(displayName = "Price Max", internalName = "priceMax")
     private Integer priceMax;
-    @VaadinTableColumn(displayName = "Discount Min", internalName = "discountMin")
+    @VaadinBervanColumn(displayName = "Discount Min", internalName = "discountMin")
     private Integer discountMin;
-    @VaadinTableColumn(displayName = "Discount Max", internalName = "discountMax")
+    @VaadinBervanColumn(displayName = "Discount Max", internalName = "discountMax")
     private Integer discountMax;
-    @VaadinTableColumn(displayName = "Product Name", internalName = "productName")
+    @VaadinBervanColumn(displayName = "Product Name", internalName = "productName")
     private String productName;
-    @VaadinTableColumn(displayName = "Product Categories", internalName = "productCategories", extension = VaadinDynamicMultiDropdownTableColumn.class)
+    @VaadinBervanColumn(displayName = "Product Categories", internalName = "productCategories", extension = VaadinDynamicMultiDropdownBervanColumn.class)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "product_alert_categories", joinColumns = @JoinColumn(name = "product_alert_id"))
     @Column(name = "category")
@@ -42,7 +42,7 @@ public class ProductAlert extends BervanBaseEntity<Long> implements PersistableT
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "product_alert_emails", joinColumns = @JoinColumn(name = "product_alert_id"))
     @Column(name = "email")
-    @VaadinTableColumn(displayName = "Emails", internalName = "emails", extension = VaadinDynamicMultiDropdownTableColumn.class)
+    @VaadinBervanColumn(displayName = "Emails", internalName = "emails", extension = VaadinDynamicMultiDropdownBervanColumn.class)
     private List<String> emails = new ArrayList<>();
 
     private Boolean deleted = false;

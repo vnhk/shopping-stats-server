@@ -2,7 +2,7 @@ package com.bervan.shstat.entity.scrap;
 
 import com.bervan.common.model.BervanBaseEntity;
 import com.bervan.common.model.PersistableTableData;
-import com.bervan.common.model.VaadinTableColumn;
+import com.bervan.common.model.VaadinBervanColumn;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -15,9 +15,9 @@ public class ShopConfig extends BervanBaseEntity<Long> implements PersistableTab
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @VaadinTableColumn(displayName = "Shop Name", internalName = "shopName")
+    @VaadinBervanColumn(displayName = "Shop Name", internalName = "shopName")
     private String shopName;
-    @VaadinTableColumn(displayName = "Base Url", internalName = "baseUrl")
+    @VaadinBervanColumn(displayName = "Base Url", internalName = "baseUrl")
     private String baseUrl;
     private Boolean deleted = false;
     @OneToMany(mappedBy = "shop")

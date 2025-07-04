@@ -1,6 +1,6 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.AbstractTableView;
+import com.bervan.common.AbstractBervanTableView;
 import com.bervan.common.BervanButton;
 import com.bervan.common.BervanButtonStyle;
 import com.bervan.common.BervanLoggerImpl;
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 @Slf4j
-public class PricesListView extends AbstractTableView<Long, ProductBasedOnDateAttributes> {
+public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOnDateAttributes> {
     private final Product product;
     private final ProductService productService;
     private final UserRepository userRepository;

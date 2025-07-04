@@ -1,6 +1,6 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.AbstractTableView;
+import com.bervan.common.AbstractBervanTableView;
 import com.bervan.common.AutoConfigurableField;
 import com.bervan.common.BervanComboBox;
 import com.bervan.common.search.SearchQueryOption;
@@ -19,7 +19,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import java.lang.reflect.Field;
 import java.util.*;
 
-public abstract class AbstractProductConfigView extends AbstractTableView<Long, ProductConfig> {
+public abstract class AbstractProductConfigView extends AbstractBervanTableView<Long, ProductConfig> {
     public static final String ROUTE_NAME = "/shopping/product-config";
     private final BervanLogger log;
     private final ComboBox<String> shopDropdown = new BervanComboBox<>();
@@ -133,6 +133,7 @@ public abstract class AbstractProductConfigView extends AbstractTableView<Long, 
 
     @Override
     protected void postSaveActions() {
+        super.postSaveActions();
         loadCategories();
     }
 

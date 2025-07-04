@@ -13,24 +13,24 @@ public class ProductConfig extends BervanBaseEntity<Long> implements Persistable
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @VaadinTableColumn(displayName = "Name", internalName = "name")
+    @VaadinBervanColumn(displayName = "Name", internalName = "name")
     private String name;
-    @VaadinTableColumn(displayName = "Url", internalName = "url")
+    @VaadinBervanColumn(displayName = "Url", internalName = "url")
     private String url;
-    @VaadinTableColumn(displayName = "Min Price", internalName = "minPrice")
+    @VaadinBervanColumn(displayName = "Min Price", internalName = "minPrice")
     private Integer minPrice;
-    @VaadinTableColumn(displayName = "Max Price", internalName = "maxPrice")
+    @VaadinBervanColumn(displayName = "Max Price", internalName = "maxPrice")
     private Integer maxPrice;
-    @VaadinTableColumn(displayName = "Scrap Time", internalName = "scrapTime")
+    @VaadinBervanColumn(displayName = "Scrap Time", internalName = "scrapTime")
     private LocalTime scrapTime;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "product_config_categories", joinColumns = @JoinColumn(name = "product_config_id"))
     @Column(name = "category")
-    @VaadinTableColumn(displayName = "Categories", internalName = "categories", extension = VaadinDynamicMultiDropdownTableColumn.class)
+    @VaadinBervanColumn(displayName = "Categories", internalName = "categories", extension = VaadinDynamicMultiDropdownBervanColumn.class)
     private List<String> categories;
     @ManyToOne
     @JoinColumn(name = "shop_config_id")
-    @VaadinTableColumn(displayName = "Shop", internalName = "shop", extension = VaadinDynamicDropdownTableColumn.class, inTable = false, inEditForm = false)
+    @VaadinBervanColumn(displayName = "Shop", internalName = "shop", extension = VaadinDynamicDropdownBervanColumn.class, inTable = false, inEditForm = false)
     private ShopConfig shop;
 
     private Boolean deleted = false;

@@ -1,6 +1,6 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.AbstractTableView;
+import com.bervan.common.AbstractBervanTableView;
 import com.bervan.common.BervanButton;
 import com.bervan.common.BervanButtonStyle;
 import com.bervan.common.search.SearchQueryOption;
@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public abstract class AbstractProductAlertView extends AbstractTableView<Long, ProductAlert> {
+public abstract class AbstractProductAlertView extends AbstractBervanTableView<Long, ProductAlert> {
     public static final String ROUTE_NAME = "/shopping/product-alerts";
     private final ProductConfigService productConfigService;
     private final SearchService searchService;
@@ -121,6 +121,7 @@ public abstract class AbstractProductAlertView extends AbstractTableView<Long, P
 
     @Override
     protected void postSaveActions() {
+        super.postSaveActions();
         loadCategories();
     }
 

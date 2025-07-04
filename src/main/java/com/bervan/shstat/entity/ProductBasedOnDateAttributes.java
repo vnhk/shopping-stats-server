@@ -2,11 +2,10 @@ package com.bervan.shstat.entity;
 
 import com.bervan.common.model.BervanBaseEntity;
 import com.bervan.common.model.PersistableTableData;
-import com.bervan.common.model.VaadinTableColumn;
+import com.bervan.common.model.VaadinBervanColumn;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,18 +26,18 @@ public class ProductBasedOnDateAttributes extends BervanBaseEntity<Long> impleme
     @JoinColumn(name = "product_id")
     private Product product;
     @NotNull
-    @VaadinTableColumn(internalName = "price", displayName = "Price")
+    @VaadinBervanColumn(internalName = "price", displayName = "Price")
     private BigDecimal price;
     @NotNull
     @Size(min = 3, max = 300)
-    @VaadinTableColumn(internalName = "formattedScrapDate", displayName = "Formatted Scrap Date End")
+    @VaadinBervanColumn(internalName = "formattedScrapDate", displayName = "Formatted Scrap Date End")
     private String formattedScrapDate;
     @NotNull
-    @VaadinTableColumn(internalName = "scrapDate", displayName = "Scrap Date")
+    @VaadinBervanColumn(internalName = "scrapDate", displayName = "Scrap Date")
     private Date scrapDate;
-    @VaadinTableColumn(internalName = "scrapDateEnd", displayName = "Scrap Date End")
+    @VaadinBervanColumn(internalName = "scrapDateEnd", displayName = "Scrap Date End")
     private Date scrapDateEnd;
-    @VaadinTableColumn(internalName = "formattedScrapDateEnd", displayName = "Formatted Scrap Date End")
+    @VaadinBervanColumn(internalName = "formattedScrapDateEnd", displayName = "Formatted Scrap Date End")
     private String formattedScrapDateEnd;
     private Boolean deleted = false;
 

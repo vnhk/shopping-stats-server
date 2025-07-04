@@ -1,6 +1,6 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.AbstractTableView;
+import com.bervan.common.AbstractBervanTableView;
 import com.bervan.common.BervanButton;
 import com.bervan.common.BervanButtonStyle;
 import com.bervan.common.search.SearchRequest;
@@ -14,7 +14,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractScrapAuditView extends AbstractTableView<Long, ScrapAudit> {
+public abstract class AbstractScrapAuditView extends AbstractBervanTableView<Long, ScrapAudit> {
     public static final String ROUTE_NAME = "/shopping/scrap-audit";
     private final BervanLogger log;
     private final ScrapAuditRepository scrapAuditRepository;

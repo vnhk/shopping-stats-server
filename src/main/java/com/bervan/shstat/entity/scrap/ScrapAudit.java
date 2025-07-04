@@ -2,7 +2,7 @@ package com.bervan.shstat.entity.scrap;
 
 import com.bervan.common.model.BervanBaseEntity;
 import com.bervan.common.model.PersistableTableData;
-import com.bervan.common.model.VaadinTableColumn;
+import com.bervan.common.model.VaadinBervanColumn;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -16,14 +16,14 @@ public class ScrapAudit extends BervanBaseEntity<Long> implements PersistableTab
     private Long id;
 
     //We want to do processing once per day, but if product have to be scrapped more than 1 time just add new product config!
-    @VaadinTableColumn(displayName = "Date", internalName = "date", inEditForm = false, inSaveForm = false)
+    @VaadinBervanColumn(displayName = "Date", internalName = "date", inEditForm = false, inSaveForm = false)
     private LocalDate date;
 
     @Transient
-    @VaadinTableColumn(displayName = "Product", internalName = "product", inSaveForm = false, inEditForm = false, sortable = false)
+    @VaadinBervanColumn(displayName = "Product", internalName = "product", inSaveForm = false, inEditForm = false, sortable = false)
     private String productDetails;
 
-    @VaadinTableColumn(displayName = "Saved", internalName = "savedProducts", inSaveForm = false, inEditForm = false)
+    @VaadinBervanColumn(displayName = "Saved", internalName = "savedProducts", inSaveForm = false, inEditForm = false)
     private long savedProducts = 0;
 
     @ManyToOne
