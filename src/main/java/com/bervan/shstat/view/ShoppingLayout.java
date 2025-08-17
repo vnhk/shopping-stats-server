@@ -10,7 +10,9 @@ public class ShoppingLayout extends MenuNavigationComponent {
 
         addButtonIfVisible(menuButtonsRow, AbstractProductsView.ROUTE_NAME, "Search", VaadinIcon.SEARCH.create());
         addButtonIfVisible(menuButtonsRow, AbstractBestOffersView.ROUTE_NAME, "Best Offers", VaadinIcon.THUMBS_UP.create());
-        addButtonIfVisible(menuButtonsRow, AbstractProductView.ROUTE_NAME, "Product", VaadinIcon.PACKAGE.create());
+        if (currentRoute.equals(AbstractProductView.ROUTE_NAME)) {
+            addButtonIfVisible(menuButtonsRow, AbstractProductView.ROUTE_NAME, "Product", VaadinIcon.PACKAGE.create());
+        }
         addButtonIfVisible(menuButtonsRow, AbstractShopConfigView.ROUTE_NAME, "Shop Config", VaadinIcon.COG.create());
         addButtonIfVisible(menuButtonsRow, AbstractProductConfigView.ROUTE_NAME, "Product Config", VaadinIcon.TOOLS.create());
         addButtonIfVisible(menuButtonsRow, AbstractScrapAuditView.ROUTE_NAME, "Scrap Audit", VaadinIcon.CLIPBOARD_TEXT.create());
