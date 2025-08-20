@@ -22,7 +22,7 @@ public class ProductViewService extends ViewBuilder {
             new LinkedHashMap<>() {
                 @Override
                 protected boolean removeEldestEntry(Map.Entry<SearchQueryKey, SearchApiResponse> eldest) {
-                    return this.size() > 5;
+                    return this.size() > 200;
                 }
             };
 
@@ -32,14 +32,21 @@ public class ProductViewService extends ViewBuilder {
         this.productSearchService = productSearchService;
     }
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     public void clearCache() {
         cache.clear();
     }
 
-    public SearchApiResponse findById(Long id, Pageable pageable) {
+    public SearchApiResponse findById(Long id) {
+        Pageable pageable = Pageable.ofSize(1);
+        SearchQueryKey searchQueryKey = new SearchQueryKey(id, null, null, null, pageable.getPageNumber(), pageable.getPageSize());
+        if (cache.containsKey(searchQueryKey)) {
+            return cache.get(searchQueryKey);
+        }
         Page<Product> products = productSearchService.findById(id, pageable);
-        return findProductGetResponse(products, pageable);
+        SearchApiResponse productGetResponse = findProductGetResponse(products, pageable);
+        cache.put(searchQueryKey, productGetResponse);
+        return productGetResponse;
     }
 
     public SearchApiResponse findProductContainingName(String name, Pageable pageable) {
@@ -60,7 +67,7 @@ public class ProductViewService extends ViewBuilder {
     }
 
     public SearchApiResponse findProducts(String category, String shop, String productName, Pageable pageable) {
-        SearchQueryKey key = new SearchQueryKey(category, shop, productName, pageable.getPageNumber(), pageable.getPageSize());
+        SearchQueryKey key = new SearchQueryKey(null, category, shop, productName, pageable.getPageNumber(), pageable.getPageSize());
 
         if (cache.containsKey(key)) {
             return cache.get(key);
@@ -84,14 +91,22 @@ public class ProductViewService extends ViewBuilder {
         return response;
     }
 
+    public void updateCache(Page<Product> queryResult) {
+        queryResult.forEach(product -> {
+           cache.put(new SearchQueryKey(product.getId(), null, null, null, 0, 0), findProductGetResponse(queryResult, Pageable.unpaged()));
+        });
+    }
+
     private static class SearchQueryKey {
+        private final Long id;
         private final String category;
         private final String shop;
         private final String productName;
         private final int page;
         private final int size;
 
-        public SearchQueryKey(String category, String shop, String productName, int page, int size) {
+        public SearchQueryKey(Long id, String category, String shop, String productName, int page, int size) {
+            this.id = id;
             this.category = Objects.toString(category, "");
             this.shop = Objects.toString(shop, "");
             this.productName = Objects.toString(productName, "");
@@ -108,12 +123,13 @@ public class ProductViewService extends ViewBuilder {
                     size == that.size &&
                     category.equals(that.category) &&
                     shop.equals(that.shop) &&
+                    Objects.equals(id, that.id) &&
                     productName.equals(that.productName);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(category, shop, productName, page, size);
+            return Objects.hash(id, category, shop, productName, page, size);
         }
     }
 }

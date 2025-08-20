@@ -9,9 +9,13 @@ import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
 import com.bervan.shstat.service.DiscountsViewService;
 import com.bervan.shstat.service.ProductSearchService;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
@@ -43,49 +47,192 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
     private BervanDynamicMultiDropdownController categoryDropdown;
     private BervanButton searchButton;
     private BervanButton rebuildBestOffers;
+    private VerticalLayout productsLayout;
 
     public AbstractBestOffersView(DiscountsViewService discountsViewService, RefreshViewService refreshViewService, ProductSearchService productSearchService, BervanLogger log) {
         super();
         this.refreshViewService = refreshViewService;
+        this.discountsViewService = discountsViewService;
+        this.productSearchService = productSearchService;
+        this.log = log;
+
+        initializeComponents();
+        createSearchInterface();
+    }
+
+    private void initializeComponents() {
         rebuildBestOffers = new BervanButton("Force Rebuild", (e) -> {
             showPrimaryNotification("Views are rebuilding... It will take time...");
             refreshViewService.refreshViewsScheduled();
             showPrimaryNotification("Views rebuilt");
         });
+
         this.add(new ShoppingLayout(ROUTE_NAME));
 
-        this.discountsViewService = discountsViewService;
-        this.productSearchService = productSearchService;
-        this.log = log;
         Set<String> categories = this.productSearchService.findCategories();
         categoryDropdown = new BervanDynamicMultiDropdownController("Categories", "Categories:",
                 categories, new ArrayList<>());
 
         shopDropdown.setItems(Arrays.asList("Media Expert", "RTV Euro AGD", "Morele", "Centrum Rowerowe"));
+        shopDropdown.setPlaceholder("Select shop...");
 
-        VerticalLayout productsLayout = new VerticalLayout();
+        productsLayout = new VerticalLayout();
 
-        searchButton = new BervanButton("Search");
-        searchButton.addClickListener(buttonClickEvent -> {
-            productsLayout.removeAll();
-            SearchApiResponse products = (SearchApiResponse) findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable.ofSize(500),
-                    discountMin.getValue(), discountMax.getValue(), months.getValue(), prevPriceMin.getValue(), prevPriceMax.getValue(), productName.getValue(), categoryDropdown.getValue(), shopDropdown.getValue());
+        configureSearchFields();
+        createSearchButton();
+    }
 
-            Map<VerticalLayout, ProductDTO> productCardMap = new HashMap<>();
-            FlexLayout tileContainer = getProductsLayout(products, productCardMap);
+    private void configureSearchFields() {
+        productName.setPlaceholder("Search by product name...");
+        productName.setClearButtonVisible(true);
+        productName.setWidthFull();
 
-            Checkbox showOnlyActualCheckbox = new Checkbox("Show only actual products");
-            showOnlyActualCheckbox.addValueChangeListener(event -> {
-                boolean onlyActual = event.getValue();
-                productCardMap.forEach((productCard, dto) -> {
-                    productCard.setVisible(!onlyActual || dto.isActual());
-                });
+        discountMin.setPlaceholder("e.g. 20");
+        discountMax.setPlaceholder("e.g. 100");
+        discountMin.setSuffixComponent(new Div("%"));
+        discountMax.setSuffixComponent(new Div("%"));
+
+        months.setPlaceholder("e.g. 3");
+        months.setMin(1);
+        months.setMax(24);
+
+        prevPriceMin.setPlaceholder("e.g. 100");
+        prevPriceMax.setPlaceholder("e.g. 10000");
+        prevPriceMin.setSuffixComponent(new Div("zł"));
+        prevPriceMax.setSuffixComponent(new Div("zł"));
+    }
+
+    private void createSearchButton() {
+        searchButton = new BervanButton("🔍 Search Best Offers");
+        searchButton.addClickListener(buttonClickEvent -> performSearch());
+    }
+
+    private void createSearchInterface() {
+        Div searchContainer = new Div();
+        searchContainer.addClassName("search-container");
+        searchContainer.getStyle()
+                .set("background", "var(--lumo-contrast-5pct)")
+                .set("border-radius", "var(--lumo-border-radius-m)")
+                .set("margin-bottom", "2rem")
+                .set("width", "100%");
+
+        H3 searchTitle = new H3("🎯 Find Best Offers");
+        searchTitle.getStyle().set("margin-top", "-20px").set("color", "var(--lumo-primary-text-color)");
+
+        // Create grid layout for search sections
+        HorizontalLayout searchGrid = new HorizontalLayout();
+        searchGrid.setWidthFull();
+        searchGrid.setSpacing(true);
+        searchGrid.setJustifyContentMode(JustifyContentMode.BETWEEN);
+
+        // First row - Product & Categories
+        HorizontalLayout firstRow = new HorizontalLayout();
+        firstRow.setWidthFull();
+        firstRow.setSpacing(true);
+
+        Div productSection = createSearchSection("Product & Shop",
+                createFieldRow(productName, shopDropdown));
+        productSection.getStyle().set("flex", "1");
+
+        Div categorySection = createSearchSection("Categories", createFieldRow(categoryDropdown));
+        categorySection.getStyle().set("flex", "1");
+
+        firstRow.add(productSection, categorySection);
+
+        // Second row - Discount & Price Range
+        HorizontalLayout secondRow = new HorizontalLayout();
+        secondRow.setWidthFull();
+        secondRow.setSpacing(true);
+
+        Div discountSection = createSearchSection("Discount Range",
+                createFieldRow(discountMin, discountMax),
+                createFieldRow(months));
+        discountSection.getStyle().set("flex", "1");
+
+        Div priceSection = createSearchSection("Previous Price Range",
+                createFieldRow(prevPriceMin, prevPriceMax));
+        priceSection.getStyle().set("flex", "1");
+
+        secondRow.add(discountSection, priceSection);
+
+        // Action Buttons - centered
+        HorizontalLayout actionButtons = new HorizontalLayout();
+        actionButtons.add(searchButton, rebuildBestOffers);
+        actionButtons.setSpacing(true);
+        actionButtons.setJustifyContentMode(JustifyContentMode.CENTER);
+        actionButtons.getStyle().set("margin-top", "1rem");
+
+        VerticalLayout searchForm = new VerticalLayout();
+        searchForm.setSpacing(true);
+        searchForm.setPadding(false);
+        searchForm.setWidthFull();
+        searchForm.add(firstRow, secondRow, actionButtons);
+
+        searchContainer.add(searchTitle, searchForm);
+
+        add(searchContainer, productsLayout);
+    }
+
+    private Div createSearchSection(String title, Object... components) {
+        Div section = new Div();
+        section.getStyle()
+                .set("margin-bottom", "0")
+                .set("padding", "0.5rem")
+                .set("background", "var(--lumo-base-color)")
+                .set("border-radius", "var(--lumo-border-radius-s)")
+                .set("border", "1px solid var(--lumo-contrast-10pct)")
+                .set("height", "fit-content")
+                .set("min-width", "0"); // Allows flex items to shrink
+
+        H3 sectionTitle = new H3(title);
+        sectionTitle.getStyle()
+                .set("margin", "0 0 0.5rem 0")
+                .set("font-size", "var(--lumo-font-size-s)")
+                .set("font-weight", "600")
+                .set("color", "var(--lumo-secondary-text-color)");
+
+        section.add(sectionTitle);
+        for (Object component : components) {
+            section.add((com.vaadin.flow.component.Component) component);
+        }
+
+        return section;
+    }
+
+    private HorizontalLayout createFieldRow(Object... fields) {
+        HorizontalLayout row = new HorizontalLayout();
+        row.setWidthFull();
+        row.setSpacing(true);
+
+        for (Object field : fields) {
+            Component component = (Component) field;
+            component.getElement().getStyle().set("flex", "1");
+            row.add(component);
+        }
+
+        return row;
+    }
+
+    private void performSearch() {
+        productsLayout.removeAll();
+        SearchApiResponse products = (SearchApiResponse) findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable.ofSize(500),
+                discountMin.getValue(), discountMax.getValue(), months.getValue(),
+                prevPriceMin.getValue(), prevPriceMax.getValue(), productName.getValue(),
+                categoryDropdown.getValue(), shopDropdown.getValue());
+
+        Map<VerticalLayout, ProductDTO> productCardMap = new HashMap<>();
+        FlexLayout tileContainer = getProductsLayout(products, productCardMap);
+
+        Checkbox showOnlyActualCheckbox = new Checkbox("Show only actual products");
+        showOnlyActualCheckbox.getStyle().set("margin-bottom", "1rem");
+        showOnlyActualCheckbox.addValueChangeListener(event -> {
+            boolean onlyActual = event.getValue();
+            productCardMap.forEach((productCard, dto) -> {
+                productCard.setVisible(!onlyActual || dto.isActual());
             });
-
-            productsLayout.add(showOnlyActualCheckbox, tileContainer);
         });
 
-        add(rebuildBestOffers, shopDropdown, categoryDropdown, discountMin, discountMax, months, prevPriceMin, prevPriceMax, productName, searchButton, productsLayout);
+        productsLayout.add(showOnlyActualCheckbox, tileContainer);
     }
 
     @Override

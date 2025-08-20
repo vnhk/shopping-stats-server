@@ -5,6 +5,7 @@ import com.bervan.common.BervanButtonStyle;
 import com.bervan.common.BervanTextField;
 import com.bervan.common.user.UserRepository;
 import com.bervan.core.model.BervanLogger;
+import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
@@ -22,7 +23,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageImpl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class AbstractProductView extends BaseProductPage implements HasUrlParameter<Long> {
-    public static final String ROUTE_NAME = "/shopping/product/:productId";
+    public static final String ROUTE_NAME = "/shopping/product";
     private final ProductViewService productViewService;
     private final ProductSearchService productSearchService;
     private final UserRepository userRepository;
@@ -72,11 +73,12 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
     }
 
     private void buildView() {
+        removeAll();
         this.add(shoppingLayout);
 
         String backLink = buildBackLink(beforeEvent);
 
-        SearchApiResponse byId = productViewService.findById(productId, Pageable.ofSize(1));
+        SearchApiResponse byId = productViewService.findById(productId);
         productDTO = (ProductDTO) byId.getItems().iterator().next();
 
         /// /////////////////////
@@ -159,14 +161,14 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
 
         add(productsLayout);
 
-        add(new Hr(), new PricesListView(this, productDateAttService, productService, shoppingLayout, productRepository.findById(productId).get(), userRepository));
+        add(new Hr(), new PricesListView(this, productDateAttService, productService, shoppingLayout, productRepository.findById(productId).get(), productViewService, userRepository));
         add(new Hr());
 
         List<Long> similarOffers = productSimilarOffersService.findSimilarOffers(productDTO.getId(), 10);
 
         List<ProductDTO> similarOffersProducts = new ArrayList<>();
         for (Long similarOffer : similarOffers) {
-            SearchApiResponse res = productViewService.findById(similarOffer, Pageable.ofSize(1));
+            SearchApiResponse res = productViewService.findById(similarOffer);
             ProductDTO next = (ProductDTO) res.getItems().iterator().next();
             similarOffersProducts.add(next);
         }
@@ -215,7 +217,9 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
             image.setHeight("300px");
             image.getStyle().set("object-fit", "contain");
 
-            String link = "todo";
+            String link = beforeEvent.getLocation().getPathWithQueryParameters();
+            link = link.replaceAll("(/product/)\\d+", "$1" + product.getId());
+
             Anchor nameText = new Anchor(link, product.getName());
 
             List<PriceDTO> prices = product.getPrices();
@@ -334,7 +338,8 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
     }
 
     private void saveChanges(Long id, String name, String link, String finalImage) {
-        productService.update(id, name, link, finalImage);
+        Product update = productService.update(id, name, link, finalImage);
+        productViewService.updateCache(new PageImpl<>(List.of(update)));
         reload();
     }
 

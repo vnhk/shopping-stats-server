@@ -510,58 +510,12 @@ public class ProductService {
         }
     }
 
-//    @Transactional
-//    public void createLowerThanAVGForLastXMonths() {
-//        List<Integer> monthOffsets = List.of(1, 2, 3, 6, 12);
-//
-//        // CREATE OR REPLACE TABLE with first offset
-//        String createTableQuery = "CREATE OR REPLACE TABLE LOWER_THAN_AVG_FOR_X_MONTHS AS ";
-//        entityManager.createNativeQuery(createTableQuery + getSql(monthOffsets.get(0))).executeUpdate();
-//
-//        // INSERT INTO with remaining offsets
-//        String insertIntoQuery = "INSERT INTO LOWER_THAN_AVG_FOR_X_MONTHS ";
-//        for (int i = 1; i < monthOffsets.size(); i++) {
-//            entityManager.createNativeQuery(insertIntoQuery + getSql(monthOffsets.get(i))).executeUpdate();
-//        }
-//
-//        // Create indexes (re-created each time table is replaced)
-//        entityManager.createNativeQuery("CREATE INDEX idx_ltafxm_main_filter_full ON LOWER_THAN_AVG_FOR_X_MONTHS(month_offset, avgPrice, discount_in_percent, category, shop)").executeUpdate();
-//        entityManager.createNativeQuery("CREATE INDEX idx_ltafxm_main_filter_partial ON LOWER_THAN_AVG_FOR_X_MONTHS(month_offset, avgPrice, discount_in_percent)").executeUpdate();
-//        entityManager.createNativeQuery("CREATE INDEX idx_ltafxm_id ON LOWER_THAN_AVG_FOR_X_MONTHS(id)").executeUpdate();
-//    }
-
-//    private String getSql(int months) {
-//        return "WITH RankedPrices AS (" +
-//                "    SELECT DISTINCT product_id, avg" + months + "month AS average_price FROM product_stats" +
-//                "), " +
-//                "LatestPDA AS (" +
-//                "    SELECT pda.*, " +
-//                "           ROW_NUMBER() OVER (PARTITION BY pda.product_id ORDER BY pda.scrap_date DESC) AS row_num " +
-//                "    FROM product_based_on_date_attributes pda" +
-//                ") " +
-//                "SELECT DISTINCT pda.id AS id, pda.scrap_date AS scrap_date, pda.price AS price, " +
-//                "       rp.average_price AS avgPrice, " + months + " AS month_offset, " +
-//                "       UPPER(p.name) AS product_name, p.shop AS shop, pc.categories AS category, " +
-//                "       p.img_src AS product_image_src, " +
-//                "       (IF(pda.price >= rp.average_price, 0, (1 - pda.price / rp.average_price) * 100)) AS discount_in_percent " +
-//                "FROM LatestPDA pda " +
-//                "JOIN product p ON p.id = pda.product_id " +
-//                "JOIN RankedPrices rp ON p.id = rp.product_id " +
-//                "LEFT JOIN product_categories pc ON pda.product_id = pc.product_id " +
-//                "JOIN actual_product ap ON ap.product_id = pda.product_id AND ap.scrap_date = pda.scrap_date " +
-//                "WHERE pda.row_num = 1 " +
-//                "  AND pda.price < rp.average_price " +
-//                "  AND pda.price > 0 " +
-//                "  AND ((1 - pda.price / rp.average_price) * 100) >= 5 " +
-//                "ORDER BY pda.id";
-//    }
-
-    public void update(Long id, String name, String link, String finalImage) {
+    public Product update(Long id, String name, String link, String finalImage) {
         Product product = productRepository.findById(id).get();
         product.setName(name);
         product.setOfferUrl(link);
         product.setImgSrc(finalImage);
 
-        productRepository.save(product);
+        return productRepository.save(product);
     }
 }

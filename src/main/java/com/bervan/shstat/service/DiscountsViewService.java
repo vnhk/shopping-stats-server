@@ -10,6 +10,7 @@ import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
+import com.bervan.shstat.view.ProductViewService;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ import java.util.*;
 @Slf4j
 public class DiscountsViewService extends ViewBuilder {
     private final ProductSearchService productSearchService;
+    private final ProductViewService productViewService;
     private final Map<DiscountQueryKey, SearchApiResponse> cache =
             new LinkedHashMap<>() {
                 @Override
@@ -33,9 +35,10 @@ public class DiscountsViewService extends ViewBuilder {
 
     public DiscountsViewService(ProductSearchService productSearchService,
                                 List<? extends DTOMapper<Product, ProductDTO>> productMappers,
-                                List<? extends DTOMapper<ProductBasedOnDateAttributes, PriceDTO>> productBasedOnDateAttributesToPrice) {
+                                List<? extends DTOMapper<ProductBasedOnDateAttributes, PriceDTO>> productBasedOnDateAttributesToPrice, ProductViewService productViewService) {
         super(getSet(productMappers, productBasedOnDateAttributesToPrice));
         this.productSearchService = productSearchService;
+        this.productViewService = productViewService;
     }
 
     private static Set getSet(List<? extends DTOMapper<Product, ProductDTO>> productMappers,
@@ -45,7 +48,7 @@ public class DiscountsViewService extends ViewBuilder {
         return all;
     }
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     public void clearCacheAtMidnight() {
         cache.clear();
     }
@@ -67,6 +70,7 @@ public class DiscountsViewService extends ViewBuilder {
 
         SearchApiResponse response = buildResponse(pageable, queryResult);
         cache.put(key, response);
+        productViewService.updateCache(queryResult);
         log.debug("findDiscountsComparedToAVGOnPricesInLastXMonths: {}\n from db: {} items", key, response.getAllFound());
         return response;
     }

@@ -26,17 +26,19 @@ import java.util.Set;
 public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOnDateAttributes> {
     private final Product product;
     private final ProductService productService;
+    private final ProductViewService productViewService;
     private final UserRepository userRepository;
     private final AbstractProductView parentView;
     private BervanButton decreasePrice10times;
     private BervanButton decreasePrice5times;
     private BervanButton decreasePrice2times;
 
-    public PricesListView(AbstractProductView parentView, ProductBasedOnDateAttributesService service, ProductService productService, ShoppingLayout pageLayout, Product product, UserRepository userRepository) {
+    public PricesListView(AbstractProductView parentView, ProductBasedOnDateAttributesService service, ProductService productService, ShoppingLayout pageLayout, Product product, ProductViewService productViewService, UserRepository userRepository) {
         super(pageLayout, service, BervanLoggerImpl.init(log), ProductBasedOnDateAttributes.class);
         this.product = product;
         this.productService = productService;
         this.parentView = parentView;
+        this.productViewService = productViewService;
         this.userRepository = userRepository;
         renderCommonComponents();
 
