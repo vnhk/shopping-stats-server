@@ -112,19 +112,19 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
                 .set("color", "var(--lumo-primary-text-color)");
 
         Div productSection = createSearchSection("Product & Shop",
-                createFieldRow(productName, shopDropdown));
+                createSearchFieldRow(productName, shopDropdown));
 
-        Div categorySection = createSearchSection("Categories", createFieldRow(categoryDropdown));
+        Div categorySection = createSearchSection("Categories", createSearchFieldRow(categoryDropdown));
 
         // First row - Product & Categories
         HorizontalLayout firstRow = createSearchSectionRow(productSection, categorySection);
 
         Div discountSection = createSearchSection("Discount Range",
-                createFieldRow(discountMin, discountMax),
-                createFieldRow(months));
+                createSearchFieldRow(discountMin, discountMax),
+                createSearchFieldRow(months));
 
         Div priceSection = createSearchSection("Previous Price Range",
-                createFieldRow(prevPriceMin, prevPriceMax));
+                createSearchFieldRow(prevPriceMin, prevPriceMax));
 
         // Second row - Discount & Price Range
         HorizontalLayout secondRow = createSearchSectionRow(discountSection, priceSection);

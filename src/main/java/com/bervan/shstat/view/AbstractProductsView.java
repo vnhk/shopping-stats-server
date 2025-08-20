@@ -75,7 +75,7 @@ public abstract class AbstractProductsView extends BaseProductsPage implements H
         searchTitle.getStyle().set("margin-top", "-20px").set("color", "var(--lumo-primary-text-color)");
 
         Div productSection = createSearchSection("Product & Shop & Category",
-                createFieldRow(productName, shopDropdown, categoryDropdown));
+                createSearchFieldRow(productName, shopDropdown, categoryDropdown));
 
         HorizontalLayout firstRow = createSearchSectionRow(productSection);
 
