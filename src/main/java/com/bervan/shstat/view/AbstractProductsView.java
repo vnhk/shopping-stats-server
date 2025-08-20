@@ -2,13 +2,16 @@ package com.bervan.shstat.view;
 
 import com.bervan.common.BervanComboBox;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.shstat.service.ProductSearchService;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
+import com.bervan.shstat.service.ProductSearchService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEvent;
@@ -63,8 +66,24 @@ public abstract class AbstractProductsView extends BaseProductsPage implements H
             productsLayout.add(showOnlyActualCheckbox, tileContainer);
         });
 
-        add(shopDropdown, categoryDropdown, productName, searchButton, productsLayout);
+        createSearchInterface();
+        add(productsLayout);
     }
+
+    private void createSearchInterface() {
+        H3 searchTitle = new H3("🛒 Find Offers");
+        searchTitle.getStyle().set("margin-top", "-20px").set("color", "var(--lumo-primary-text-color)");
+
+        Div productSection = createSearchSection("Product & Shop & Category",
+                createFieldRow(productName, shopDropdown, categoryDropdown));
+
+        HorizontalLayout firstRow = createSearchSectionRow(productSection);
+
+        HorizontalLayout actionButtons = getSearchActionButtonsLayout(searchButton);
+
+        add(getSearchForm(searchTitle, actionButtons, firstRow));
+    }
+
 
     @Override
     public void setParameter(BeforeEvent event, @OptionalParameter Void parameter) {

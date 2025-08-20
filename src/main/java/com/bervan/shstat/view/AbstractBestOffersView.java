@@ -9,7 +9,6 @@ import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
 import com.bervan.shstat.service.DiscountsViewService;
 import com.bervan.shstat.service.ProductSearchService;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
@@ -108,109 +107,31 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
     }
 
     private void createSearchInterface() {
-        Div searchContainer = new Div();
-        searchContainer.addClassName("search-container");
-        searchContainer.getStyle()
-                .set("background", "var(--lumo-contrast-5pct)")
-                .set("border-radius", "var(--lumo-border-radius-m)")
-                .set("margin-bottom", "2rem")
-                .set("width", "100%");
-
         H3 searchTitle = new H3("🎯 Find Best Offers");
-        searchTitle.getStyle().set("margin-top", "-20px").set("color", "var(--lumo-primary-text-color)");
-
-        // Create grid layout for search sections
-        HorizontalLayout searchGrid = new HorizontalLayout();
-        searchGrid.setWidthFull();
-        searchGrid.setSpacing(true);
-        searchGrid.setJustifyContentMode(JustifyContentMode.BETWEEN);
-
-        // First row - Product & Categories
-        HorizontalLayout firstRow = new HorizontalLayout();
-        firstRow.setWidthFull();
-        firstRow.setSpacing(true);
+        searchTitle.getStyle().set("margin-top", "0")
+                .set("color", "var(--lumo-primary-text-color)");
 
         Div productSection = createSearchSection("Product & Shop",
                 createFieldRow(productName, shopDropdown));
-        productSection.getStyle().set("flex", "1");
 
         Div categorySection = createSearchSection("Categories", createFieldRow(categoryDropdown));
-        categorySection.getStyle().set("flex", "1");
 
-        firstRow.add(productSection, categorySection);
-
-        // Second row - Discount & Price Range
-        HorizontalLayout secondRow = new HorizontalLayout();
-        secondRow.setWidthFull();
-        secondRow.setSpacing(true);
+        // First row - Product & Categories
+        HorizontalLayout firstRow = createSearchSectionRow(productSection, categorySection);
 
         Div discountSection = createSearchSection("Discount Range",
                 createFieldRow(discountMin, discountMax),
                 createFieldRow(months));
-        discountSection.getStyle().set("flex", "1");
 
         Div priceSection = createSearchSection("Previous Price Range",
                 createFieldRow(prevPriceMin, prevPriceMax));
-        priceSection.getStyle().set("flex", "1");
 
-        secondRow.add(discountSection, priceSection);
+        // Second row - Discount & Price Range
+        HorizontalLayout secondRow = createSearchSectionRow(discountSection, priceSection);
 
-        // Action Buttons - centered
-        HorizontalLayout actionButtons = new HorizontalLayout();
-        actionButtons.add(searchButton, rebuildBestOffers);
-        actionButtons.setSpacing(true);
-        actionButtons.setJustifyContentMode(JustifyContentMode.CENTER);
-        actionButtons.getStyle().set("margin-top", "1rem");
+        HorizontalLayout actionButtons = getSearchActionButtonsLayout(searchButton, rebuildBestOffers);
 
-        VerticalLayout searchForm = new VerticalLayout();
-        searchForm.setSpacing(true);
-        searchForm.setPadding(false);
-        searchForm.setWidthFull();
-        searchForm.add(firstRow, secondRow, actionButtons);
-
-        searchContainer.add(searchTitle, searchForm);
-
-        add(searchContainer, productsLayout);
-    }
-
-    private Div createSearchSection(String title, Object... components) {
-        Div section = new Div();
-        section.getStyle()
-                .set("margin-bottom", "0")
-                .set("padding", "0.5rem")
-                .set("background", "var(--lumo-base-color)")
-                .set("border-radius", "var(--lumo-border-radius-s)")
-                .set("border", "1px solid var(--lumo-contrast-10pct)")
-                .set("height", "fit-content")
-                .set("min-width", "0"); // Allows flex items to shrink
-
-        H3 sectionTitle = new H3(title);
-        sectionTitle.getStyle()
-                .set("margin", "0 0 0.5rem 0")
-                .set("font-size", "var(--lumo-font-size-s)")
-                .set("font-weight", "600")
-                .set("color", "var(--lumo-secondary-text-color)");
-
-        section.add(sectionTitle);
-        for (Object component : components) {
-            section.add((com.vaadin.flow.component.Component) component);
-        }
-
-        return section;
-    }
-
-    private HorizontalLayout createFieldRow(Object... fields) {
-        HorizontalLayout row = new HorizontalLayout();
-        row.setWidthFull();
-        row.setSpacing(true);
-
-        for (Object field : fields) {
-            Component component = (Component) field;
-            component.getElement().getStyle().set("flex", "1");
-            row.add(component);
-        }
-
-        return row;
+        add(getSearchForm(searchTitle, actionButtons, firstRow, secondRow), productsLayout);
     }
 
     private void performSearch() {
