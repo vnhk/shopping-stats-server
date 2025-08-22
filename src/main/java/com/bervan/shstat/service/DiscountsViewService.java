@@ -70,7 +70,7 @@ public class DiscountsViewService extends ViewBuilder {
 
         SearchApiResponse response = buildResponse(pageable, queryResult);
         cache.put(key, response);
-        productViewService.updateCache(queryResult);
+        productViewService.updateCacheWithProductsById(queryResult);
         log.debug("findDiscountsComparedToAVGOnPricesInLastXMonths: {}\n from db: {} items", key, response.getAllFound());
         return response;
     }

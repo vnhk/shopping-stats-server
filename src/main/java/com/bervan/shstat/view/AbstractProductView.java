@@ -339,7 +339,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
 
     private void saveChanges(Long id, String name, String link, String finalImage) {
         Product update = productService.update(id, name, link, finalImage);
-        productViewService.updateCache(new PageImpl<>(List.of(update)));
+        productViewService.updateCacheWithProductsById(new PageImpl<>(List.of(update)));
         reload();
     }
 
