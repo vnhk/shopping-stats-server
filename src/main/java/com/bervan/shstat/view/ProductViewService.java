@@ -92,8 +92,9 @@ public class ProductViewService extends ViewBuilder {
     }
 
     public void updateCache(Page<Product> queryResult) {
+        Pageable pageable = Pageable.ofSize(1);
         queryResult.forEach(product -> {
-           cache.put(new SearchQueryKey(product.getId(), null, null, null, 0, 0), findProductGetResponse(queryResult, Pageable.unpaged()));
+            cache.put(new SearchQueryKey(product.getId(), null, null, null, pageable.getPageNumber(), pageable.getPageSize()), findProductGetResponse(queryResult, pageable));
         });
     }
 

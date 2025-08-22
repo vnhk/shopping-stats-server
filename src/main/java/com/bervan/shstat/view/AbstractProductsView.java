@@ -1,5 +1,6 @@
 package com.bervan.shstat.view;
 
+import com.bervan.common.BervanButton;
 import com.bervan.common.BervanComboBox;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.response.ProductDTO;
@@ -29,18 +30,16 @@ public abstract class AbstractProductsView extends BaseProductsPage implements H
     public static final String ROUTE_NAME = "/shopping/products";
     private final ProductViewService productViewService;
     private final ProductSearchService productSearchService;
-    private final BervanLogger log;
     private final ComboBox<String> shopDropdown = new BervanComboBox<>("Shop:");
     private final ComboBox<String> categoryDropdown = new ComboBox<>("Category:");
     private final TextField productName = new TextField("Product Name:");
-    private final Button searchButton = new Button("Search");
+    private final Button searchButton = new BervanButton("Search");
 
-    public AbstractProductsView(ProductViewService productViewService, ProductSearchService productSearchService, BervanLogger log) {
+    public AbstractProductsView(ProductViewService productViewService, ProductSearchService productSearchService) {
         super();
         this.add(new ShoppingLayout(ROUTE_NAME));
         this.productViewService = productViewService;
         this.productSearchService = productSearchService;
-        this.log = log;
         shopDropdown.setItems(Arrays.asList("Media Expert", "RTV Euro AGD", "Morele", "Centrum Rowerowe"));
 
         Set<String> categories = this.productSearchService.findCategories();
