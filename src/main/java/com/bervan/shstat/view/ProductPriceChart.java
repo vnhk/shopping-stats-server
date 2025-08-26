@@ -12,7 +12,7 @@ import elemental.json.impl.JreJsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
-@JsModule("./chart-component.js")
+@JsModule("./price-chart-component.js")
 @Tag("canvas")
 public class ProductPriceChart extends Component implements HasSize {
     public ProductPriceChart(List<String> labels, List<Double> prices, Double avg) {
