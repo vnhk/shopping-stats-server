@@ -1,5 +1,6 @@
 package com.bervan.shstat.view;
 
+import com.bervan.common.BervanTableToolbar;
 import com.bervan.common.view.AbstractBervanTableView;
 import com.bervan.common.component.BervanButton;
 import com.bervan.common.component.BervanButtonStyle;
@@ -26,7 +27,6 @@ public abstract class AbstractProductAlertView extends AbstractBervanTableView<L
     private final ProductConfigService productConfigService;
     private final SearchService searchService;
     private Set<String> allAvailableCategories;
-    private BervanButton notifyAboutProducts;
 
     public AbstractProductAlertView(ProductAlertService service, ProductConfigService productConfigService, SearchService searchService, BervanLogger log) {
         super(new ShoppingLayout(ROUTE_NAME), service, log, ProductAlert.class);
@@ -34,50 +34,15 @@ public abstract class AbstractProductAlertView extends AbstractBervanTableView<L
         this.searchService = searchService;
         renderCommonComponents();
         loadCategories();
+    }
 
-        notifyAboutProducts = new BervanButton("Force notification via email", ev -> {
-            ConfirmDialog confirmDialog = new ConfirmDialog();
-            confirmDialog.setHeader("Confirm");
-            confirmDialog.setText("Are you sure you want to notify?");
-
-            confirmDialog.setConfirmText("Yes");
-            confirmDialog.setConfirmButtonTheme("primary");
-            confirmDialog.addConfirmListener(event -> {
-                Set<String> itemsId = getSelectedItemsByCheckbox();
-
-                List<ProductAlert> toSet = data.stream()
-                        .filter(e -> e.getId() != null)
-                        .filter(e -> itemsId.contains(e.getId().toString()))
-                        .toList();
-
-                Set<ProductAlert> originals = new HashSet<>();
-                for (ProductAlert alert : toSet) {
-                    originals.add(service.loadById(alert.getId()).get());
-                }
-
-                service.notifyAboutProducts(originals);
-
-                checkboxes.stream().filter(AbstractField::getValue).forEach(e -> e.setValue(false));
-                selectAllCheckbox.setValue(false);
-                showPrimaryNotification("Notifying ended!");
-            });
-
-            confirmDialog.setCancelText("Cancel");
-            confirmDialog.setCancelable(true);
-            confirmDialog.addCancelListener(event -> {
-            });
-
-            confirmDialog.open();
-        }, BervanButtonStyle.WARNING);
-
-        buttonsForCheckboxesForVisibilityChange.add(notifyAboutProducts);
-        for (Button button : buttonsForCheckboxesForVisibilityChange) {
-            button.setEnabled(false);
-        }
-
-        checkboxActions.remove(checkboxDeleteButton);
-        checkboxActions.add(notifyAboutProducts);
-        checkboxActions.add(checkboxDeleteButton);
+    @Override
+    protected void buildToolbarActionBar() {
+        tableToolbarActions = new ProductAlertsToolbar(gridActionService, checkboxes, data, tClass, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange)
+                .withNotifyAboutProducts()
+                .withDeleteButton()
+                .withExportButton(isExportable(), service, bervanLogger, pathToFileStorage, globalTmpDir)
+                .build();
     }
 
     @Override
