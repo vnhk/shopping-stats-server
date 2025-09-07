@@ -1,8 +1,7 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.BervanButton;
-import com.bervan.common.BervanComboBox;
-import com.bervan.core.model.BervanLogger;
+import com.bervan.common.component.BervanButton;
+import com.bervan.common.component.BervanComboBox;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
 import com.bervan.shstat.service.ProductSearchService;

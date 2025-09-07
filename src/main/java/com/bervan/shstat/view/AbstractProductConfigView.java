@@ -1,8 +1,8 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.AbstractBervanTableView;
-import com.bervan.common.AutoConfigurableField;
-import com.bervan.common.BervanComboBox;
+import com.bervan.common.view.AbstractBervanTableView;
+import com.bervan.common.component.AutoConfigurableField;
+import com.bervan.common.component.BervanComboBox;
 import com.bervan.common.search.SearchQueryOption;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.SearchService;

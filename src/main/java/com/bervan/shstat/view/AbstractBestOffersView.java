@@ -1,7 +1,7 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.BervanButton;
-import com.bervan.common.BervanDynamicMultiDropdownController;
+import com.bervan.common.component.BervanButton;
+import com.bervan.common.component.BervanDynamicMultiDropdownController;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.queue.RefreshViewService;
 import com.bervan.shstat.response.ApiResponse;

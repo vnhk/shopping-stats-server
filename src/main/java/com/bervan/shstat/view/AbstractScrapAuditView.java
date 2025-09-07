@@ -1,8 +1,8 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.AbstractBervanTableView;
-import com.bervan.common.BervanButton;
-import com.bervan.common.BervanButtonStyle;
+import com.bervan.common.view.AbstractBervanTableView;
+import com.bervan.common.component.BervanButton;
+import com.bervan.common.component.BervanButtonStyle;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.service.ScrapAuditService;
