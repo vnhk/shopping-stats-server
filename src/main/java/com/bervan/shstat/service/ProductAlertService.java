@@ -150,7 +150,7 @@ public class ProductAlertService extends BaseService<Long, ProductAlert> {
         if (!matchedProducts.isEmpty()) {
             String message = buildHtmlProductList(alert, matchedProducts.subList(0, Math.min(100, matchedProducts.size())));
             for (String email : alert.getEmails()) {
-                emailService.sendEmail(email, "Product Alerts " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-uuuu")), message);
+                emailService.sendEmail(email, "Product Alerts " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-uuuu")), message, "Product Alert!");
             }
         }
     }

@@ -1,24 +1,17 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.BervanTableToolbar;
-import com.bervan.common.view.AbstractBervanTableView;
-import com.bervan.common.component.BervanButton;
-import com.bervan.common.component.BervanButtonStyle;
 import com.bervan.common.search.SearchQueryOption;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.SearchService;
 import com.bervan.common.search.model.SearchOperation;
 import com.bervan.common.user.User;
+import com.bervan.common.view.AbstractBervanTableView;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.entity.ProductAlert;
 import com.bervan.shstat.service.ProductAlertService;
 import com.bervan.shstat.service.ProductConfigService;
-import com.vaadin.flow.component.AbstractField;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -34,6 +27,7 @@ public abstract class AbstractProductAlertView extends AbstractBervanTableView<L
         this.searchService = searchService;
         renderCommonComponents();
         loadCategories();
+        componentHelper = new ProductAlertsComponentHelper(new ArrayList<>(allAvailableCategories));
     }
 
     @Override
@@ -46,42 +40,14 @@ public abstract class AbstractProductAlertView extends AbstractBervanTableView<L
     }
 
     @Override
-    protected List<String> getAllValuesForDynamicDropdowns(String key, ProductAlert item) {
-        return new ArrayList<>();
-    }
-
-    @Override
-    protected List<String> getAllValuesForDynamicMultiDropdowns(String key, ProductAlert item) {
-        if (key.equals("productCategories")) {
-            return allAvailableCategories.stream().sorted(String::compareTo).toList();
-        }
-        return new ArrayList<>();
-    }
-
-    private void loadCategories() {
-        allAvailableCategories = productConfigService.loadAllCategories();
-    }
-
-    @Override
-    protected List<String> getInitialSelectedValueForDynamicMultiDropdown(String key, ProductAlert item) {
-        if (item != null && key.equals("productCategories")) {
-            return item.getProductCategories();
-        } else if (item != null && key.equals("emails")) {
-            return item.getEmails();
-        }
-        return new ArrayList<>();
-    }
-
-    @Override
-    protected String getInitialSelectedValueForDynamicDropdown(String key, ProductAlert item) {
-        return null;
-    }
-
-    @Override
     protected ProductAlert customizeSavingInCreateForm(ProductAlert newItem) {
         ProductAlert productAlert = super.customizeSavingInCreateForm(newItem);
         productAlert.getOwners().add(loadCommonUser());
         return productAlert;
+    }
+
+    private void loadCategories() {
+        allAvailableCategories = productConfigService.loadAllCategories();
     }
 
     @Override
