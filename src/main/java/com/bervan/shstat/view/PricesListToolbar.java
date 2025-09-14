@@ -21,9 +21,9 @@ public class PricesListToolbar extends BervanTableToolbar<Long, ProductBasedOnDa
     private BervanButton decreasePrice2times;
     private Function<Void, Void> updateStatsOfProduct;
 
-    public PricesListToolbar(GridActionService<Long, ProductBasedOnDateAttributes> gridActionService, List<Checkbox> checkboxes, List<ProductBasedOnDateAttributes> data, Class<?> tClass, Checkbox selectAllCheckbox, List<Button> buttonsForCheckboxesForVisibilityChange,
+    public PricesListToolbar(GridActionService<Long, ProductBasedOnDateAttributes> gridActionService, List<Checkbox> checkboxes, List<ProductBasedOnDateAttributes> data, Checkbox selectAllCheckbox, List<Button> buttonsForCheckboxesForVisibilityChange,
                              Function<Void, Void> updateStatsOfProduct) {
-        super(gridActionService, checkboxes, data, tClass, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange);
+        super(gridActionService, checkboxes, data, ProductBasedOnDateAttributes.class, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange);
         this.updateStatsOfProduct = updateStatsOfProduct;
     }
 

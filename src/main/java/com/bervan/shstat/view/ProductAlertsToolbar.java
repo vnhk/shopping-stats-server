@@ -18,8 +18,8 @@ import java.util.Set;
 public class ProductAlertsToolbar extends BervanTableToolbar<Long, ProductAlert> {
     private BervanButton notifyAboutProducts;
 
-    public ProductAlertsToolbar(GridActionService<Long, ProductAlert> gridActionService, List<Checkbox> checkboxes, List<ProductAlert> data, Class<?> tClass, Checkbox selectAllCheckbox, List<Button> buttonsForCheckboxesForVisibilityChange) {
-        super(gridActionService, checkboxes, data, tClass, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange);
+    public ProductAlertsToolbar(GridActionService<Long, ProductAlert> gridActionService, List<Checkbox> checkboxes, List<ProductAlert> data, Checkbox selectAllCheckbox, List<Button> buttonsForCheckboxesForVisibilityChange) {
+        super(gridActionService, checkboxes, data, ProductAlert.class, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange);
     }
 
     public ProductAlertsToolbar withNotifyAboutProducts() {

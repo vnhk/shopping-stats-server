@@ -1,19 +1,14 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.component.AutoConfigurableField;
 import com.bervan.common.component.CommonComponentHelper;
 import com.bervan.shstat.entity.ProductAlert;
-import com.bervan.shstat.entity.scrap.ProductConfig;
-import com.bervan.shstat.entity.scrap.ShopConfig;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
 public class ProductAlertsComponentHelper extends CommonComponentHelper<Long, ProductAlert> {
     private final List<String> allAvailableCategories;
+
     public ProductAlertsComponentHelper(List<String> allAvailableCategories) {
         super(ProductAlert.class);
         this.allAvailableCategories = allAvailableCategories;

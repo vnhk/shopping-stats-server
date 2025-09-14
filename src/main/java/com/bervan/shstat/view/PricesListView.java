@@ -33,7 +33,7 @@ public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOn
 
     @Override
     protected void buildToolbarActionBar() {
-        tableToolbarActions = new PricesListToolbar(gridActionService, checkboxes, data, tClass, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange, (V) -> {
+        tableToolbarActions = new PricesListToolbar(gridActionService, checkboxes, data, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange, (V) -> {
             updateStatsOfProduct();
             return null;
         })

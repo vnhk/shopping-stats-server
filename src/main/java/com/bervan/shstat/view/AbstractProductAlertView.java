@@ -32,7 +32,7 @@ public abstract class AbstractProductAlertView extends AbstractBervanTableView<L
 
     @Override
     protected void buildToolbarActionBar() {
-        tableToolbarActions = new ProductAlertsToolbar(gridActionService, checkboxes, data, tClass, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange)
+        tableToolbarActions = new ProductAlertsToolbar(gridActionService, checkboxes, data, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange)
                 .withNotifyAboutProducts()
                 .withDeleteButton()
                 .withExportButton(isExportable(), service, bervanLogger, pathToFileStorage, globalTmpDir)
