@@ -7,6 +7,7 @@ import com.bervan.shstat.entity.scrap.ShopConfig;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -15,6 +16,7 @@ public class ProductConfigComponentHelper extends CommonComponentHelper<Long, Pr
     private final Map<String, ShopConfig> shops;
     private final List<String> allAvailableCategories;
     private final Function<ProductConfig, List<String>> loadCategories;
+
     public ProductConfigComponentHelper(Map<String, ShopConfig> shops, List<String> allAvailableCategories, Function<ProductConfig, List<String>> loadCategories) {
         super(ProductConfig.class);
         this.shops = shops;

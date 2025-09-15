@@ -1,14 +1,16 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.view.AbstractBervanTableView;
 import com.bervan.common.search.SearchQueryOption;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.SearchService;
 import com.bervan.common.search.model.SearchOperation;
 import com.bervan.common.user.User;
+import com.bervan.common.view.AbstractBervanTableView;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.shstat.service.ShopConfigService;
 import com.bervan.shstat.entity.scrap.ShopConfig;
+import com.bervan.shstat.service.ShopConfigService;
+
+import java.util.HashMap;
 
 public abstract class AbstractShopConfigView extends AbstractBervanTableView<Long, ShopConfig> {
     public static final String ROUTE_NAME = "/shopping/shop-config";

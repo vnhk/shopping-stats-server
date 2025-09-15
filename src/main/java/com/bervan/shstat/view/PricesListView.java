@@ -12,6 +12,8 @@ import com.bervan.shstat.service.ProductService;
 import com.vaadin.flow.component.grid.Grid;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
+
 @Slf4j
 public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOnDateAttributes> {
     private final Product product;

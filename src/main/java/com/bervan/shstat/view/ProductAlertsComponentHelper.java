@@ -4,6 +4,7 @@ import com.bervan.common.component.CommonComponentHelper;
 import com.bervan.shstat.entity.ProductAlert;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class ProductAlertsComponentHelper extends CommonComponentHelper<Long, ProductAlert> {

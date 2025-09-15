@@ -27,7 +27,7 @@ public abstract class AbstractProductConfigView extends AbstractBervanTableView<
     private String selectedShopName;
 
     public AbstractProductConfigView(ProductConfigService productConfigService, SearchService searchService, BervanLogger log) {
-        super(new ShoppingLayout(ROUTE_NAME), productConfigService, log, ProductConfig.class);
+        super(new ShoppingLayout(ROUTE_NAME), productConfigService, log, ProductConfig .class);
         this.add(new ShoppingLayout(ROUTE_NAME));
         this.searchService = searchService;
         this.log = log;

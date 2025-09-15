@@ -1,17 +1,18 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.view.AbstractBervanTableView;
 import com.bervan.common.component.BervanButton;
 import com.bervan.common.component.BervanButtonStyle;
 import com.bervan.common.search.SearchRequest;
+import com.bervan.common.view.AbstractBervanTableView;
 import com.bervan.core.model.BervanLogger;
-import com.bervan.shstat.service.ScrapAuditService;
 import com.bervan.shstat.entity.scrap.ScrapAudit;
 import com.bervan.shstat.repository.ScrapAuditRepository;
+import com.bervan.shstat.service.ScrapAuditService;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public abstract class AbstractScrapAuditView extends AbstractBervanTableView<Long, ScrapAudit> {
