@@ -1,5 +1,7 @@
 package com.bervan.shstat.view;
 
+import com.bervan.asynctask.AsyncTask;
+import com.bervan.asynctask.AsyncTaskService;
 import com.bervan.common.component.BervanButton;
 import com.bervan.common.component.BervanDynamicMultiDropdownController;
 import com.bervan.core.model.BervanLogger;
@@ -24,6 +26,8 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.QueryParameters;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -34,6 +38,7 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
     public static final String ROUTE_NAME = "/shopping/best-offers";
     private final DiscountsViewService discountsViewService;
     private final RefreshViewService refreshViewService;
+    private final AsyncTaskService asyncTaskService;
     private final ProductSearchService productSearchService;
     private final BervanLogger log;
     private NumberField discountMin = new NumberField("Discount Min:");
@@ -48,10 +53,11 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
     private BervanButton rebuildBestOffers;
     private VerticalLayout productsLayout;
 
-    public AbstractBestOffersView(DiscountsViewService discountsViewService, RefreshViewService refreshViewService, ProductSearchService productSearchService, BervanLogger log) {
+    public AbstractBestOffersView(DiscountsViewService discountsViewService, RefreshViewService refreshViewService, AsyncTaskService asyncTaskService, ProductSearchService productSearchService, BervanLogger log) {
         super();
         this.refreshViewService = refreshViewService;
         this.discountsViewService = discountsViewService;
+        this.asyncTaskService = asyncTaskService;
         this.productSearchService = productSearchService;
         this.log = log;
 
@@ -61,9 +67,21 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
 
     private void initializeComponents() {
         rebuildBestOffers = new BervanButton("Force Rebuild", (e) -> {
-            showPrimaryNotification("Views are rebuilding... It will take time...");
-            refreshViewService.refreshViewsScheduled();
-            showPrimaryNotification("Views rebuilt");
+            AsyncTask newAsyncTask = asyncTaskService.createAndStoreAsyncTask();
+            showPrimaryNotification("Views are rebuilding... It will take time... You will be notified!");
+
+            SecurityContext context = SecurityContextHolder.getContext();
+            new Thread(() -> {
+                SecurityContextHolder.setContext(context);
+                AsyncTask asyncTask = asyncTaskService.setInProgress(newAsyncTask, "Manual Product Views Refresh started!");
+                try {
+                    refreshViewService.refreshViewsScheduled();
+                    asyncTaskService.setFinished(newAsyncTask, "Manual Product Views Refresh finished!");
+                } catch (Exception ex) {
+                    asyncTaskService.setFailed(asyncTask, ex.getMessage());
+                }
+            }).start();
+
         });
 
         this.add(new ShoppingLayout(ROUTE_NAME));
