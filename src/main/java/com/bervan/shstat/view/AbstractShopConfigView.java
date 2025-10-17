@@ -1,5 +1,6 @@
 package com.bervan.shstat.view;
 
+import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.search.SearchQueryOption;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.SearchService;
@@ -10,15 +11,13 @@ import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.entity.scrap.ShopConfig;
 import com.bervan.shstat.service.ShopConfigService;
 
-import java.util.HashMap;
-
 public abstract class AbstractShopConfigView extends AbstractBervanTableView<Long, ShopConfig> {
     public static final String ROUTE_NAME = "/shopping/shop-config";
     private final BervanLogger log;
     private final SearchService searchService;
 
-    public AbstractShopConfigView(ShopConfigService shopConfigService, SearchService searchService, BervanLogger log) {
-        super(new ShoppingLayout(ROUTE_NAME), shopConfigService, log, ShopConfig.class);
+    public AbstractShopConfigView(ShopConfigService shopConfigService, SearchService searchService, BervanLogger log, BervanViewConfig bervanViewConfig) {
+        super(new ShoppingLayout(ROUTE_NAME), shopConfigService, log, bervanViewConfig, ShopConfig.class);
         this.add(new ShoppingLayout(ROUTE_NAME));
         this.searchService = searchService;
         this.log = log;

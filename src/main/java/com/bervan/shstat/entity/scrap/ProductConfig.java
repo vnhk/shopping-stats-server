@@ -1,6 +1,7 @@
 package com.bervan.shstat.entity.scrap;
 
-import com.bervan.common.model.*;
+import com.bervan.common.model.BervanBaseEntity;
+import com.bervan.common.model.PersistableTableData;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -13,24 +14,17 @@ public class ProductConfig extends BervanBaseEntity<Long> implements Persistable
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @VaadinBervanColumn(displayName = "Name", internalName = "name")
     private String name;
-    @VaadinBervanColumn(displayName = "Url", internalName = "url")
     private String url;
-    @VaadinBervanColumn(displayName = "Min Price", internalName = "minPrice")
     private Integer minPrice;
-    @VaadinBervanColumn(displayName = "Max Price", internalName = "maxPrice")
     private Integer maxPrice;
-    @VaadinBervanColumn(displayName = "Scrap Time", internalName = "scrapTime")
     private LocalTime scrapTime;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "product_config_categories", joinColumns = @JoinColumn(name = "product_config_id"))
     @Column(name = "category")
-    @VaadinBervanColumn(displayName = "Categories", internalName = "categories", extension = VaadinDynamicMultiDropdownBervanColumn.class)
     private List<String> categories;
     @ManyToOne
     @JoinColumn(name = "shop_config_id")
-    @VaadinBervanColumn(displayName = "Shop", internalName = "shop", extension = VaadinDynamicDropdownBervanColumn.class, inTable = false, inEditForm = false)
     private ShopConfig shop;
 
     private Boolean deleted = false;

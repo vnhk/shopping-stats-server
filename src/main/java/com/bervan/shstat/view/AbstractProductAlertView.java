@@ -1,5 +1,6 @@
 package com.bervan.shstat.view;
 
+import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.search.SearchQueryOption;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.SearchService;
@@ -12,7 +13,6 @@ import com.bervan.shstat.service.ProductAlertService;
 import com.bervan.shstat.service.ProductConfigService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -22,8 +22,8 @@ public abstract class AbstractProductAlertView extends AbstractBervanTableView<L
     private final SearchService searchService;
     private Set<String> allAvailableCategories;
 
-    public AbstractProductAlertView(ProductAlertService service, ProductConfigService productConfigService, SearchService searchService, BervanLogger log) {
-        super(new ShoppingLayout(ROUTE_NAME), service, log, ProductAlert.class);
+    public AbstractProductAlertView(ProductAlertService service, ProductConfigService productConfigService, SearchService searchService, BervanLogger log, BervanViewConfig bervanViewConfig) {
+        super(new ShoppingLayout(ROUTE_NAME), service, log, bervanViewConfig, ProductAlert.class);
         this.productConfigService = productConfigService;
         this.searchService = searchService;
         renderCommonComponents();
@@ -33,7 +33,7 @@ public abstract class AbstractProductAlertView extends AbstractBervanTableView<L
 
     @Override
     protected void buildToolbarActionBar() {
-        tableToolbarActions = new ProductAlertsToolbar(gridActionService, checkboxes, data, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange)
+        tableToolbarActions = new ProductAlertsToolbar(gridActionService, checkboxes, data, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange, bervanViewConfig)
                 .withNotifyAboutProducts()
                 .withDeleteButton()
                 .withExportButton(isExportable(), service, bervanLogger, pathToFileStorage, globalTmpDir)

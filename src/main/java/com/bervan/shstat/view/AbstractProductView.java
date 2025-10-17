@@ -3,6 +3,7 @@ package com.bervan.shstat.view;
 import com.bervan.common.component.BervanButton;
 import com.bervan.common.component.BervanButtonStyle;
 import com.bervan.common.component.BervanTextField;
+import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.user.UserRepository;
 import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.entity.Product;
@@ -50,10 +51,11 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
     private ProductDTO productDTO;
     private BeforeEvent beforeEvent;
     private Long productId;
+    private final BervanViewConfig bervanViewConfig;
 
 
     public AbstractProductView(ProductViewService productViewService, ProductSearchService productSearchService,
-                               UserRepository userRepository, ProductService productService, ProductSimilarOffersService productSimilarOffersService, ProductRepository productRepository, ProductBasedOnDateAttributesService productDateAttService, BervanLogger log) {
+                               UserRepository userRepository, ProductService productService, ProductSimilarOffersService productSimilarOffersService, ProductRepository productRepository, ProductBasedOnDateAttributesService productDateAttService, BervanLogger log, BervanViewConfig bervanViewConfig) {
         super();
         this.userRepository = userRepository;
         this.productService = productService;
@@ -63,6 +65,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
         this.productViewService = productViewService;
         this.productSearchService = productSearchService;
         this.log = log;
+        this.bervanViewConfig = bervanViewConfig;
     }
 
     @Override
@@ -161,7 +164,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
 
         add(productsLayout);
 
-        add(new Hr(), new PricesListView(this, productDateAttService, productService, shoppingLayout, productRepository.findById(productId).get(), productViewService, userRepository));
+        add(new Hr(), new PricesListView(this, productDateAttService, productService, shoppingLayout, productRepository.findById(productId).get(), productViewService, userRepository, bervanViewConfig));
         add(new Hr());
 
         List<Long> similarOffers = productSimilarOffersService.findSimilarOffers(productDTO.getId(), 10);

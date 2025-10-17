@@ -1,6 +1,7 @@
 package com.bervan.shstat.view;
 
 import com.bervan.common.BervanLoggerImpl;
+import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.model.SearchOperation;
 import com.bervan.common.user.UserRepository;
@@ -12,8 +13,6 @@ import com.bervan.shstat.service.ProductService;
 import com.vaadin.flow.component.grid.Grid;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
-
 @Slf4j
 public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOnDateAttributes> {
     private final Product product;
@@ -23,8 +22,8 @@ public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOn
     private final AbstractProductView parentView;
 
 
-    public PricesListView(AbstractProductView parentView, ProductBasedOnDateAttributesService service, ProductService productService, ShoppingLayout pageLayout, Product product, ProductViewService productViewService, UserRepository userRepository) {
-        super(pageLayout, service, BervanLoggerImpl.init(log), ProductBasedOnDateAttributes.class);
+    public PricesListView(AbstractProductView parentView, ProductBasedOnDateAttributesService service, ProductService productService, ShoppingLayout pageLayout, Product product, ProductViewService productViewService, UserRepository userRepository, BervanViewConfig bervanViewConfig) {
+        super(pageLayout, service, BervanLoggerImpl.init(log), bervanViewConfig, ProductBasedOnDateAttributes.class);
         this.product = product;
         this.productService = productService;
         this.parentView = parentView;
@@ -38,7 +37,7 @@ public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOn
         tableToolbarActions = new PricesListToolbar(gridActionService, checkboxes, data, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange, (V) -> {
             updateStatsOfProduct();
             return null;
-        })
+        }, bervanViewConfig)
                 .withDecreasePrice2times()
                 .withDecreasePrice5times()
                 .withDecreasePrice10times()

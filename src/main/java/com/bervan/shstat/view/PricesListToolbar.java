@@ -3,6 +3,7 @@ package com.bervan.shstat.view;
 import com.bervan.common.BervanTableToolbar;
 import com.bervan.common.component.BervanButton;
 import com.bervan.common.component.BervanButtonStyle;
+import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.service.GridActionService;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.vaadin.flow.component.AbstractField;
@@ -22,8 +23,8 @@ public class PricesListToolbar extends BervanTableToolbar<Long, ProductBasedOnDa
     private Function<Void, Void> updateStatsOfProduct;
 
     public PricesListToolbar(GridActionService<Long, ProductBasedOnDateAttributes> gridActionService, List<Checkbox> checkboxes, List<ProductBasedOnDateAttributes> data, Checkbox selectAllCheckbox, List<Button> buttonsForCheckboxesForVisibilityChange,
-                             Function<Void, Void> updateStatsOfProduct) {
-        super(gridActionService, checkboxes, data, ProductBasedOnDateAttributes.class, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange);
+                             Function<Void, Void> updateStatsOfProduct, BervanViewConfig bervanViewConfig) {
+        super(gridActionService, checkboxes, data, ProductBasedOnDateAttributes.class, bervanViewConfig, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange);
         this.updateStatsOfProduct = updateStatsOfProduct;
     }
 

@@ -2,7 +2,6 @@ package com.bervan.shstat.entity;
 
 import com.bervan.common.model.BervanBaseEntity;
 import com.bervan.common.model.PersistableTableData;
-import com.bervan.common.model.VaadinBervanColumn;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -26,18 +25,13 @@ public class ProductBasedOnDateAttributes extends BervanBaseEntity<Long> impleme
     @JoinColumn(name = "product_id")
     private Product product;
     @NotNull
-    @VaadinBervanColumn(internalName = "price", displayName = "Price")
     private BigDecimal price;
     @NotNull
     @Size(min = 3, max = 300)
-    @VaadinBervanColumn(internalName = "formattedScrapDate", displayName = "Formatted Scrap Date End")
     private String formattedScrapDate;
     @NotNull
-    @VaadinBervanColumn(internalName = "scrapDate", displayName = "Scrap Date")
     private Date scrapDate;
-    @VaadinBervanColumn(internalName = "scrapDateEnd", displayName = "Scrap Date End")
     private Date scrapDateEnd;
-    @VaadinBervanColumn(internalName = "formattedScrapDateEnd", displayName = "Formatted Scrap Date End")
     private String formattedScrapDateEnd;
     private Boolean deleted = false;
 

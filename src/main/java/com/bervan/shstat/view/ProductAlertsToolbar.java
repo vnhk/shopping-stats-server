@@ -3,6 +3,7 @@ package com.bervan.shstat.view;
 import com.bervan.common.BervanTableToolbar;
 import com.bervan.common.component.BervanButton;
 import com.bervan.common.component.BervanButtonStyle;
+import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.service.GridActionService;
 import com.bervan.shstat.entity.ProductAlert;
 import com.bervan.shstat.service.ProductAlertService;
@@ -11,7 +12,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,8 +19,8 @@ import java.util.Set;
 public class ProductAlertsToolbar extends BervanTableToolbar<Long, ProductAlert> {
     private BervanButton notifyAboutProducts;
 
-    public ProductAlertsToolbar(GridActionService<Long, ProductAlert> gridActionService, List<Checkbox> checkboxes, List<ProductAlert> data, Checkbox selectAllCheckbox, List<Button> buttonsForCheckboxesForVisibilityChange) {
-        super(gridActionService, checkboxes, data, ProductAlert.class, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange);
+    public ProductAlertsToolbar(GridActionService<Long, ProductAlert> gridActionService, List<Checkbox> checkboxes, List<ProductAlert> data, Checkbox selectAllCheckbox, List<Button> buttonsForCheckboxesForVisibilityChange, BervanViewConfig bervanViewConfig) {
+        super(gridActionService, checkboxes, data, ProductAlert.class, bervanViewConfig, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange);
     }
 
     public ProductAlertsToolbar withNotifyAboutProducts() {

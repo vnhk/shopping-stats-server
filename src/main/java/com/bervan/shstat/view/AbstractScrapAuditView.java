@@ -2,6 +2,7 @@ package com.bervan.shstat.view;
 
 import com.bervan.common.component.BervanButton;
 import com.bervan.common.component.BervanButtonStyle;
+import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.view.AbstractBervanTableView;
 import com.bervan.core.model.BervanLogger;
@@ -12,7 +13,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public abstract class AbstractScrapAuditView extends AbstractBervanTableView<Long, ScrapAudit> {
@@ -46,8 +46,8 @@ public abstract class AbstractScrapAuditView extends AbstractBervanTableView<Lon
         refreshTable.click();
     }, BervanButtonStyle.PRIMARY);
 
-    public AbstractScrapAuditView(ScrapAuditService scrapAuditService, ScrapAuditRepository scrapAuditRepository, BervanLogger log) {
-        super(new ShoppingLayout(ROUTE_NAME), scrapAuditService, log, ScrapAudit.class);
+    public AbstractScrapAuditView(ScrapAuditService scrapAuditService, ScrapAuditRepository scrapAuditRepository, BervanLogger log, BervanViewConfig bervanViewConfig) {
+        super(new ShoppingLayout(ROUTE_NAME), scrapAuditService, log, bervanViewConfig, ScrapAudit.class);
         this.log = log;
         this.scrapAuditRepository = scrapAuditRepository;
         renderCommonComponents();

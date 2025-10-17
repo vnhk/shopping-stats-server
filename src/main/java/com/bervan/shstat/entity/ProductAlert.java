@@ -3,7 +3,6 @@ package com.bervan.shstat.entity;
 import com.bervan.common.model.BervanBaseEntity;
 import com.bervan.common.model.PersistableTableData;
 import com.bervan.common.model.VaadinDynamicMultiDropdownBervanColumn;
-import com.bervan.common.model.VaadinBervanColumn;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,19 +20,12 @@ public class ProductAlert extends BervanBaseEntity<Long> implements PersistableT
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @VaadinBervanColumn(displayName = "Alert Name", internalName = "alertName")
     private String name;
-    @VaadinBervanColumn(displayName = "Price Min", internalName = "priceMin")
     private Integer priceMin;
-    @VaadinBervanColumn(displayName = "Price Max", internalName = "priceMax")
     private Integer priceMax;
-    @VaadinBervanColumn(displayName = "Discount Min", internalName = "discountMin")
     private Integer discountMin;
-    @VaadinBervanColumn(displayName = "Discount Max", internalName = "discountMax")
     private Integer discountMax;
-    @VaadinBervanColumn(displayName = "Product Name", internalName = "productName")
     private String productName;
-    @VaadinBervanColumn(displayName = "Product Categories", internalName = "productCategories", extension = VaadinDynamicMultiDropdownBervanColumn.class)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "product_alert_categories", joinColumns = @JoinColumn(name = "product_alert_id"))
     @Column(name = "category")
@@ -42,7 +34,6 @@ public class ProductAlert extends BervanBaseEntity<Long> implements PersistableT
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "product_alert_emails", joinColumns = @JoinColumn(name = "product_alert_id"))
     @Column(name = "email")
-    @VaadinBervanColumn(displayName = "Emails", internalName = "emails", extension = VaadinDynamicMultiDropdownBervanColumn.class)
     private List<String> emails = new ArrayList<>();
 
     private Boolean deleted = false;

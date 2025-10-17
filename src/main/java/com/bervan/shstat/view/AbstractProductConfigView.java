@@ -1,6 +1,7 @@
 package com.bervan.shstat.view;
 
 import com.bervan.common.component.BervanComboBox;
+import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.search.SearchQueryOption;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.SearchService;
@@ -26,8 +27,8 @@ public abstract class AbstractProductConfigView extends AbstractBervanTableView<
     private Set<String> allAvailableCategories;
     private String selectedShopName;
 
-    public AbstractProductConfigView(ProductConfigService productConfigService, SearchService searchService, BervanLogger log) {
-        super(new ShoppingLayout(ROUTE_NAME), productConfigService, log, ProductConfig .class);
+    public AbstractProductConfigView(ProductConfigService productConfigService, SearchService searchService, BervanLogger log, BervanViewConfig bervanViewConfig) {
+        super(new ShoppingLayout(ROUTE_NAME), productConfigService, log, bervanViewConfig, ProductConfig .class);
         this.add(new ShoppingLayout(ROUTE_NAME));
         this.searchService = searchService;
         this.log = log;
