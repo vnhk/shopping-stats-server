@@ -1,0 +1,16 @@
+columns:
+  - field: shopName
+    displayName: "Shop Name"
+    internalName: "shopName"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true
+
+  - field: baseUrl
+    displayName: "Base Url"
+    internalName: "baseUrl"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true

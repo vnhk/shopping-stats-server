@@ -1,0 +1,66 @@
+columns:
+  - field: name
+    displayName: "Name"
+    internalName: "name"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true
+    min: 3
+    max: 255
+
+  - field: url
+    displayName: "Url"
+    internalName: "url"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true
+    min: 3
+    max: 1000
+
+  - field: minPrice
+    displayName: "Min Price"
+    internalName: "minPrice"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+    min: 0
+    max: 100000000
+
+  - field: maxPrice
+    displayName: "Max Price"
+    internalName: "maxPrice"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+    min: 0
+    max: 100000000
+
+  - field: scrapTime
+    displayName: "Scrap Time"
+    internalName: "scrapTime"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+
+  - field: categories
+    displayName: "Categories"
+    internalName: "categories"
+    extension: "VaadinDynamicMultiDropdownBervanColumn"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+
+  - field: shop
+    displayName: "Shop"
+    internalName: "shop"
+    extension: "VaadinDynamicDropdownBervanColumn"
+    inSaveForm: true
+    inEditForm: false
+    inTable: false
+    required: true

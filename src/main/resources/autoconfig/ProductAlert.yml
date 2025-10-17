@@ -1,0 +1,78 @@
+columns:
+  - field: name
+    displayName: "Alert Name"
+    internalName: "alertName"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true
+    min: 3
+    max: 255
+
+  - field: priceMin
+    displayName: "Price Min"
+    internalName: "priceMin"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+    min: 0
+    max: 100000000
+
+  - field: priceMax
+    displayName: "Price Max"
+    internalName: "priceMax"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+    min: 0
+    max: 100000000
+
+  - field: discountMin
+    displayName: "Discount Min"
+    internalName: "discountMin"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+    min: 0
+    max: 100
+
+  - field: discountMax
+    displayName: "Discount Max"
+    internalName: "discountMax"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+    min: 0
+    max: 100
+
+  - field: productName
+    displayName: "Product Name"
+    internalName: "productName"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true
+    min: 3
+    max: 255
+
+  - field: productCategories
+    displayName: "Product Categories"
+    internalName: "productCategories"
+    extension: "VaadinDynamicMultiDropdownBervanColumn"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+
+  - field: emails
+    displayName: "Emails"
+    internalName: "emails"
+    extension: "VaadinDynamicMultiDropdownBervanColumn"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false

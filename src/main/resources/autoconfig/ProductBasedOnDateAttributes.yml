@@ -1,0 +1,42 @@
+columns:
+  - field: price
+    displayName: "Price"
+    internalName: "price"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true
+
+  - field: formattedScrapDate
+    displayName: "Formatted Scrap Date End"
+    internalName: "formattedScrapDate"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true
+    min: 3
+    max: 300
+
+  - field: scrapDate
+    displayName: "Scrap Date"
+    internalName: "scrapDate"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true
+
+  - field: scrapDateEnd
+    displayName: "Scrap Date End"
+    internalName: "scrapDateEnd"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false
+
+  - field: formattedScrapDateEnd
+    displayName: "Formatted Scrap Date End"
+    internalName: "formattedScrapDateEnd"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: false

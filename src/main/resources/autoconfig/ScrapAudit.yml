@@ -1,0 +1,25 @@
+columns:
+  - field: date
+    displayName: "Date"
+    internalName: "date"
+    inSaveForm: false
+    inEditForm: false
+    inTable: true
+    required: false
+
+  - field: productDetails
+    displayName: "Product"
+    internalName: "product"
+    inSaveForm: false
+    inEditForm: false
+    inTable: true
+    sortable: false
+    required: false
+
+  - field: savedProducts
+    displayName: "Saved"
+    internalName: "savedProducts"
+    inSaveForm: false
+    inEditForm: false
+    inTable: true
+    required: false
