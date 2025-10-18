@@ -88,7 +88,7 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
 
         Set<String> categories = this.productSearchService.findCategories();
         categoryDropdown = new BervanDynamicMultiDropdownController("Categories", "Categories:",
-                categories, new ArrayList<>());
+                categories, new ArrayList<>(), false);
 
         shopDropdown.setItems(Arrays.asList("Media Expert", "RTV Euro AGD", "Morele", "Centrum Rowerowe"));
         shopDropdown.setPlaceholder("Select shop...");

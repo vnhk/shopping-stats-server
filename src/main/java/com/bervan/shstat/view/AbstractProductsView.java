@@ -2,18 +2,17 @@ package com.bervan.shstat.view;
 
 import com.bervan.common.component.BervanButton;
 import com.bervan.common.component.BervanComboBox;
+import com.bervan.common.component.BervanTextField;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
 import com.bervan.shstat.service.ProductSearchService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
@@ -29,9 +28,9 @@ public abstract class AbstractProductsView extends BaseProductsPage implements H
     public static final String ROUTE_NAME = "/shopping/products";
     private final ProductViewService productViewService;
     private final ProductSearchService productSearchService;
-    private final ComboBox<String> shopDropdown = new BervanComboBox<>("Shop:");
-    private final ComboBox<String> categoryDropdown = new ComboBox<>("Category:");
-    private final TextField productName = new TextField("Product Name:");
+    private final BervanComboBox<String> shopDropdown = new BervanComboBox<>("Shop:", false);
+    private final BervanComboBox<String> categoryDropdown = new BervanComboBox<>("Category:", false);
+    private final BervanTextField productName = new BervanTextField("Product Name:");
     private final Button searchButton = new BervanButton("Search");
 
     public AbstractProductsView(ProductViewService productViewService, ProductSearchService productSearchService) {
