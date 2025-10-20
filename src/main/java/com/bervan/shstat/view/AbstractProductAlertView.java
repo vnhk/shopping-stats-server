@@ -41,8 +41,8 @@ public abstract class AbstractProductAlertView extends AbstractBervanTableView<L
     }
 
     @Override
-    protected ProductAlert customizeSavingInCreateForm(ProductAlert newItem) {
-        ProductAlert productAlert = super.customizeSavingInCreateForm(newItem);
+    protected ProductAlert preSaveActions(ProductAlert newItem) {
+        ProductAlert productAlert = super.preSaveActions(newItem);
         productAlert.getOwners().add(loadCommonUser());
         return productAlert;
     }
@@ -52,8 +52,8 @@ public abstract class AbstractProductAlertView extends AbstractBervanTableView<L
     }
 
     @Override
-    protected void postSaveActions() {
-        super.postSaveActions();
+    protected void postSaveActions(ProductAlert save) {
+        super.postSaveActions(save);
         loadCategories();
     }
 

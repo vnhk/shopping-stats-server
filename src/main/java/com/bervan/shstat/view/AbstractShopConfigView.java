@@ -36,8 +36,8 @@ public abstract class AbstractShopConfigView extends AbstractBervanTableView<Lon
     }
 
     @Override
-    protected ShopConfig customizeSavingInCreateForm(ShopConfig newItem) {
-        ShopConfig shopConfig = super.customizeSavingInCreateForm(newItem);
+    protected ShopConfig preSaveActions(ShopConfig newItem) {
+        ShopConfig shopConfig = super.preSaveActions(newItem);
         shopConfig.getOwners().add(loadCommonUser());
         return shopConfig;
     }

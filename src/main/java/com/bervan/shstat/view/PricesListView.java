@@ -62,15 +62,15 @@ public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOn
     }
 
     @Override
-    protected ProductBasedOnDateAttributes customizeSavingInCreateForm(ProductBasedOnDateAttributes newItem) {
+    protected ProductBasedOnDateAttributes preSaveActions(ProductBasedOnDateAttributes newItem) {
         newItem.setProduct(product);
         newItem.addOwner(userRepository.findByUsername("COMMON_USER").get());
-        return super.customizeSavingInCreateForm(newItem);
+        return super.preSaveActions(newItem);
     }
 
     @Override
-    protected void postSaveActions() {
-        super.postSaveActions();
+    protected void postSaveActions(ProductBasedOnDateAttributes save) {
+        super.postSaveActions(save);
     }
 
     @Override

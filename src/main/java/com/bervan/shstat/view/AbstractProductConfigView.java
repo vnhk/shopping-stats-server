@@ -72,15 +72,15 @@ public abstract class AbstractProductConfigView extends AbstractBervanTableView<
     }
 
     @Override
-    protected ProductConfig customizeSavingInCreateForm(ProductConfig newItem) {
-        ProductConfig productConfig = super.customizeSavingInCreateForm(newItem);
+    protected ProductConfig preSaveActions(ProductConfig newItem) {
+        ProductConfig productConfig = super.preSaveActions(newItem);
         productConfig.getOwners().add(loadCommonUser());
         return productConfig;
     }
 
     @Override
-    protected void postSaveActions() {
-        super.postSaveActions();
+    protected void postSaveActions(ProductConfig save) {
+        super.postSaveActions(save);
         loadCategories();
     }
 
