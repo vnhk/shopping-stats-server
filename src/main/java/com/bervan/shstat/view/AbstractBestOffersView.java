@@ -194,7 +194,8 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
     @Override
     public void setParameter(BeforeEvent event, @OptionalParameter Void parameter) {
         QueryParameters queryParameters = event.getLocation().getQueryParameters();
-        List<String> categories = (List<String>) getParams(queryParameters, "category");
+        Object category = getParams(queryParameters, "category");
+        List<String> categories = getCategories(category);
         String shop = (String) getParams(queryParameters, "shop");
         String productName = (String) getParams(queryParameters, "product-name");
         Double discountMin = getDoubleParam(queryParameters, "discount-min");
@@ -218,6 +219,21 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
         if (atLeastOneParameter) {
             searchButton.click();
         }
+    }
+
+    private List<String> getCategories(Object category) {
+        List<String> categories = new ArrayList<>();
+
+        if (category instanceof String s) {
+            categories.add(s);
+        } else if (category instanceof List<?> list) {
+            for (Object item : list) {
+                if (item instanceof String str) {
+                    categories.add(str);
+                }
+            }
+        }
+        return categories;
     }
 
     private boolean updateField(List<String> fieldValues, BervanDynamicMultiDropdownController multiDropdown, boolean atLeastOneParameter) {
