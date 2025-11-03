@@ -167,7 +167,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
         add(new Hr(), new PricesListView(this, productDateAttService, productService, shoppingLayout, productRepository.findById(productId).get(), productViewService, userRepository, bervanViewConfig));
         add(new Hr());
 
-        List<Long> similarOffers = productSimilarOffersService.findSimilarOffers(productDTO.getId(), 10);
+        List<Long> similarOffers = productSimilarOffersService.findSimilarOffers(productDTO.getId(), 3);
 
         List<ProductDTO> similarOffersProducts = new ArrayList<>();
         for (Long similarOffer : similarOffers) {
