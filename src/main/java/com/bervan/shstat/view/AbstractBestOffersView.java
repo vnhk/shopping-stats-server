@@ -11,13 +11,10 @@ import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
 import com.bervan.shstat.service.DiscountsViewService;
 import com.bervan.shstat.service.ProductSearchService;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
@@ -31,7 +28,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class AbstractBestOffersView extends BaseProductsPage implements HasUrlParameter<Void> {
@@ -51,7 +51,6 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
     private BervanDynamicMultiDropdownController categoryDropdown;
     private BervanButton searchButton;
     private BervanButton rebuildBestOffers;
-    private VerticalLayout productsLayout;
 
     public AbstractBestOffersView(DiscountsViewService discountsViewService, RefreshViewService refreshViewService, AsyncTaskService asyncTaskService, ProductSearchService productSearchService, BervanLogger log) {
         super();
@@ -93,10 +92,9 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
         shopDropdown.setItems(Arrays.asList("Media Expert", "RTV Euro AGD", "Morele", "Centrum Rowerowe"));
         shopDropdown.setPlaceholder("Select shop...");
 
-        productsLayout = new VerticalLayout();
-
         configureSearchFields();
         createSearchButton();
+        add(productsLayout);
     }
 
     private void configureSearchFields() {
@@ -121,7 +119,7 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
 
     private void createSearchButton() {
         searchButton = new BervanButton("🔍 Search Best Offers");
-        searchButton.addClickListener(buttonClickEvent -> performSearch());
+        searchButton.addClickListener(buttonClickEvent -> startNewSearch());
     }
 
     private void createSearchInterface() {
@@ -152,26 +150,12 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
         add(getSearchForm(searchTitle, actionButtons, firstRow, secondRow), productsLayout);
     }
 
-    private void performSearch() {
-        productsLayout.removeAll();
-        SearchApiResponse products = (SearchApiResponse) findDiscountsComparedToAVGOnPricesInLastXMonths(Pageable.ofSize(500),
+    @Override
+    protected SearchApiResponse executeSearch(Pageable pageable) {
+        return (SearchApiResponse) findDiscountsComparedToAVGOnPricesInLastXMonths(pageable,
                 discountMin.getValue(), discountMax.getValue(), months.getValue(),
                 prevPriceMin.getValue(), prevPriceMax.getValue(), productName.getValue(),
                 categoryDropdown.getValue(), shopDropdown.getValue());
-
-        Map<VerticalLayout, ProductDTO> productCardMap = new HashMap<>();
-        FlexLayout tileContainer = getProductsLayout(products, productCardMap);
-
-        Checkbox showOnlyActualCheckbox = new Checkbox("Show only actual products");
-        showOnlyActualCheckbox.getStyle().set("margin-bottom", "1rem");
-        showOnlyActualCheckbox.addValueChangeListener(event -> {
-            boolean onlyActual = event.getValue();
-            productCardMap.forEach((productCard, dto) -> {
-                productCard.setVisible(!onlyActual || dto.isActual());
-            });
-        });
-
-        productsLayout.add(showOnlyActualCheckbox, tileContainer);
     }
 
     @Override
@@ -237,7 +221,7 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
     }
 
     private boolean updateField(List<String> fieldValues, BervanDynamicMultiDropdownController multiDropdown, boolean atLeastOneParameter) {
-        if (fieldValues != null) {
+        if (fieldValues != null && !fieldValues.isEmpty() && multiDropdown != null) {
             multiDropdown.setValue(fieldValues);
             atLeastOneParameter = true;
         }
