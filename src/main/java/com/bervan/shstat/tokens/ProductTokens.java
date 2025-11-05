@@ -9,7 +9,9 @@ import java.time.LocalDateTime;
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Table(name = "product_tokens", indexes = {
-        @Index(name = "idx_product_tokens_product_id", columnList = "productId")
+        @Index(name = "idx_product_tokens_product_id", columnList = "productId"),
+        @Index(name = "idx_product_tokens_value", columnList = "value"),
+        @Index(name = "idx_product_tokens_value_product_id", columnList = "value, productId")
 })
 public class ProductTokens extends BervanBaseEntity<Long> {
     @Id
