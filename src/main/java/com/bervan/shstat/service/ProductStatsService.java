@@ -26,7 +26,7 @@ public class ProductStatsService {
     private static final int BATCH_SIZE = 1000;
     private final ProductStatsRepository productStatsRepository;
     private final ProductBestOfferRepository productBestOfferRepository;
-    private final List<ProductStats> delayedToBeSaved = new LinkedList<>();
+    private final Map<Long, ProductStats> delayedToBeSaved = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
 
     @Value("${product-update.delayed-save}")
@@ -91,8 +91,7 @@ public class ProductStatsService {
         updateStats(byProductId, mappedProduct.getProductBasedOnDateAttributes());
         lock.lock();
         try {
-            delayedToBeSaved.removeIf(p -> p.getProductId().equals(productId));
-            delayedToBeSaved.add(byProductId.get());
+            delayedToBeSaved.put(productId, byProductId.get());
         } finally {
             lock.unlock();
         }
@@ -109,9 +108,10 @@ public class ProductStatsService {
                 log.info("flushStatsToDb started!");
                 try {
                     if (!delayedToBeSaved.isEmpty()) {
-                        for (int i = 0; i < delayedToBeSaved.size(); i += BATCH_SIZE) {
-                            int end = Math.min(i + BATCH_SIZE, delayedToBeSaved.size());
-                            productStatsRepository.saveAll(delayedToBeSaved.subList(i, end));
+                        List<ProductStats> batch = new ArrayList<>(delayedToBeSaved.values());
+                        for (int i = 0; i < batch.size(); i += BATCH_SIZE) {
+                            int end = Math.min(i + BATCH_SIZE, batch.size());
+                            productStatsRepository.saveAll(batch.subList(i, end));
                         }
                         delayedToBeSaved.clear();
                     }

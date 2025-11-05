@@ -141,7 +141,17 @@ public class ProductSimilarOffersService {
                     }
 
                     if (!tokensToSave.isEmpty()) {
-                        productTokensRepository.saveAll(tokensToSave);
+                        // Remove duplicates by (productId + value + factor)
+                        List<ProductTokens> uniqueTokens = tokensToSave.stream()
+                                .collect(Collectors.toMap(
+                                        t -> t.getProductId() + "|" + t.getValue() + "|" + t.getFactor(),
+                                        t -> t,
+                                        (existing, duplicate) -> existing))
+                                .values()
+                                .stream()
+                                .toList();
+
+                        productTokensRepository.saveAll(uniqueTokens);
                         tokensToSave.clear();
                     }
                     log.info("processTokensInDb ended");

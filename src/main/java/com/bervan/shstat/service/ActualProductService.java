@@ -24,7 +24,7 @@ public class ActualProductService {
     private static final Integer currentDateOffsetInDays = 2; //is ok, good offers will not last forever!
     private static final int BATCH_SIZE = 1000;
     private final ActualProductsRepository actualProductsRepository;
-    private final List<ActualProduct> delayedToBeSaved = new LinkedList<>();
+    private final Map<Long, ActualProduct> delayedToBeSaved = new HashMap<>();
     private final Map<Long, Set<Date>> inMemoryData = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
 
@@ -54,36 +54,32 @@ public class ActualProductService {
                     .sorted(Comparator.comparing(ProductBasedOnDateAttributes::getScrapDate).reversed())
                     .toList();
 
-            Optional<ActualProduct> actualProduct = actualProductsRepository.findByProductId(productId);
+            ActualProduct ap = actualProductsRepository.findByProductId(productId)
+                    .map(existing -> {
+                        if (existing.getScrapDate().before(scrapDate)) {
+                            existing.setScrapDate(scrapDate);
+                            existing.setProductId(productId);
+                            existing.setProductName(mappedProduct.getName());
+                            existing.setShop(mappedProduct.getShop());
+                            existing.setPrice(sortedPrices.get(0).getPrice());
+                            if (!existing.getOwners().contains(commonUser)) {
+                                existing.addOwner(commonUser);
+                            }
+                        }
+                        return existing;
+                    })
+                    .orElseGet(() -> {
+                        ActualProduct newAP = new ActualProduct();
+                        newAP.addOwner(commonUser);
+                        newAP.setProductId(productId);
+                        newAP.setProductName(mappedProduct.getName());
+                        newAP.setShop(mappedProduct.getShop());
+                        newAP.setPrice(sortedPrices.get(0).getPrice());
+                        newAP.setScrapDate(scrapDate);
+                        return newAP;
+                    });
 
-            if (actualProduct.isPresent()) {
-                ActualProduct ap = actualProduct.get();
-                if (ap.getScrapDate().before(scrapDate)) {
-                    ap.setScrapDate(scrapDate);
-                    //remove it later
-                    ap.setProductId(productId);
-                    ap.setProductName(mappedProduct.getName());
-                    ap.setShop(mappedProduct.getShop());
-                    ap.setPrice(sortedPrices.get(0).getPrice());
-                    //
-                    if (!ap.getOwners().contains(commonUser)) {
-                        ap.addOwner(commonUser);
-                    }
-                    delayedToBeSaved.removeIf(p -> p.getProductId().equals(productId));
-                    delayedToBeSaved.add(ap);
-                }
-            } else {
-                ActualProduct newAP = new ActualProduct();
-                newAP.addOwner(commonUser);
-                newAP.setProductId(productId);
-                newAP.setProductName(mappedProduct.getName());
-                newAP.setShop(mappedProduct.getShop());
-                newAP.setPrice(sortedPrices.get(0).getPrice());
-                newAP.setScrapDate(scrapDate);
-                delayedToBeSaved.removeIf(p -> p.getProductId().equals(productId));
-                delayedToBeSaved.add(newAP);
-            }
-
+            delayedToBeSaved.put(productId, ap);
             knownDates.add(scrapDate);
         } finally {
             lock.unlock();
@@ -101,9 +97,10 @@ public class ActualProductService {
                 log.info("flushActualProductsToDb started!");
                 try {
                     if (!delayedToBeSaved.isEmpty()) {
-                        for (int i = 0; i < delayedToBeSaved.size(); i += BATCH_SIZE) {
-                            int end = Math.min(i + BATCH_SIZE, delayedToBeSaved.size());
-                            actualProductsRepository.saveAll(delayedToBeSaved.subList(i, end));
+                        List<ActualProduct> batch = new ArrayList<>(delayedToBeSaved.values());
+                        for (int i = 0; i < batch.size(); i += BATCH_SIZE) {
+                            int end = Math.min(i + BATCH_SIZE, batch.size());
+                            actualProductsRepository.saveAll(batch.subList(i, end));
                         }
                         delayedToBeSaved.clear();
                         inMemoryData.clear();
