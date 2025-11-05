@@ -15,6 +15,7 @@ import com.bervan.shstat.service.ProductBasedOnDateAttributesService;
 import com.bervan.shstat.service.ProductSearchService;
 import com.bervan.shstat.service.ProductService;
 import com.bervan.shstat.tokens.ProductSimilarOffersService;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -48,10 +49,11 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
     private final ProductBasedOnDateAttributesService productDateAttService;
     private final BervanLogger log;
     private final ShoppingLayout shoppingLayout = new ShoppingLayout(ROUTE_NAME);
+    private final BervanViewConfig bervanViewConfig;
     private ProductDTO productDTO;
     private BeforeEvent beforeEvent;
     private Long productId;
-    private final BervanViewConfig bervanViewConfig;
+    private VerticalLayout productsLayout;
 
 
     public AbstractProductView(ProductViewService productViewService, ProductSearchService productSearchService,
@@ -72,20 +74,56 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
     public void setParameter(BeforeEvent beforeEvent, Long productId) {
         this.beforeEvent = beforeEvent;
         this.productId = productId;
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         buildView();
     }
 
     private void buildView() {
+        this.setWidthFull();
         removeAll();
         this.add(shoppingLayout);
 
+        productsLayout = new VerticalLayout();
+        add(productsLayout);
+        Div priceListViewContainer = new Div();
+        priceListViewContainer.setWidthFull();
+        add(new Hr(), priceListViewContainer, new Hr());
+
+        getUI().ifPresent(UI -> UI.access(() -> {
+            runAsync(req -> productViewService.findById(productId), productId)
+                    .thenAccept(response -> UI.access(() -> {
+                        ProductDTO dto = (ProductDTO) response.getItems().iterator().next();
+                        productDTO = dto;
+                        buildViewFromProduct();
+
+                        runAsync(req -> productRepository.findById(productId), productId)
+                                .thenAccept(res -> UI.access(() -> {
+                                    priceListViewContainer.add(
+                                            new PricesListView(AbstractProductView.this, productDateAttService, productService, shoppingLayout, res.get(), productViewService, userRepository, bervanViewConfig)
+                                    );
+                                }));
+
+                        runAsync(req -> productSimilarOffersService.findSimilarOffers(productDTO.getId(), 3), productId)
+                                .thenAccept(res -> UI.access(() -> {
+                                    List<ProductDTO> similarOffersProducts = new ArrayList<>();
+                                    for (Long similarOffer : res) {
+                                        SearchApiResponse apiRes = productViewService.findById(similarOffer);
+                                        ProductDTO next = (ProductDTO) apiRes.getItems().iterator().next();
+                                        similarOffersProducts.add(next);
+                                    }
+
+                                    add(createScrollableSection("Similar offers:", createScrollingLayout(similarOffersProducts)));
+                                }));
+                    }));
+        }));
+    }
+
+    private void buildViewFromProduct() {
         String backLink = buildBackLink(beforeEvent);
-
-        SearchApiResponse byId = productViewService.findById(productId);
-        productDTO = (ProductDTO) byId.getItems().iterator().next();
-
-        /// /////////////////////
-        VerticalLayout productsLayout = new VerticalLayout();
 
         VerticalLayout productCard = new VerticalLayout();
 
@@ -161,22 +199,6 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
         }
 
         productsLayout.add(productCard);
-
-        add(productsLayout);
-
-        add(new Hr(), new PricesListView(this, productDateAttService, productService, shoppingLayout, productRepository.findById(productId).get(), productViewService, userRepository, bervanViewConfig));
-        add(new Hr());
-
-        List<Long> similarOffers = productSimilarOffersService.findSimilarOffers(productDTO.getId(), 3);
-
-        List<ProductDTO> similarOffersProducts = new ArrayList<>();
-        for (Long similarOffer : similarOffers) {
-            SearchApiResponse res = productViewService.findById(similarOffer);
-            ProductDTO next = (ProductDTO) res.getItems().iterator().next();
-            similarOffersProducts.add(next);
-        }
-
-        add(createScrollableSection("Similar offers:", createScrollingLayout(similarOffersProducts)));
     }
 
     private VerticalLayout createScrollableSection(String title, HorizontalLayout contentLayout) {

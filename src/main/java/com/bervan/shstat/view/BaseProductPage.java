@@ -9,35 +9,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 public abstract class BaseProductPage extends AbstractPageView {
 
-    protected void setProductCardStyle(VerticalLayout productCard) {
-        productCard.getStyle().set("border", "1px solid #ccc");
-        productCard.getStyle().set("border-radius", "8px");
-        productCard.getStyle().set("padding", "10px");
-        productCard.getStyle().set("box-shadow", "0 2px 5px rgba(0,0,0,0.1)");
-        productCard.getStyle().set("background-color", "#fff");
-        productCard.getStyle().set("text-align", "center");
-    }
-
-
-    protected Image getProductImage(ProductDTO productDTO) {
-        Image image = new Image(productDTO.getImgSrc() == null ? "" : productDTO.getImgSrc(), "No image :(");
-        if (productDTO.getImgSrc().startsWith("http") || productDTO.getImgSrc().startsWith("https")) {
-            image.setSrc(productDTO.getImgSrc());
-        } else {
-            image.setSrc("data:image/png;base64," + productDTO.getImgSrc());
-        }
-        return image;
-    }
-
-    protected Text getLatestPriceText(List<PriceDTO> prices, ProductDTO productDTO) {
-        StringBuilder priceTextBuilder = getLatestPriceTextWithDiscount(prices, productDTO);
-        return new Text(priceTextBuilder.toString());
-    }
-
-    private static StringBuilder getLatestPriceTextWithDiscount(List<PriceDTO> prices, ProductDTO productDTO) {
+    private StringBuilder getLatestPriceTextWithDiscount(List<PriceDTO> prices, ProductDTO productDTO) {
         PriceDTO latest = prices.get(0);
         BigDecimal latestPrice = latest.getPrice();
 
@@ -57,6 +34,34 @@ public abstract class BaseProductPage extends AbstractPageView {
             }
         }
         return priceTextBuilder;
+    }
+
+    protected <T, R> CompletableFuture<R> runAsync(Function<T, R> function, T input) {
+        return CompletableFuture.supplyAsync(() -> function.apply(input));
+    }
+
+    protected void setProductCardStyle(VerticalLayout productCard) {
+        productCard.getStyle().set("border", "1px solid #ccc");
+        productCard.getStyle().set("border-radius", "8px");
+        productCard.getStyle().set("padding", "10px");
+        productCard.getStyle().set("box-shadow", "0 2px 5px rgba(0,0,0,0.1)");
+        productCard.getStyle().set("background-color", "#fff");
+        productCard.getStyle().set("text-align", "center");
+    }
+
+    protected Image getProductImage(ProductDTO productDTO) {
+        Image image = new Image(productDTO.getImgSrc() == null ? "" : productDTO.getImgSrc(), "No image :(");
+        if (productDTO.getImgSrc().startsWith("http") || productDTO.getImgSrc().startsWith("https")) {
+            image.setSrc(productDTO.getImgSrc());
+        } else {
+            image.setSrc("data:image/png;base64," + productDTO.getImgSrc());
+        }
+        return image;
+    }
+
+    protected Text getLatestPriceText(List<PriceDTO> prices, ProductDTO productDTO) {
+        StringBuilder priceTextBuilder = getLatestPriceTextWithDiscount(prices, productDTO);
+        return new Text(priceTextBuilder.toString());
     }
 
 
