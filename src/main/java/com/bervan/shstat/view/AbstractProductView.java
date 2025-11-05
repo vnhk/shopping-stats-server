@@ -93,9 +93,32 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
         priceListViewContainer.setWidthFull();
         add(new Hr(), priceListViewContainer, new Hr());
 
+        // --- 🩶 Skeleton placeholder before async loads ---
+        VerticalLayout skeletonLayout = getProductSkeletonLayout();
+        productsLayout.add(skeletonLayout);
+
+        // --------------------------------------------------
+        // --- 🩶 Skeleton for Similar Offers ---
+        Div similarOffersContainer = new Div();
+        similarOffersContainer.setWidthFull();
+        similarOffersContainer.add(new H3("Similar offers:"));
+
+        HorizontalLayout skeletonOffers = new HorizontalLayout();
+        skeletonOffers.setSpacing(true);
+
+        for (int i = 0; i < 3; i++) {
+            VerticalLayout offerSkeleton = getSimilarOfferSkeleton();
+            skeletonOffers.add(offerSkeleton);
+        }
+
+        similarOffersContainer.add(skeletonOffers);
+        add(similarOffersContainer);
+        // ---------------------------------------
+
         getUI().ifPresent(UI -> UI.access(() -> {
             runAsync(req -> productViewService.findById(productId), productId)
                     .thenAccept(response -> UI.access(() -> {
+                        productsLayout.removeAll(); // remove skeleton
                         ProductDTO dto = (ProductDTO) response.getItems().iterator().next();
                         productDTO = dto;
                         buildViewFromProduct();
@@ -109,6 +132,10 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
 
                         runAsync(req -> productSimilarOffersService.findSimilarOffers(productDTO.getId(), 3), productId)
                                 .thenAccept(res -> UI.access(() -> {
+                                    //  Remove skeleton before adding real offers
+                                    similarOffersContainer.removeAll();
+                                    similarOffersContainer.add(new H3("Similar offers:"));
+
                                     List<ProductDTO> similarOffersProducts = new ArrayList<>();
                                     for (Long similarOffer : res) {
                                         SearchApiResponse apiRes = productViewService.findById(similarOffer);
@@ -116,10 +143,57 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
                                         similarOffersProducts.add(next);
                                     }
 
-                                    add(createScrollableSection("Similar offers:", createScrollingLayout(similarOffersProducts)));
+                                    similarOffersContainer.add(createScrollingLayout(similarOffersProducts));
                                 }));
                     }));
         }));
+    }
+
+    private VerticalLayout getProductSkeletonLayout() {
+        VerticalLayout skeletonLayout = new VerticalLayout();
+        skeletonLayout.setWidth("1200px");
+
+        Div imageSkeleton = new Div();
+        imageSkeleton.addClassName("skeleton");
+        imageSkeleton.setWidth("400px");
+        imageSkeleton.setHeight("400px");
+
+        Div titleSkeleton = new Div();
+        titleSkeleton.addClassName("skeleton");
+        titleSkeleton.setWidth("60%");
+        titleSkeleton.setHeight("25px");
+
+        Div priceSkeleton = new Div();
+        priceSkeleton.addClassName("skeleton");
+        priceSkeleton.setWidth("100px");
+        priceSkeleton.setHeight("20px");
+
+        skeletonLayout.add(imageSkeleton, titleSkeleton, priceSkeleton);
+        return skeletonLayout;
+    }
+
+    private VerticalLayout getSimilarOfferSkeleton() {
+        VerticalLayout offerSkeleton = new VerticalLayout();
+        offerSkeleton.setWidth("300px");
+        offerSkeleton.addClassName("skeleton-offer");
+
+        Div img = new Div();
+        img.addClassName("skeleton");
+        img.setWidth("300px");
+        img.setHeight("300px");
+
+        Div title = new Div();
+        title.addClassName("skeleton");
+        title.setWidth("80%");
+        title.setHeight("20px");
+
+        Div price = new Div();
+        price.addClassName("skeleton");
+        price.setWidth("60px");
+        price.setHeight("18px");
+
+        offerSkeleton.add(img, title, price);
+        return offerSkeleton;
     }
 
     private void buildViewFromProduct() {

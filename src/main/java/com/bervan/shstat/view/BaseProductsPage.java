@@ -38,10 +38,18 @@ public abstract class BaseProductsPage extends BaseProductPage {
     public BaseProductsPage() {
         productsLayout = new VerticalLayout();
         productsLayout.setWidthFull();
+        stopButton = new BervanButton("Stop loading");
+        stopButton.setVisible(false);
+        stopButton.addClickListener(e -> {
+            stoppedByUser = true;
+            showSuccessNotification("Loading stopped by user.");
+            stopButton.setVisible(false);
+        });
     }
 
     protected void startNewSearch() {
         // Reset state
+        stopButton.setVisible(true);
         currentPage = 0;
         totalLoaded = 0;
         stoppedByUser = false;
@@ -59,13 +67,7 @@ public abstract class BaseProductsPage extends BaseProductPage {
                     productCard.setVisible(!onlyActual || dto.isActual()));
         });
 
-        stopButton = new BervanButton("Stop loading");
-        stopButton.addClickListener(e -> {
-            stoppedByUser = true;
-            showSuccessNotification("Loading stopped by user.");
-        });
-
-        productsLayout.add(new HorizontalLayout(showOnlyActualCheckbox, stopButton), tileContainer);
+        productsLayout.add(new HorizontalLayout(showOnlyActualCheckbox), tileContainer);
 
         // Start async loading
         loadNextPageAsync();
@@ -79,6 +81,7 @@ public abstract class BaseProductsPage extends BaseProductPage {
         if (totalLoaded >= MAX_PRODUCTS) {
             allLoaded = true;
             showWarningNotification("There are more than 500 products — please update filters.");
+            stopButton.setVisible(false);
             return;
         }
 

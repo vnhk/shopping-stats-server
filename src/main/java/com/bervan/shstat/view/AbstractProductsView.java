@@ -50,7 +50,7 @@ public abstract class AbstractProductsView extends BaseProductsPage implements H
                 createSearchFieldRow(productName, shopDropdown, categoryDropdown));
 
         HorizontalLayout firstRow = createSearchSectionRow(productSection);
-        HorizontalLayout actionButtons = getSearchActionButtonsLayout(searchButton);
+        HorizontalLayout actionButtons = getSearchActionButtonsLayout(searchButton, stopButton);
 
         add(getSearchForm(searchTitle, actionButtons, firstRow));
     }

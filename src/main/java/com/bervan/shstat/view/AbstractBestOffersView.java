@@ -145,7 +145,7 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
         // Second row - Discount & Price Range
         HorizontalLayout secondRow = createSearchSectionRow(discountSection, priceSection);
 
-        HorizontalLayout actionButtons = getSearchActionButtonsLayout(searchButton, rebuildBestOffers);
+        HorizontalLayout actionButtons = getSearchActionButtonsLayout(searchButton, stopButton, rebuildBestOffers);
 
         add(getSearchForm(searchTitle, actionButtons, firstRow, secondRow), productsLayout);
     }
