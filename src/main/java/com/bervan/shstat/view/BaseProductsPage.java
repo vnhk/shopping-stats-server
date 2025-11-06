@@ -4,6 +4,7 @@ import com.bervan.common.component.BervanButton;
 import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Anchor;
@@ -45,6 +46,12 @@ public abstract class BaseProductsPage extends BaseProductPage {
             showSuccessNotification("Loading stopped by user.");
             stopButton.setVisible(false);
         });
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        stoppedByUser = true;
+        super.onDetach(detachEvent);
     }
 
     protected void startNewSearch() {
