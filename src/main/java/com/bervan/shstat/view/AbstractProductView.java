@@ -130,7 +130,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
                                     );
                                 }));
 
-                        runAsync(req -> productSimilarOffersService.findSimilarOffers(productDTO.getId(), 3), productId)
+                        runAsync(req -> productSimilarOffersService.findSimilarOffers(productDTO.getId(), 15), productId)
                                 .thenAccept(res -> UI.access(() -> {
                                     //  Remove skeleton before adding real offers
                                     similarOffersContainer.removeAll();
