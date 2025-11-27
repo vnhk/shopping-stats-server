@@ -5,37 +5,32 @@ import com.bervan.shstat.ScrapContext;
 import com.bervan.shstat.response.ApiResponse;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
-import org.jboss.logging.Logger;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Set;
 
 @Service
 @Slf4j
 public class QueueService {
-    Logger logger = Logger.getLogger(QueueService.class);
     private final Set<AbstractQueue<?>> queueProcessors;
 
     private final Jackson2JsonMessageConverter messageConverter;
     private final ApiKeyService apiKeyService;
+    @Autowired
+    private AmqpTemplate amqpTemplate;
 
     public QueueService(Jackson2JsonMessageConverter messageConverter, Set<AbstractQueue<?>> queueProcessors, ApiKeyService apiKeyService) {
         this.queueProcessors = queueProcessors;
         this.messageConverter = messageConverter;
         this.apiKeyService = apiKeyService;
     }
-
-    @Autowired
-    private AmqpTemplate amqpTemplate;
 
     public ApiResponse sendProductMessage(QueueMessage productMessage) {
         amqpTemplate.convertAndSend("DIRECT_EXCHANGE", "PRODUCTS_ROUTING_KEY", productMessage);
@@ -54,7 +49,7 @@ public class QueueService {
         try {
             if (queueMessage.getApiKey() == null || queueMessage.getApiKey().isBlank() ||
                     apiKeyService.getUserByAPIKey(queueMessage.getApiKey()) == null) {
-                logger.error("NOT_API_KEY for PRODUCTS_QUEUE message");
+                log.error("NOT_API_KEY for PRODUCTS_QUEUE message");
                 channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
                 return;
             }
@@ -74,7 +69,7 @@ public class QueueService {
             }
 
         } catch (Exception e) {
-            logger.error(e);
+            log.error("Failed to process message", e);
             if (!ackEarly) {
                 channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
             }

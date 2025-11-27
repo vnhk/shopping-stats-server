@@ -5,7 +5,6 @@ import com.bervan.common.component.BervanButtonStyle;
 import com.bervan.common.component.BervanTextField;
 import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.user.UserRepository;
-import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.response.PriceDTO;
@@ -47,7 +46,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
     private final ProductSimilarOffersService productSimilarOffersService;
     private final ProductRepository productRepository;
     private final ProductBasedOnDateAttributesService productDateAttService;
-    private final BervanLogger log;
+    
     private final ShoppingLayout shoppingLayout = new ShoppingLayout(ROUTE_NAME);
     private final BervanViewConfig bervanViewConfig;
     private ProductDTO productDTO;
@@ -57,7 +56,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
 
 
     public AbstractProductView(ProductViewService productViewService, ProductSearchService productSearchService,
-                               UserRepository userRepository, ProductService productService, ProductSimilarOffersService productSimilarOffersService, ProductRepository productRepository, ProductBasedOnDateAttributesService productDateAttService, BervanLogger log, BervanViewConfig bervanViewConfig) {
+                               UserRepository userRepository, ProductService productService, ProductSimilarOffersService productSimilarOffersService, ProductRepository productRepository, ProductBasedOnDateAttributesService productDateAttService, BervanViewConfig bervanViewConfig) {
         super();
         this.userRepository = userRepository;
         this.productService = productService;
@@ -66,7 +65,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
         this.productDateAttService = productDateAttService;
         this.productViewService = productViewService;
         this.productSearchService = productSearchService;
-        this.log = log;
+
         this.bervanViewConfig = bervanViewConfig;
     }
 

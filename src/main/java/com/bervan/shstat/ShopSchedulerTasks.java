@@ -1,12 +1,12 @@
 package com.bervan.shstat;
 
 import com.bervan.common.user.UserRepository;
-import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.entity.scrap.ProductConfig;
 import com.bervan.shstat.entity.scrap.ScrapAudit;
 import com.bervan.shstat.queue.QueueService;
 import com.bervan.shstat.repository.ProductConfigRepository;
 import com.bervan.shstat.repository.ScrapAuditRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -18,18 +18,19 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Service
+@Slf4j
 public class ShopSchedulerTasks {
-    private final BervanLogger log;
+    
     private final ProductConfigRepository productConfigRepository;
     private final ScrapAuditRepository scrapAuditRepository;
     private final QueueService queueService;
     private final UserRepository userRepository;
 
-    public ShopSchedulerTasks(BervanLogger log,
+    public ShopSchedulerTasks(
                               ProductConfigRepository productConfigRepository,
                               ScrapAuditRepository scrapAuditRepository,
                               QueueService queueService, UserRepository userRepository) {
-        this.log = log;
+
         this.productConfigRepository = productConfigRepository;
         this.scrapAuditRepository = scrapAuditRepository;
         this.queueService = queueService;

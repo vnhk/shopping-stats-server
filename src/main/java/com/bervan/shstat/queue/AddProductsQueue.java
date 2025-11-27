@@ -1,7 +1,6 @@
 package com.bervan.shstat.queue;
 
 import com.bervan.common.service.ApiKeyService;
-import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.service.ProductService;
 import com.bervan.shstat.entity.Product;
 import com.google.common.collect.Lists;
@@ -22,8 +21,8 @@ import java.util.concurrent.TimeoutException;
 public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
     private final ProductService productService;
 
-    public AddProductsQueue(BervanLogger log, ProductService productService, ApiKeyService apiKeyService) {
-        super(log, apiKeyService, "AddProductsQueueParam");
+    public AddProductsQueue( ProductService productService, ApiKeyService apiKeyService) {
+        super(apiKeyService, "AddProductsQueueParam");
         this.productService = productService;
     }
 

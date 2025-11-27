@@ -4,7 +4,6 @@ import com.bervan.asynctask.AsyncTask;
 import com.bervan.asynctask.AsyncTaskService;
 import com.bervan.common.component.BervanButton;
 import com.bervan.common.component.BervanDynamicMultiDropdownController;
-import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.queue.RefreshViewService;
 import com.bervan.shstat.response.ApiResponse;
 import com.bervan.shstat.response.ProductDTO;
@@ -40,7 +39,7 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
     private final RefreshViewService refreshViewService;
     private final AsyncTaskService asyncTaskService;
     private final ProductSearchService productSearchService;
-    private final BervanLogger log;
+
     private NumberField discountMin = new NumberField("Discount Min:");
     private NumberField discountMax = new NumberField("Discount Max:");
     private IntegerField months = new IntegerField("Number of months:");
@@ -52,13 +51,12 @@ public abstract class AbstractBestOffersView extends BaseProductsPage implements
     private BervanButton searchButton;
     private BervanButton rebuildBestOffers;
 
-    public AbstractBestOffersView(DiscountsViewService discountsViewService, RefreshViewService refreshViewService, AsyncTaskService asyncTaskService, ProductSearchService productSearchService, BervanLogger log) {
+    public AbstractBestOffersView(DiscountsViewService discountsViewService, RefreshViewService refreshViewService, AsyncTaskService asyncTaskService, ProductSearchService productSearchService) {
         super();
         this.refreshViewService = refreshViewService;
         this.discountsViewService = discountsViewService;
         this.asyncTaskService = asyncTaskService;
         this.productSearchService = productSearchService;
-        this.log = log;
 
         initializeComponents();
         createSearchInterface();

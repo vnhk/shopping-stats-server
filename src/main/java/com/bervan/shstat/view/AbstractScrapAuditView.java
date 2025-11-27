@@ -5,7 +5,6 @@ import com.bervan.common.component.BervanButtonStyle;
 import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.view.AbstractBervanTableView;
-import com.bervan.core.model.BervanLogger;
 import com.bervan.shstat.entity.scrap.ScrapAudit;
 import com.bervan.shstat.repository.ScrapAuditRepository;
 import com.bervan.shstat.service.ScrapAuditService;
@@ -17,7 +16,7 @@ import java.util.List;
 
 public abstract class AbstractScrapAuditView extends AbstractBervanTableView<Long, ScrapAudit> {
     public static final String ROUTE_NAME = "/shopping/scrap-audit";
-    private final BervanLogger log;
+    
     private final ScrapAuditRepository scrapAuditRepository;
     private final HorizontalLayout buttonsWithDateFilters = new HorizontalLayout();
     private final BervanButton defaultThisDayButton = new BervanButton("Today", click -> {
@@ -46,9 +45,9 @@ public abstract class AbstractScrapAuditView extends AbstractBervanTableView<Lon
         refreshTable.click();
     }, BervanButtonStyle.PRIMARY);
 
-    public AbstractScrapAuditView(ScrapAuditService scrapAuditService, ScrapAuditRepository scrapAuditRepository, BervanLogger log, BervanViewConfig bervanViewConfig) {
-        super(new ShoppingLayout(ROUTE_NAME), scrapAuditService, log, bervanViewConfig, ScrapAudit.class);
-        this.log = log;
+    public AbstractScrapAuditView(ScrapAuditService scrapAuditService, ScrapAuditRepository scrapAuditRepository, BervanViewConfig bervanViewConfig) {
+        super(new ShoppingLayout(ROUTE_NAME), scrapAuditService, bervanViewConfig, ScrapAudit.class);
+
         this.scrapAuditRepository = scrapAuditRepository;
         renderCommonComponents();
 

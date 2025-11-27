@@ -9,7 +9,6 @@ import com.bervan.common.search.model.Operator;
 import com.bervan.common.search.model.SearchOperation;
 import com.bervan.common.user.User;
 import com.bervan.common.view.AbstractBervanTableView;
-import com.bervan.core.model.BervanLogger;
 import com.bervan.history.model.Persistable;
 import com.bervan.shstat.entity.scrap.ProductConfig;
 import com.bervan.shstat.entity.scrap.ShopConfig;
@@ -20,18 +19,18 @@ import java.util.*;
 
 public abstract class AbstractProductConfigView extends AbstractBervanTableView<Long, ProductConfig> {
     public static final String ROUTE_NAME = "/shopping/product-config";
-    private final BervanLogger log;
+    
     private final ComboBox<String> shopDropdown = new BervanComboBox<>();
     private final SearchService searchService;
     private Map<String, ShopConfig> shops;
     private Set<String> allAvailableCategories;
     private String selectedShopName;
 
-    public AbstractProductConfigView(ProductConfigService productConfigService, SearchService searchService, BervanLogger log, BervanViewConfig bervanViewConfig) {
-        super(new ShoppingLayout(ROUTE_NAME), productConfigService, log, bervanViewConfig, ProductConfig .class);
+    public AbstractProductConfigView(ProductConfigService productConfigService, SearchService searchService, BervanViewConfig bervanViewConfig) {
+        super(new ShoppingLayout(ROUTE_NAME), productConfigService, bervanViewConfig, ProductConfig .class);
         this.add(new ShoppingLayout(ROUTE_NAME));
         this.searchService = searchService;
-        this.log = log;
+
         loadCategories();
 
         loadShops();

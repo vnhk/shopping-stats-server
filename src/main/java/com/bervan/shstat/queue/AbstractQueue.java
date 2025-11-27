@@ -2,18 +2,17 @@ package com.bervan.shstat.queue;
 
 
 import com.bervan.common.service.ApiKeyService;
-import com.bervan.core.model.BervanLogger;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.Date;
 
+@Slf4j
 public abstract class AbstractQueue<T extends Serializable> {
-    protected final BervanLogger log;
-    protected String supports;
     protected final ApiKeyService apiKeyService;
+    protected String supports;
 
-    protected AbstractQueue(BervanLogger log, ApiKeyService apiKeyService, String supports) {
-        this.log = log;
+    protected AbstractQueue(ApiKeyService apiKeyService, String supports) {
         this.apiKeyService = apiKeyService;
         this.supports = supports;
     }

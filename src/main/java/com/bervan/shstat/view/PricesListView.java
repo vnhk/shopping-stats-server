@@ -1,6 +1,5 @@
 package com.bervan.shstat.view;
 
-import com.bervan.common.BervanLoggerImpl;
 import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.model.SearchOperation;
@@ -17,17 +16,15 @@ import lombok.extern.slf4j.Slf4j;
 public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOnDateAttributes> {
     private final Product product;
     private final ProductService productService;
-    private final ProductViewService productViewService;
     private final UserRepository userRepository;
     private final AbstractProductView parentView;
 
 
     public PricesListView(AbstractProductView parentView, ProductBasedOnDateAttributesService service, ProductService productService, ShoppingLayout pageLayout, Product product, ProductViewService productViewService, UserRepository userRepository, BervanViewConfig bervanViewConfig) {
-        super(pageLayout, service, BervanLoggerImpl.init(log), bervanViewConfig, ProductBasedOnDateAttributes.class);
+        super(pageLayout, service, bervanViewConfig, ProductBasedOnDateAttributes.class);
         this.product = product;
         this.productService = productService;
         this.parentView = parentView;
-        this.productViewService = productViewService;
         this.userRepository = userRepository;
         renderCommonComponents();
     }
@@ -41,7 +38,7 @@ public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOn
                 .withDecreasePrice2times()
                 .withDecreasePrice5times()
                 .withDecreasePrice10times()
-                .withExportButton(isExportable(), service, bervanLogger, pathToFileStorage, globalTmpDir)
+                .withExportButton(isExportable(), service, pathToFileStorage, globalTmpDir)
                 .build();
     }
 
