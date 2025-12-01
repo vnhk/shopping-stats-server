@@ -5,15 +5,15 @@ import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.model.SearchOperation;
 import com.bervan.common.user.UserRepository;
 import com.bervan.common.view.AbstractBervanTableView;
+import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.service.ProductBasedOnDateAttributesService;
 import com.bervan.shstat.service.ProductService;
 import com.vaadin.flow.component.grid.Grid;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOnDateAttributes> {
+    private final JsonLogger log = JsonLogger.getLogger(getClass());
     private final Product product;
     private final ProductService productService;
     private final UserRepository userRepository;

@@ -1,10 +1,10 @@
 package com.bervan.shstat.tokens;
 
 import com.bervan.common.user.User;
+import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductAttribute;
 import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,8 +16,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 public class ProductSimilarOffersService {
+    private final JsonLogger log = JsonLogger.getLogger(getClass());
     private final List<? extends TokenConverter> tokenConverters;
     private final ProductTokensRepository productTokensRepository;
     private final List<ProductTokens> tokensToSave = new ArrayList<>();

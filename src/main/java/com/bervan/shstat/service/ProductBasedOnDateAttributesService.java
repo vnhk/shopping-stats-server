@@ -2,9 +2,9 @@ package com.bervan.shstat.service;
 
 import com.bervan.common.search.SearchService;
 import com.bervan.common.service.BaseService;
+import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.repository.ProductBasedOnDateAttributesRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -13,8 +13,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
-@Slf4j
 public class ProductBasedOnDateAttributesService extends BaseService<Long, ProductBasedOnDateAttributes> {
+    private final JsonLogger log = JsonLogger.getLogger(getClass());
+
     protected ProductBasedOnDateAttributesService(ProductBasedOnDateAttributesRepository repository, SearchService searchService) {
         super(repository, searchService);
     }

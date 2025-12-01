@@ -1,8 +1,8 @@
 package com.bervan.shstat.queue;
 
+import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.service.ProductService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
-@Slf4j
 public class RefreshViewService {
     public static final String historicalLowPrices = "HISTORICAL_LOW_PRICES";
     public static final String lowerThanHistoricalLowPrices = "LOWER_THAN_HISTORICAL_LOW_PRICES";
@@ -23,6 +22,7 @@ public class RefreshViewService {
                     lowerThanAvgForLastMonth,
                     lowerThanAvgForLastXMonths
             );
+    private final JsonLogger log = JsonLogger.getLogger(getClass());
     private final ProductService productService;
     private final ProductRepository productRepository;
 

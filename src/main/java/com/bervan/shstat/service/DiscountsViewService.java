@@ -1,5 +1,6 @@
 package com.bervan.shstat.service;
 
+import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.DataHolder;
 import com.bervan.shstat.ViewBuilder;
 import com.bervan.shstat.dtomappers.BaseProductAttributesMapper;
@@ -12,7 +13,6 @@ import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
 import com.bervan.shstat.view.ProductViewService;
 import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,8 +21,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-@Slf4j
 public class DiscountsViewService extends ViewBuilder {
+    private final JsonLogger log = JsonLogger.getLogger(getClass());
     private final ProductSearchService productSearchService;
     private final ProductViewService productViewService;
     private final Map<DiscountQueryKey, SearchApiResponse> cache =

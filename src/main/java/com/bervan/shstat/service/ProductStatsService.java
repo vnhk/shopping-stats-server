@@ -1,12 +1,12 @@
 package com.bervan.shstat.service;
 
 import com.bervan.common.user.User;
+import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.entity.ProductStats;
 import com.bervan.shstat.repository.ProductBestOfferRepository;
 import com.bervan.shstat.repository.ProductStatsRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -20,10 +20,10 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-@Slf4j
 @Service
 public class ProductStatsService {
     private static final int BATCH_SIZE = 1000;
+    private final JsonLogger log = JsonLogger.getLogger(getClass());
     private final ProductStatsRepository productStatsRepository;
     private final ProductBestOfferRepository productBestOfferRepository;
     private final Map<Long, ProductStats> delayedToBeSaved = new HashMap<>();

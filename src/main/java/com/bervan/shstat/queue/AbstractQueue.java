@@ -2,14 +2,14 @@ package com.bervan.shstat.queue;
 
 
 import com.bervan.common.service.ApiKeyService;
-import lombok.extern.slf4j.Slf4j;
+import com.bervan.logging.JsonLogger;
 
 import java.io.Serializable;
 import java.util.Date;
 
-@Slf4j
 public abstract class AbstractQueue<T extends Serializable> {
     protected final ApiKeyService apiKeyService;
+    private final JsonLogger log = JsonLogger.getLogger(getClass());
     protected String supports;
 
     protected AbstractQueue(ApiKeyService apiKeyService, String supports) {

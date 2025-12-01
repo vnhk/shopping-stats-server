@@ -2,6 +2,7 @@ package com.bervan.shstat.service;
 
 import com.bervan.common.user.User;
 import com.bervan.common.user.UserRepository;
+import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.AttrFieldMappingVal;
 import com.bervan.shstat.AttrMapper;
 import com.bervan.shstat.MapperException;
@@ -10,7 +11,6 @@ import com.bervan.shstat.repository.ProductBestOfferRepository;
 import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.tokens.ProductSimilarOffersService;
 import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -33,7 +33,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 public class ProductService {
     public static final List<AttrFieldMappingVal<Field>> commonProductProperties;
     public static final List<AttrFieldMappingVal<Field>> productPerDateAttributeProperties;
@@ -90,6 +89,7 @@ public class ProductService {
         }
     }
 
+    private final JsonLogger log = JsonLogger.getLogger(getClass());
     private final ProductRepository productRepository;
     private final ActualProductService actualProductService;
     private final ProductStatsService productStatsService;

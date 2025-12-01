@@ -4,12 +4,12 @@ import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.SearchService;
 import com.bervan.common.service.BaseService;
 import com.bervan.common.service.EmailService;
+import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.entity.ProductAlert;
 import com.bervan.shstat.repository.ProductAlertRepository;
 import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,8 +22,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 public class ProductAlertService extends BaseService<Long, ProductAlert> {
+    private final JsonLogger log = JsonLogger.getLogger(getClass());
     private final EmailService emailService;
     private final DiscountsViewService discountsViewService;
 

@@ -1,18 +1,18 @@
 package com.bervan.shstat.queue;
 
 import com.bervan.common.service.ApiKeyService;
+import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.favorites.FavoriteService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 
 @Service
-@Slf4j
 public class RefreshFavoritesViewsQueue extends AbstractQueue<RefreshFavoritesViewsQueueParam> {
+    private final JsonLogger log = JsonLogger.getLogger(getClass());
     private final FavoriteService favoriteService;
 
-    public RefreshFavoritesViewsQueue( FavoriteService favoriteService, ApiKeyService apiKeyService) {
+    public RefreshFavoritesViewsQueue(FavoriteService favoriteService, ApiKeyService apiKeyService) {
         super(apiKeyService, "RefreshFavoritesViewsQueueParam");
         this.favoriteService = favoriteService;
     }

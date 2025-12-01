@@ -1,11 +1,11 @@
 package com.bervan.shstat.service;
 
 import com.bervan.common.user.User;
+import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.entity.ActualProduct;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
 import com.bervan.shstat.repository.ActualProductsRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,11 +18,11 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static com.bervan.shstat.service.ProductService.productPerDateAttributeProperties;
 
-@Slf4j
 @Service
 public class ActualProductService {
     private static final Integer currentDateOffsetInDays = 2; //is ok, good offers will not last forever!
     private static final int BATCH_SIZE = 1000;
+    private final JsonLogger log = JsonLogger.getLogger(getClass());
     private final ActualProductsRepository actualProductsRepository;
     private final Map<Long, ActualProduct> delayedToBeSaved = new HashMap<>();
     private final Map<Long, Set<Date>> inMemoryData = new HashMap<>();

@@ -1,10 +1,10 @@
 package com.bervan.shstat.queue;
 
 import com.bervan.common.service.ApiKeyService;
-import com.bervan.shstat.service.ProductService;
+import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.entity.Product;
+import com.bervan.shstat.service.ProductService;
 import com.google.common.collect.Lists;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
@@ -17,11 +17,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @Service
-@Slf4j
 public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
+    private final JsonLogger log = JsonLogger.getLogger(getClass());
     private final ProductService productService;
 
-    public AddProductsQueue( ProductService productService, ApiKeyService apiKeyService) {
+    public AddProductsQueue(ProductService productService, ApiKeyService apiKeyService) {
         super(apiKeyService, "AddProductsQueueParam");
         this.productService = productService;
     }

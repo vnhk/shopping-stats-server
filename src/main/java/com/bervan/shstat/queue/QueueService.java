@@ -1,10 +1,10 @@
 package com.bervan.shstat.queue;
 
 import com.bervan.common.service.ApiKeyService;
+import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.ScrapContext;
 import com.bervan.shstat.response.ApiResponse;
 import com.rabbitmq.client.Channel;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -17,8 +17,8 @@ import java.util.Collections;
 import java.util.Set;
 
 @Service
-@Slf4j
 public class QueueService {
+    private final JsonLogger log = JsonLogger.getLogger(getClass());
     private final Set<AbstractQueue<?>> queueProcessors;
 
     private final Jackson2JsonMessageConverter messageConverter;
