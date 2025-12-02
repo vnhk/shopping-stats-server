@@ -4,6 +4,7 @@ import com.bervan.common.user.User;
 import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductAttribute;
+import com.bervan.shstat.service.ActualProductService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +35,7 @@ public class ProductSimilarOffersService {
     }
 
     @Transactional
-    public void createAndUpdateTokens(Product product, User commonUser) {
+    public void createAndUpdateTokens(Product product, User commonUser, ActualProductService actualProductService) {
         //if cache maybe here clear the cache
 
         //by category - 1

@@ -2,6 +2,7 @@ package com.bervan.shstat.service;
 
 import com.bervan.common.user.User;
 import com.bervan.common.user.UserRepository;
+import com.bervan.logging.BaseProcessContext;
 import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.AttrFieldMappingVal;
 import com.bervan.shstat.AttrMapper;
@@ -136,22 +137,22 @@ public class ProductService {
     }
 
     @Async("productTaskExecutor")
-    public CompletableFuture<List<Product>> addProductsAsync(List<Map<String, Object>> products) {
+    public CompletableFuture<List<Product>> addProductsAsync(List<Map<String, Object>> products, BaseProcessContext addProductsContext) {
         List<Product> allMapped = new LinkedList<>();
         List<String> messages = new LinkedList<>();
         for (Map<String, Object> productMap : products) {
             try {
                 Product product = mapProductCommonAttr(productMap);
-                ProductBasedOnDateAttributes perDateAttributes = mapProductPerDateAttributes(productMap, product);
+                ProductBasedOnDateAttributes perDateAttributes = mapProductPerDateAttributes(productMap, product, addProductsContext);
 
-                boolean productDateAttributeAdded = addProductDateAttribute(product, perDateAttributes);
+                boolean productDateAttributeAdded = addProductDateAttribute(product, perDateAttributes, addProductsContext);
 
                 Set<ProductAttribute> resAttributes = new HashSet<>();
                 for (Map.Entry<String, Object> attrs : productMap.entrySet()) {
                     String key = attrs.getKey();
                     Object value = attrs.getValue();
                     if (value instanceof Date) {
-                        log.warn("Not implemented for: " + attrs);
+                        log.warn(addProductsContext.map(), "Not implemented for: " + attrs);
                         continue;
                     } else if (value instanceof String) {
                         Optional<ProductListTextAttribute> attrOpt = findProductAttr(product, key, ProductListTextAttribute.class);
@@ -162,13 +163,13 @@ public class ProductService {
                             attrOpt.get().getValue().add((String) value);
                         }
                     } else if (value instanceof LocalDate) {
-                        log.warn("Not implemented for: " + attrs);
+                        log.warn(addProductsContext.map(), "Not implemented for: " + attrs);
                         continue;
                     } else if (value instanceof LocalDateTime) {
-                        log.warn("Not implemented for: " + attrs);
+                        log.warn(addProductsContext.map(), "Not implemented for: " + attrs);
                         continue;
                     } else if (value instanceof Number) {
-                        log.warn("Not implemented for: " + attrs);
+                        log.warn(addProductsContext.map(), "Not implemented for: " + attrs);
                         continue;
                     } else if (value instanceof List<?>) {
                         List<?> list = (List<?>) value;
@@ -180,7 +181,7 @@ public class ProductService {
                                 attrOpt.get().getValue().addAll((List<String>) value);
                             }
                         } else if (!list.isEmpty() && list.get(0) instanceof Number) {
-                            log.warn("Not implemented for: " + attrs);
+                            log.warn(addProductsContext.map(), "Not implemented for: " + attrs);
                             continue;
                         }
                     } else if (value instanceof String[]) {
@@ -208,18 +209,18 @@ public class ProductService {
                 loadCommonUserIfNotLoaded();
                 product.addOwner(commonUser);
                 if (product.getName().length() > 300) {
-                    log.error("Product name is to long: {}", product.getName());
+                    log.error(addProductsContext.map(), "Product name is to long: {}", product.getName());
                     continue;
                 }
                 if (product.getName().length() < 3) {
-                    log.error("Product name is to short: {}", product.getName());
+                    log.error(addProductsContext.map(), "Product name is to short: {}", product.getName());
                     continue;
                 }
 
-                product = save(product);
-                createAndUpdateTokens(product);
-                updateActualProducts(perDateAttributes, product);
-                updateProductStats(product);
+                product = save(product, addProductsContext);
+                createAndUpdateTokens(product, addProductsContext);
+                updateActualProducts(perDateAttributes, product, addProductsContext);
+                updateProductStats(product, addProductsContext);
 
                 allMapped.add(product);
             } catch (MapperException e) {
@@ -230,13 +231,13 @@ public class ProductService {
         }
 
         for (String message : messages) {
-            log.error(message);
+            log.error(addProductsContext.map(), message);
         }
 
         return CompletableFuture.completedFuture(allMapped);
     }
 
-    public void updateScrapAudit(List<Product> allMapped) {
+    public void updateScrapAudit(List<Product> allMapped, BaseProcessContext addProductsContext) {
         String delimiter = "___";
 
         // group result by "shop", "productListName", "productListUrl"
@@ -248,37 +249,37 @@ public class ProductService {
 
         groupedProducts.forEach((key, list) -> {
             String[] split = key.split(delimiter);
-            scrapAuditService.updateSavedProductsCount(split[0], split[1], split[2], list.size());
+            scrapAuditService.updateSavedProductsCount(split[0], split[1], split[2], list.size(), addProductsContext);
         });
     }
 
-    private void updateProductStats(Product product) {
+    private void updateProductStats(Product product, BaseProcessContext addProductsContext) {
         try {
-            productStatsService.updateProductStats(product, commonUser);
+            productStatsService.updateProductStats(product, commonUser, addProductsContext);
         } catch (Exception e) {
-            log.error("Failed to updateProductStats!", e);
+            log.error(addProductsContext.map(), "Failed to updateProductStats!", e);
             throw new MapperException("Failed to updateProductStats!");
         }
     }
 
-    private void updateActualProducts(ProductBasedOnDateAttributes perDateAttributes, Product product) {
+    private void updateActualProducts(ProductBasedOnDateAttributes perDateAttributes, Product product, BaseProcessContext addProductsContext) {
         try {
-            actualProductService.updateActualProducts(perDateAttributes.getScrapDate(), product, commonUser);
+            actualProductService.updateActualProducts(perDateAttributes.getScrapDate(), product, commonUser, addProductsContext);
         } catch (Exception e) {
-            log.error("Failed to updateActualProducts!", e);
+            log.error(addProductsContext.map(), "Failed to updateActualProducts!", e);
             throw new MapperException("Failed to updateActualProducts!");
         }
     }
 
-    private void createAndUpdateTokens(Product product) {
+    private void createAndUpdateTokens(Product product, BaseProcessContext addProductsContext) {
         try {
-            productSimilarOffersService.createAndUpdateTokens(product, commonUser);
+            productSimilarOffersService.createAndUpdateTokens(product, commonUser, actualProductService);
         } catch (Exception e) {
-            log.error("Failed to createAndUpdateTokens!", e);
+            log.error(addProductsContext.map(), "Failed to createAndUpdateTokens!", e);
         }
     }
 
-    private synchronized Product save(Product product) {
+    private synchronized Product save(Product product, BaseProcessContext addProductsContext) {
         try {
             // if in 1 portion of data we will have the same product that has not been added to db, then it will be added more than 1 times,
             // and org.hibernate.exception.ConstraintViolationException will be thrown
@@ -288,7 +289,7 @@ public class ProductService {
             }
             return productRepository.save(product);
         } catch (Exception e) {
-            log.error("Failed to save/update product!", e);
+            log.error(addProductsContext.map(), "Failed to save/update product!", e);
             throw new MapperException("Failed to save/update product!");
         }
     }
@@ -304,13 +305,13 @@ public class ProductService {
         }
     }
 
-    private boolean addProductDateAttribute(Product product, ProductBasedOnDateAttributes newPerDateAttribute) {
+    private boolean addProductDateAttribute(Product product, ProductBasedOnDateAttributes newPerDateAttribute, BaseProcessContext addProductsContext) {
         List<ProductBasedOnDateAttributes> sortedPrices = new ArrayList<>(product.getProductBasedOnDateAttributes().stream()
                 .sorted(Comparator.comparing(ProductBasedOnDateAttributes::getScrapDate).reversed())
                 .toList());
         product.setProductBasedOnDateAttributes(sortedPrices);
 
-        boolean shouldNewProductBaseOnDateAttributeCreated = shouldNewProductBaseOnDateAttributeCreated(product, sortedPrices, newPerDateAttribute);
+        boolean shouldNewProductBaseOnDateAttributeCreated = shouldNewProductBaseOnDateAttributeCreated(product, sortedPrices, newPerDateAttribute, addProductsContext);
         if (shouldNewProductBaseOnDateAttributeCreated) {
             product.addAttribute(newPerDateAttribute);
         }
@@ -320,7 +321,7 @@ public class ProductService {
         return shouldNewProductBaseOnDateAttributeCreated;
     }
 
-    private boolean shouldNewProductBaseOnDateAttributeCreated(Product product, List<ProductBasedOnDateAttributes> sortedPrices, ProductBasedOnDateAttributes newPerDateAttribute) {
+    private boolean shouldNewProductBaseOnDateAttributeCreated(Product product, List<ProductBasedOnDateAttributes> sortedPrices, ProductBasedOnDateAttributes newPerDateAttribute, BaseProcessContext addProductsContext) {
         if (!sortedPrices.isEmpty()) {
             ProductBasedOnDateAttributes lastAttr = sortedPrices.get(0);
             BigDecimal previousPrice = lastAttr.getPrice();
@@ -329,7 +330,7 @@ public class ProductService {
             BigDecimal threshold = previousPrice.multiply(BigDecimal.valueOf(0.009)); // 0.9% threshold
 
             if (difference.compareTo(threshold) < 0) {
-                log.warn("New ProductBasedOnDateAttribute will not be created because new price is almost the same as previous one (less than 1% change). Product: {}, Old price {}, new price: {}",
+                log.warn(addProductsContext.map(), "New ProductBasedOnDateAttribute will not be created because new price is almost the same as previous one (less than 1% change). Product: {}, Old price {}, new price: {}",
                         product.getName(), previousPrice, currentPrice);
                 return false;
             }
@@ -346,7 +347,7 @@ public class ProductService {
                             RoundingMode.CEILING))) >= 0
                     && newPerDateAttribute.getPrice().subtract(BigDecimal.valueOf(10000)).compareTo(BigDecimal.ONE) >= 0) {
                 //if product has at least 10 prices and new price is much bigger than previous, and newPrice - 10000 >= 1 - we skip adding the price
-                log.warn("ProductBasedOnDateAttribute skipped because the new price is much bigger than average: {} -> {}",
+                log.warn(addProductsContext.map(), "ProductBasedOnDateAttribute skipped because the new price is much bigger than average: {} -> {}",
                         product.getName(), newPerDateAttribute.getPrice());
                 return false;
             }
@@ -359,7 +360,7 @@ public class ProductService {
         return false;
     }
 
-    private ProductBasedOnDateAttributes mapProductPerDateAttributes(Map<String, Object> productToMap, Product product) {
+    private ProductBasedOnDateAttributes mapProductPerDateAttributes(Map<String, Object> productToMap, Product product, BaseProcessContext addProductsContext) {
         BeanWrapper wrapper = new BeanWrapperImpl(ProductBasedOnDateAttributes.class);
         Map<String, Object> productProperties = new HashMap<>();
         for (AttrFieldMappingVal<Field> perDateAttrs : productPerDateAttributeProperties) {
@@ -379,7 +380,7 @@ public class ProductService {
 
         if (product.getId() != null &&
                 productBasedOnDateAttributesService.existsByProductIdAndFormattedScrapDate(product.getId(), res.getFormattedScrapDate())) {
-            log.warn("Product {} ({}) was already mapped for given date!\nShop:{}\nProductListName:{}\nScrapDate:{}",
+            log.warn(addProductsContext.map(), "Product {} ({}) was already mapped for given date!\nShop:{}\nProductListName:{}\nScrapDate:{}",
                     product.getName(),
                     product.getId(),
                     product.getShop(), product.getProductListName(),

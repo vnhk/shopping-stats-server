@@ -1,6 +1,7 @@
 package com.bervan.shstat.service;
 
 import com.bervan.common.user.User;
+import com.bervan.logging.BaseProcessContext;
 import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.entity.ActualProduct;
 import com.bervan.shstat.entity.Product;
@@ -35,7 +36,7 @@ public class ActualProductService {
         this.actualProductsRepository = actualProductsRepository;
     }
 
-    public void updateActualProducts(Object date, Product mappedProduct, User commonUser) {
+    public void updateActualProducts(Object date, Product mappedProduct, User commonUser, BaseProcessContext addProductsContext) {
         Date scrapDate = (Date) productPerDateAttributeProperties.stream()
                 .filter(e -> e.attr.equals("Date"))
                 .findFirst()

@@ -1,6 +1,7 @@
 package com.bervan.shstat.service;
 
 import com.bervan.common.user.User;
+import com.bervan.logging.BaseProcessContext;
 import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductBasedOnDateAttributes;
@@ -70,9 +71,9 @@ public class ProductStatsService {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
-    public void updateProductStats(Product mappedProduct, User commonUser) {
+    public void updateProductStats(Product mappedProduct, User commonUser, BaseProcessContext addProductsContext) {
         if (mappedProduct.getProductBasedOnDateAttributes() == null || mappedProduct.getProductBasedOnDateAttributes().stream().filter(e -> !e.isDeleted()).count() < 2) {
-            log.warn("updateProductStats - No sense to create stats because there is no enough historical data for product: {} id", mappedProduct.getId());
+            log.warn(addProductsContext.map(), "updateProductStats - No sense to create stats because there is no enough historical data for product: {} id", mappedProduct.getId());
             return;
         }
 

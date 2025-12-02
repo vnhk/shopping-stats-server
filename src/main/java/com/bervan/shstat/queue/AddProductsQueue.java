@@ -1,6 +1,7 @@
 package com.bervan.shstat.queue;
 
 import com.bervan.common.service.ApiKeyService;
+import com.bervan.logging.BaseProcessContext;
 import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.service.ProductService;
@@ -28,22 +29,23 @@ public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
 
     @Override
     protected void process(Serializable param) {
+        BaseProcessContext addProducts = BaseProcessContext.builder().processName("addProducts").build();
         if (param instanceof List<?> list) {
-            addProductsByPartitions((List<Map<String, Object>>) param);
+            addProductsByPartitions((List<Map<String, Object>>) param, addProducts);
         } else {
             LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>) param;
-            addProductsByPartitions((List<Map<String, Object>>) data.get("addProductsQueueParam"));
+            addProductsByPartitions((List<Map<String, Object>>) data.get("addProductsQueueParam"), addProducts);
         }
     }
 
-    public void addProductsByPartitions(List<Map<String, Object>> products) {
-        log.info("Processing started for: {} products", products.size());
+    public void addProductsByPartitions(List<Map<String, Object>> products, BaseProcessContext addProductsContext) {
+        log.info(addProductsContext.map(), "Processing started for: {} products", products.size());
         List<List<Map<String, Object>>> partition = Lists.partition(products, 3);
         List<CompletableFuture<List<Product>>> futures = new ArrayList<>();
         List<Product> allMapped = new ArrayList<>();
 
         for (List<Map<String, Object>> p : partition) {
-            futures.add(productService.addProductsAsync(p));
+            futures.add(productService.addProductsAsync(p, addProductsContext));
         }
 
         try {
@@ -53,12 +55,12 @@ public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
                 allMapped.addAll(future.get());
             }
         } catch (TimeoutException e) {
-            log.error("Timeout while waiting for async tasks");
+            log.error(addProductsContext.map(), "Timeout while waiting for async tasks");
         } catch (Exception e) {
-            log.error("Error while processing async tasks", e);
+            log.error(addProductsContext.map(), "Error while processing async tasks", e);
         }
 
-        productService.updateScrapAudit(allMapped);
-        log.info("Processing ended for: {} products", allMapped.size());
+        productService.updateScrapAudit(allMapped, addProductsContext);
+        log.info(addProductsContext.map(), "Processing ended for: {} products", allMapped.size());
     }
 }
