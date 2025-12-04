@@ -9,7 +9,7 @@ import java.util.concurrent.Executor;
 
 @Configuration
 public class AsyncConfig {
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
 
     @Bean("productTaskExecutor")
     public Executor productTaskExecutor() {

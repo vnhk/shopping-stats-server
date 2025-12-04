@@ -19,7 +19,7 @@ import java.util.Set;
 
 @Service
 public class ShopSchedulerTasks {
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
 
     private final ProductConfigRepository productConfigRepository;
     private final ScrapAuditRepository scrapAuditRepository;

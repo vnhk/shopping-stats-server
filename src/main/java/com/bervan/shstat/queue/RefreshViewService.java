@@ -22,7 +22,7 @@ public class RefreshViewService {
                     lowerThanAvgForLastMonth,
                     lowerThanAvgForLastXMonths
             );
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     private final ProductService productService;
     private final ProductRepository productRepository;
 

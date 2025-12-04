@@ -18,7 +18,7 @@ import java.util.Set;
 
 @Service
 public class QueueService {
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     private final Set<AbstractQueue<?>> queueProcessors;
 
     private final Jackson2JsonMessageConverter messageConverter;

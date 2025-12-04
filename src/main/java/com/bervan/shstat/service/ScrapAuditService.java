@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class ScrapAuditService extends BaseService<Long, ScrapAudit> {
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     private final Map<String, ScrapAudit> scrapAuditCache = new ConcurrentHashMap<>();
 
     protected ScrapAuditService(ScrapAuditRepository repository, SearchService searchService) {

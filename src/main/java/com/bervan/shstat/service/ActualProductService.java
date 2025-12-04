@@ -23,7 +23,7 @@ import static com.bervan.shstat.service.ProductService.productPerDateAttributePr
 public class ActualProductService {
     private static final Integer currentDateOffsetInDays = 2; //is ok, good offers will not last forever!
     private static final int BATCH_SIZE = 1000;
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     private final ActualProductsRepository actualProductsRepository;
     private final Map<Long, ActualProduct> delayedToBeSaved = new HashMap<>();
     private final Map<Long, Set<Date>> inMemoryData = new HashMap<>();

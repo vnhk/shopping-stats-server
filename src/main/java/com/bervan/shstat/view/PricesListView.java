@@ -13,7 +13,7 @@ import com.bervan.shstat.service.ProductService;
 import com.vaadin.flow.component.grid.Grid;
 
 public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOnDateAttributes> {
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     private final Product product;
     private final ProductService productService;
     private final UserRepository userRepository;

@@ -9,7 +9,7 @@ import java.util.Date;
 
 public abstract class AbstractQueue<T extends Serializable> {
     protected final ApiKeyService apiKeyService;
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     protected String supports;
 
     protected AbstractQueue(ApiKeyService apiKeyService, String supports) {

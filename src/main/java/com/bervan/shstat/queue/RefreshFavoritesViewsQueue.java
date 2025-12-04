@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 @Service
 public class RefreshFavoritesViewsQueue extends AbstractQueue<RefreshFavoritesViewsQueueParam> {
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     private final FavoriteService favoriteService;
 
     public RefreshFavoritesViewsQueue(FavoriteService favoriteService, ApiKeyService apiKeyService) {

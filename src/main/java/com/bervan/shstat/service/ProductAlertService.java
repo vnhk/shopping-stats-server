@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class ProductAlertService extends BaseService<Long, ProductAlert> {
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     private final EmailService emailService;
     private final DiscountsViewService discountsViewService;
 

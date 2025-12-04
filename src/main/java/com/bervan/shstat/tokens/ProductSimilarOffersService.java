@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class ProductSimilarOffersService {
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     private final List<? extends TokenConverter> tokenConverters;
     private final ProductTokensRepository productTokensRepository;
     private final List<ProductTokens> tokensToSave = new ArrayList<>();

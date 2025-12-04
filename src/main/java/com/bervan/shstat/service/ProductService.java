@@ -90,7 +90,7 @@ public class ProductService {
         }
     }
 
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     private final ProductRepository productRepository;
     private final ActualProductService actualProductService;
     private final ProductStatsService productStatsService;

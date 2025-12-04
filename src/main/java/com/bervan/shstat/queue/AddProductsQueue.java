@@ -19,7 +19,7 @@ import java.util.concurrent.TimeoutException;
 
 @Service
 public class AddProductsQueue extends AbstractQueue<AddProductsQueueParam> {
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     private final ProductService productService;
 
     public AddProductsQueue(ProductService productService, ApiKeyService apiKeyService) {

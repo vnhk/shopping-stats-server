@@ -24,7 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Service
 public class ProductStatsService {
     private static final int BATCH_SIZE = 1000;
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     private final ProductStatsRepository productStatsRepository;
     private final ProductBestOfferRepository productBestOfferRepository;
     private final Map<Long, ProductStats> delayedToBeSaved = new HashMap<>();

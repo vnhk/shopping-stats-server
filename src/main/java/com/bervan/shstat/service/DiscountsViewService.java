@@ -22,7 +22,7 @@ import java.util.*;
 
 @Service
 public class DiscountsViewService extends ViewBuilder {
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     private final ProductSearchService productSearchService;
     private final ProductViewService productViewService;
     private final Map<DiscountQueryKey, SearchApiResponse> cache =

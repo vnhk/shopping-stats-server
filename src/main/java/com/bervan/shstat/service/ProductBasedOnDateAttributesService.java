@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Service
 public class ProductBasedOnDateAttributesService extends BaseService<Long, ProductBasedOnDateAttributes> {
-    private final JsonLogger log = JsonLogger.getLogger(getClass());
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
 
     protected ProductBasedOnDateAttributesService(ProductBasedOnDateAttributesRepository repository, SearchService searchService) {
         super(repository, searchService);
