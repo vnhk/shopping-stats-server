@@ -22,7 +22,7 @@ public abstract class AbstractQueue<T extends Serializable> {
         process(param);
         Date endDate = new Date();
         long diffTimeInSeconds = diffTimeInSeconds(startDate, endDate);
-        log.info("[" + supports + "] Task duration: " + diffTimeInSeconds + " (s)");
+        log.debug("[" + supports + "] Task duration: " + diffTimeInSeconds + " (s)");
     }
 
     protected abstract void process(Serializable param);
