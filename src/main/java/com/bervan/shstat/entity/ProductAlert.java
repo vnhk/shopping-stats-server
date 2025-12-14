@@ -1,8 +1,7 @@
 package com.bervan.shstat.entity;
 
-import com.bervan.common.model.BervanBaseEntity;
-import com.bervan.common.model.PersistableTableData;
-import com.bervan.common.model.VaadinDynamicMultiDropdownBervanColumn;
+import com.bervan.common.model.BervanOwnedBaseEntity;
+import com.bervan.common.model.PersistableTableOwnedData;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +14,7 @@ import java.util.List;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Getter
 @Setter
-public class ProductAlert extends BervanBaseEntity<Long> implements PersistableTableData<Long> {
+public class ProductAlert extends BervanOwnedBaseEntity<Long> implements PersistableTableOwnedData<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

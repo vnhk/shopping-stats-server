@@ -1,6 +1,6 @@
 package com.bervan.shstat.entity;
 
-import com.bervan.common.model.BervanBaseEntity;
+import com.bervan.common.model.BervanOwnedBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Entity
 @Table(indexes = {@Index(columnList = "name")})
-public abstract class ProductAttribute extends BervanBaseEntity<Long> {
+public abstract class ProductAttribute extends BervanOwnedBaseEntity<Long> {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_attribute_seq")
     @SequenceGenerator(
             name = "product_attribute_seq",

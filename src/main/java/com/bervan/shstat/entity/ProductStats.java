@@ -1,7 +1,6 @@
 package com.bervan.shstat.entity;
 
-import com.bervan.common.model.BervanBaseEntity;
-import com.bervan.history.model.AbstractBaseEntity;
+import com.bervan.common.model.BervanOwnedBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -11,7 +10,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"productId"})})
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public class ProductStats extends BervanBaseEntity<Long> {
+public class ProductStats extends BervanOwnedBaseEntity<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

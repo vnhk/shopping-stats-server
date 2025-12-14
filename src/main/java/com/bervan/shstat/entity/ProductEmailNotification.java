@@ -1,7 +1,6 @@
 package com.bervan.shstat.entity;
 
-import com.bervan.common.model.BervanBaseEntity;
-import com.bervan.history.model.AbstractBaseEntity;
+import com.bervan.common.model.BervanOwnedBaseEntity;
 import com.bervan.shstat.favorites.FavoritesList;
 import jakarta.persistence.*;
 
@@ -12,7 +11,7 @@ import java.util.Set;
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public class ProductEmailNotification extends BervanBaseEntity<Long> {
+public class ProductEmailNotification extends BervanOwnedBaseEntity<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

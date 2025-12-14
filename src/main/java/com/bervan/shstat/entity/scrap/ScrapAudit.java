@@ -1,7 +1,7 @@
 package com.bervan.shstat.entity.scrap;
 
-import com.bervan.common.model.BervanBaseEntity;
-import com.bervan.common.model.PersistableTableData;
+import com.bervan.common.model.BervanOwnedBaseEntity;
+import com.bervan.common.model.PersistableTableOwnedData;
 
 import jakarta.persistence.*;
 
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public class ScrapAudit extends BervanBaseEntity<Long> implements PersistableTableData<Long> {
+public class ScrapAudit extends BervanOwnedBaseEntity<Long> implements PersistableTableOwnedData<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
