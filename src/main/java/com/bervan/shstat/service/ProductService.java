@@ -1,7 +1,5 @@
 package com.bervan.shstat.service;
 
-import com.bervan.common.user.User;
-import com.bervan.common.user.UserRepository;
 import com.bervan.logging.BaseProcessContext;
 import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.AttrFieldMappingVal;
@@ -95,16 +93,13 @@ public class ProductService {
     private final ActualProductService actualProductService;
     private final ProductStatsService productStatsService;
     private final ProductSimilarOffersService productSimilarOffersService;
-    private final UserRepository userRepository;
     private final ProductBasedOnDateAttributesService productBasedOnDateAttributesService;
     private final ScrapAuditService scrapAuditService;
     private final ProductBestOfferRepository productBestOfferRepository;
-    private User commonUser;
 
     public ProductService(ProductRepository productRepository,
                           ActualProductService actualProductService,
                           ProductStatsService productStatsService, ProductSimilarOffersService productSimilarOffersService,
-                          UserRepository userRepository,
                           ProductBasedOnDateAttributesService productBasedOnDateAttributesService,
                           ScrapAuditService scrapAuditService,
                           ProductBestOfferRepository productBestOfferRepository) {
@@ -112,7 +107,6 @@ public class ProductService {
         this.actualProductService = actualProductService;
         this.productStatsService = productStatsService;
         this.productSimilarOffersService = productSimilarOffersService;
-        this.userRepository = userRepository;
         this.productBasedOnDateAttributesService = productBasedOnDateAttributesService;
         this.scrapAuditService = scrapAuditService;
         this.productBestOfferRepository = productBestOfferRepository;
@@ -206,8 +200,6 @@ public class ProductService {
                     product.addAttribute(resAttribute);
                 }
 
-                loadCommonUserIfNotLoaded();
-                product.addOwner(commonUser);
                 if (product.getName().length() > 300) {
                     log.error(addProductsContext.map(), "Product name is to long: {}", product.getName());
                     continue;
@@ -255,7 +247,7 @@ public class ProductService {
 
     private void updateProductStats(Product product, BaseProcessContext addProductsContext) {
         try {
-            productStatsService.updateProductStats(product, commonUser, addProductsContext);
+            productStatsService.updateProductStats(product, addProductsContext);
         } catch (Exception e) {
             log.error(addProductsContext.map(), "Failed to updateProductStats!", e);
             throw new MapperException("Failed to updateProductStats!");
@@ -264,7 +256,7 @@ public class ProductService {
 
     private void updateActualProducts(ProductBasedOnDateAttributes perDateAttributes, Product product, BaseProcessContext addProductsContext) {
         try {
-            actualProductService.updateActualProducts(perDateAttributes.getScrapDate(), product, commonUser, addProductsContext);
+            actualProductService.updateActualProducts(perDateAttributes.getScrapDate(), product, addProductsContext);
         } catch (Exception e) {
             log.error(addProductsContext.map(), "Failed to updateActualProducts!", e);
             throw new MapperException("Failed to updateActualProducts!");
@@ -273,7 +265,7 @@ public class ProductService {
 
     private void createAndUpdateTokens(Product product, BaseProcessContext addProductsContext) {
         try {
-            productSimilarOffersService.createAndUpdateTokens(product, commonUser, actualProductService);
+            productSimilarOffersService.createAndUpdateTokens(product, actualProductService);
         } catch (Exception e) {
             log.error(addProductsContext.map(), "Failed to createAndUpdateTokens!", e);
         }
@@ -297,12 +289,6 @@ public class ProductService {
     public void updateStats(Product product) {
         Optional<ProductStats> byProductId = productStatsService.findByProductId(product.getId());
         productStatsService.updateStatsAndSave(byProductId, product);
-    }
-
-    private void loadCommonUserIfNotLoaded() {
-        if (commonUser == null) {
-            commonUser = userRepository.findByUsername("COMMON_USER").get();
-        }
     }
 
     private boolean addProductDateAttribute(Product product, ProductBasedOnDateAttributes newPerDateAttribute, BaseProcessContext addProductsContext) {
@@ -438,8 +424,6 @@ public class ProductService {
         Pageable pageable = PageRequest.of(0, pageSize, Sort.by("id"));
         Page<ActualProduct> page;
 
-        loadCommonUserIfNotLoaded();
-
         do {
             page = actualProductService.findAll(pageable);
             List<ActualProduct> actualProducts = page.getContent();
@@ -485,7 +469,6 @@ public class ProductService {
                 atLeastOneDiscount |= calculateDiscount(productStats.getAvg12Month(), price, productBestOffer::setDiscount12Month);
 
                 if (atLeastOneDiscount) {
-                    productBestOffer.addOwner(commonUser);
                     toBeSaved.add(productBestOffer);
                 }
             }

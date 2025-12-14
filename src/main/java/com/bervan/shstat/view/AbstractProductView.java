@@ -4,14 +4,12 @@ import com.bervan.common.component.BervanButton;
 import com.bervan.common.component.BervanButtonStyle;
 import com.bervan.common.component.BervanTextField;
 import com.bervan.common.config.BervanViewConfig;
-import com.bervan.common.user.UserRepository;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.repository.ProductRepository;
 import com.bervan.shstat.response.PriceDTO;
 import com.bervan.shstat.response.ProductDTO;
 import com.bervan.shstat.response.SearchApiResponse;
 import com.bervan.shstat.service.ProductBasedOnDateAttributesService;
-import com.bervan.shstat.service.ProductSearchService;
 import com.bervan.shstat.service.ProductService;
 import com.bervan.shstat.tokens.ProductSimilarOffersService;
 import com.vaadin.flow.component.AttachEvent;
@@ -40,13 +38,11 @@ import java.util.stream.Stream;
 public abstract class AbstractProductView extends BaseProductPage implements HasUrlParameter<Long> {
     public static final String ROUTE_NAME = "/shopping/product";
     private final ProductViewService productViewService;
-    private final ProductSearchService productSearchService;
-    private final UserRepository userRepository;
     private final ProductService productService;
     private final ProductSimilarOffersService productSimilarOffersService;
     private final ProductRepository productRepository;
     private final ProductBasedOnDateAttributesService productDateAttService;
-    
+
     private final ShoppingLayout shoppingLayout = new ShoppingLayout(ROUTE_NAME);
     private final BervanViewConfig bervanViewConfig;
     private ProductDTO productDTO;
@@ -55,16 +51,13 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
     private VerticalLayout productsLayout;
 
 
-    public AbstractProductView(ProductViewService productViewService, ProductSearchService productSearchService,
-                               UserRepository userRepository, ProductService productService, ProductSimilarOffersService productSimilarOffersService, ProductRepository productRepository, ProductBasedOnDateAttributesService productDateAttService, BervanViewConfig bervanViewConfig) {
+    public AbstractProductView(ProductViewService productViewService, ProductService productService, ProductSimilarOffersService productSimilarOffersService, ProductRepository productRepository, ProductBasedOnDateAttributesService productDateAttService, BervanViewConfig bervanViewConfig) {
         super();
-        this.userRepository = userRepository;
         this.productService = productService;
         this.productSimilarOffersService = productSimilarOffersService;
         this.productRepository = productRepository;
         this.productDateAttService = productDateAttService;
         this.productViewService = productViewService;
-        this.productSearchService = productSearchService;
 
         this.bervanViewConfig = bervanViewConfig;
     }
@@ -125,7 +118,7 @@ public abstract class AbstractProductView extends BaseProductPage implements Has
                         runAsync(req -> productRepository.findById(productId), productId)
                                 .thenAccept(res -> UI.access(() -> {
                                     priceListViewContainer.add(
-                                            new PricesListView(AbstractProductView.this, productDateAttService, productService, shoppingLayout, res.get(), productViewService, userRepository, bervanViewConfig)
+                                            new PricesListView(AbstractProductView.this, productDateAttService, productService, shoppingLayout, res.get(), bervanViewConfig)
                                     );
                                 }));
 

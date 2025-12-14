@@ -1,11 +1,7 @@
 package com.bervan.shstat.view;
 
 import com.bervan.common.config.BervanViewConfig;
-import com.bervan.common.search.SearchQueryOption;
-import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.SearchService;
-import com.bervan.common.search.model.SearchOperation;
-import com.bervan.common.user.User;
 import com.bervan.common.view.AbstractBervanTableView;
 import com.bervan.shstat.entity.ProductAlert;
 import com.bervan.shstat.service.ProductAlertService;
@@ -41,9 +37,7 @@ public abstract class AbstractProductAlertView extends AbstractBervanTableView<L
 
     @Override
     protected ProductAlert preSaveActions(ProductAlert newItem) {
-        ProductAlert productAlert = super.preSaveActions(newItem);
-        productAlert.getOwners().add(loadCommonUser());
-        return productAlert;
+        return super.preSaveActions(newItem);
     }
 
     private void loadCategories() {
@@ -79,16 +73,6 @@ public abstract class AbstractProductAlertView extends AbstractBervanTableView<L
 
     private List<String> loadCategories(ProductAlert productAlert) {
         return ((ProductAlertService) service).loadAllCategories(productAlert);
-    }
-
-    private User loadCommonUser() {
-        SearchRequest searchRequest = new SearchRequest();
-        searchRequest.setAddOwnerCriterion(false);
-        searchRequest.addDeletedFalseCriteria(User.class);
-        searchRequest.addCriterion("U1", User.class, "username", SearchOperation.EQUALS_OPERATION, "COMMON_USER");
-        SearchQueryOption options = new SearchQueryOption(User.class);
-
-        return (User) searchService.search(searchRequest, options).getResultList().get(0);
     }
 
 }

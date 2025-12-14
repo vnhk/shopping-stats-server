@@ -1,6 +1,6 @@
 package com.bervan.shstat.entity;
 
-import com.bervan.common.model.BervanOwnedBaseEntity;
+import com.bervan.common.model.BervanBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -16,7 +16,7 @@ import java.util.Set;
         indexes = {@Index(columnList = "shop"), @Index(columnList = "name"), @Index(columnList = "productListName"),
                 @Index(columnList = "productListUrl"), @Index(columnList = "offerUrl")})
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public class Product extends BervanOwnedBaseEntity<Long> {
+public class Product extends BervanBaseEntity<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

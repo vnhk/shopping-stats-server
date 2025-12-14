@@ -7,7 +7,6 @@ import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.SearchService;
 import com.bervan.common.search.model.Operator;
 import com.bervan.common.search.model.SearchOperation;
-import com.bervan.common.user.User;
 import com.bervan.common.view.AbstractBervanTableView;
 import com.bervan.history.model.Persistable;
 import com.bervan.shstat.entity.scrap.ProductConfig;
@@ -19,7 +18,7 @@ import java.util.*;
 
 public abstract class AbstractProductConfigView extends AbstractBervanTableView<Long, ProductConfig> {
     public static final String ROUTE_NAME = "/shopping/product-config";
-    
+
     private final ComboBox<String> shopDropdown = new BervanComboBox<>();
     private final SearchService searchService;
     private Map<String, ShopConfig> shops;
@@ -27,7 +26,7 @@ public abstract class AbstractProductConfigView extends AbstractBervanTableView<
     private String selectedShopName;
 
     public AbstractProductConfigView(ProductConfigService productConfigService, SearchService searchService, BervanViewConfig bervanViewConfig) {
-        super(new ShoppingLayout(ROUTE_NAME), productConfigService, bervanViewConfig, ProductConfig .class);
+        super(new ShoppingLayout(ROUTE_NAME), productConfigService, bervanViewConfig, ProductConfig.class);
         this.add(new ShoppingLayout(ROUTE_NAME));
         this.searchService = searchService;
 
@@ -71,13 +70,6 @@ public abstract class AbstractProductConfigView extends AbstractBervanTableView<
     }
 
     @Override
-    protected ProductConfig preSaveActions(ProductConfig newItem) {
-        ProductConfig productConfig = super.preSaveActions(newItem);
-        productConfig.getOwners().add(loadCommonUser());
-        return productConfig;
-    }
-
-    @Override
     protected void postSaveActions(ProductConfig save) {
         super.postSaveActions(save);
         loadCategories();
@@ -99,15 +91,5 @@ public abstract class AbstractProductConfigView extends AbstractBervanTableView<
             productConfig.setCategories(loadCategories(productConfig));
         }
         return productConfigs;
-    }
-
-    private User loadCommonUser() {
-        SearchRequest searchRequest = new SearchRequest();
-        searchRequest.setAddOwnerCriterion(false);
-        searchRequest.addDeletedFalseCriteria(User.class);
-        searchRequest.addCriterion("U1", User.class, "username", SearchOperation.EQUALS_OPERATION, "COMMON_USER");
-        SearchQueryOption options = new SearchQueryOption(User.class);
-
-        return (User) searchService.search(searchRequest, options).getResultList().get(0);
     }
 }

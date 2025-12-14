@@ -1,6 +1,5 @@
 package com.bervan.shstat.tokens;
 
-import com.bervan.common.user.User;
 import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.entity.Product;
 import com.bervan.shstat.entity.ProductAttribute;
@@ -35,7 +34,7 @@ public class ProductSimilarOffersService {
     }
 
     @Transactional
-    public void createAndUpdateTokens(Product product, User commonUser, ActualProductService actualProductService) {
+    public void createAndUpdateTokens(Product product, ActualProductService actualProductService) {
         //if cache maybe here clear the cache
 
         //by category - 1
@@ -88,7 +87,6 @@ public class ProductSimilarOffersService {
                     token.setValue(tokenValue);
                     token.setFactor(newFactor);
                     token.setProductId(product.getId());
-                    token.addOwner(commonUser);
                     tokensToSave.add(token);
                 }
             }

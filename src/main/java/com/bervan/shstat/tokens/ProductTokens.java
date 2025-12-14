@@ -1,6 +1,6 @@
 package com.bervan.shstat.tokens;
 
-import com.bervan.common.model.BervanOwnedBaseEntity;
+import com.bervan.common.model.BervanBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
         @Index(name = "idx_product_tokens_value", columnList = "value"),
         @Index(name = "idx_product_tokens_value_product_id", columnList = "value, productId")
 })
-public class ProductTokens extends BervanOwnedBaseEntity<Long> {
+public class ProductTokens extends BervanBaseEntity<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -1,6 +1,6 @@
 package com.bervan.shstat.entity;
 
-import com.bervan.common.model.BervanOwnedBaseEntity;
+import com.bervan.common.model.BervanBaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public class ProductBestOffer extends BervanOwnedBaseEntity<Long> {
+public class ProductBestOffer extends BervanBaseEntity<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

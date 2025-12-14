@@ -3,7 +3,6 @@ package com.bervan.shstat.view;
 import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.model.SearchOperation;
-import com.bervan.common.user.UserRepository;
 import com.bervan.common.view.AbstractBervanTableView;
 import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.entity.Product;
@@ -16,16 +15,14 @@ public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOn
     private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     private final Product product;
     private final ProductService productService;
-    private final UserRepository userRepository;
     private final AbstractProductView parentView;
 
 
-    public PricesListView(AbstractProductView parentView, ProductBasedOnDateAttributesService service, ProductService productService, ShoppingLayout pageLayout, Product product, ProductViewService productViewService, UserRepository userRepository, BervanViewConfig bervanViewConfig) {
+    public PricesListView(AbstractProductView parentView, ProductBasedOnDateAttributesService service, ProductService productService, ShoppingLayout pageLayout, Product product, BervanViewConfig bervanViewConfig) {
         super(pageLayout, service, bervanViewConfig, ProductBasedOnDateAttributes.class);
         this.product = product;
         this.productService = productService;
         this.parentView = parentView;
-        this.userRepository = userRepository;
         renderCommonComponents();
     }
 
@@ -61,7 +58,6 @@ public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOn
     @Override
     protected ProductBasedOnDateAttributes preSaveActions(ProductBasedOnDateAttributes newItem) {
         newItem.setProduct(product);
-        newItem.addOwner(userRepository.findByUsername("COMMON_USER").get());
         return super.preSaveActions(newItem);
     }
 

@@ -1,6 +1,5 @@
 package com.bervan.shstat;
 
-import com.bervan.common.user.UserRepository;
 import com.bervan.logging.JsonLogger;
 import com.bervan.shstat.entity.scrap.ProductConfig;
 import com.bervan.shstat.entity.scrap.ScrapAudit;
@@ -24,17 +23,15 @@ public class ShopSchedulerTasks {
     private final ProductConfigRepository productConfigRepository;
     private final ScrapAuditRepository scrapAuditRepository;
     private final QueueService queueService;
-    private final UserRepository userRepository;
 
     public ShopSchedulerTasks(
             ProductConfigRepository productConfigRepository,
             ScrapAuditRepository scrapAuditRepository,
-            QueueService queueService, UserRepository userRepository) {
+            QueueService queueService) {
 
         this.productConfigRepository = productConfigRepository;
         this.scrapAuditRepository = scrapAuditRepository;
         this.queueService = queueService;
-        this.userRepository = userRepository;
     }
 
     @Scheduled(cron = "0 */10 * * * *")
@@ -72,7 +69,6 @@ public class ShopSchedulerTasks {
                 scrapAudit.setDeleted(false);
                 scrapAudit.setProductConfig(configToProcess);
                 scrapAudit.setDate(localDate);
-                scrapAudit.addOwner(userRepository.findByUsername("COMMON_USER").get());
                 scrapAuditRepository.save(scrapAudit);
             }
 
