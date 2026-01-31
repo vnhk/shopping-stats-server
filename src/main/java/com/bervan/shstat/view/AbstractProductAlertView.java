@@ -28,7 +28,18 @@ public abstract class AbstractProductAlertView extends AbstractBervanTableView<L
 
     @Override
     protected void buildToolbarActionBar() {
-        tableToolbarActions = new ProductAlertsToolbar(gridActionService, checkboxes, data, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange, bervanViewConfig)
+        ProductAlertsToolbar toolbar = new ProductAlertsToolbar(checkboxes, data, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange, bervanViewConfig,
+                (v) -> {
+                    refreshData();
+                    return v;
+                }, service);
+
+        // Pass floating toolbar for custom actions (if enabled)
+        if (floatingToolbar != null) {
+            toolbar.withFloatingToolbar(floatingToolbar);
+        }
+
+        tableToolbarActions = toolbar
                 .withNotifyAboutProducts()
                 .withDeleteButton()
                 .withExportButton(isExportable(), service, pathToFileStorage, globalTmpDir)

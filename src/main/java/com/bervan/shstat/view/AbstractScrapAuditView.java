@@ -57,7 +57,7 @@ public abstract class AbstractScrapAuditView extends AbstractBervanTableView<Lon
 
         defaultThisDayButton.click();
 
-        addButton.setVisible(false);
+        newItemButton.setVisible(false);
     }
 
     @Override

@@ -28,10 +28,20 @@ public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOn
 
     @Override
     protected void buildToolbarActionBar() {
-        tableToolbarActions = new PricesListToolbar(gridActionService, checkboxes, data, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange, (V) -> {
+        PricesListToolbar toolbar = new PricesListToolbar(checkboxes, data, selectAllCheckbox, buttonsForCheckboxesForVisibilityChange, (v) -> {
             updateStatsOfProduct();
-            return null;
-        }, bervanViewConfig)
+            return v;
+        }, bervanViewConfig, (v) -> {
+            refreshData();
+            return v;
+        }, service);
+
+        // Pass floating toolbar for custom actions (if enabled)
+        if (floatingToolbar != null) {
+            toolbar.withFloatingToolbar(floatingToolbar);
+        }
+
+        tableToolbarActions = toolbar
                 .withDecreasePrice2times()
                 .withDecreasePrice5times()
                 .withDecreasePrice10times()
