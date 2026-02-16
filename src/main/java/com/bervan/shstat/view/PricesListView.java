@@ -45,7 +45,7 @@ public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOn
                 .withDecreasePrice2times()
                 .withDecreasePrice5times()
                 .withDecreasePrice10times()
-                .withExportButton(isExportable(), service, pathToFileStorage, globalTmpDir)
+                .withExportButton(isExportable(), service, () -> pathToFileStorage, () -> globalTmpDir)
                 .build();
     }
 

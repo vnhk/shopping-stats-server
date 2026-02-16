@@ -42,7 +42,7 @@ public abstract class AbstractProductAlertView extends AbstractBervanTableView<L
         tableToolbarActions = toolbar
                 .withNotifyAboutProducts()
                 .withDeleteButton()
-                .withExportButton(isExportable(), service, pathToFileStorage, globalTmpDir)
+                .withExportButton(isExportable(), service, () -> pathToFileStorage, () -> globalTmpDir)
                 .build();
     }
 
