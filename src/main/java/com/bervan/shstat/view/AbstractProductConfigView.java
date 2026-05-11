@@ -16,6 +16,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 
 import java.util.*;
 
+@Deprecated
 public abstract class AbstractProductConfigView extends AbstractBervanTableView<Long, ProductConfig> {
     public static final String ROUTE_NAME = "/shopping/product-config";
 

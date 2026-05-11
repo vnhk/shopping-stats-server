@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public abstract class AbstractScrapAuditView extends AbstractBervanTableView<Long, ScrapAudit> {
     public static final String ROUTE_NAME = "/shopping/scrap-audit";
     

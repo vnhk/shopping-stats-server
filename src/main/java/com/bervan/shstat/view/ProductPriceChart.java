@@ -14,6 +14,7 @@ import java.util.List;
 
 @JsModule("./price-chart-component.js")
 @Tag("canvas")
+@Deprecated
 public class ProductPriceChart extends Component implements HasSize {
     public ProductPriceChart(List<String> labels, List<Double> prices, Double avg) {
         setId("priceChart");

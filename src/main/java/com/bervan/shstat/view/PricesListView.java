@@ -11,6 +11,7 @@ import com.bervan.shstat.service.ProductBasedOnDateAttributesService;
 import com.bervan.shstat.service.ProductService;
 import com.vaadin.flow.component.grid.Grid;
 
+@Deprecated
 public class PricesListView extends AbstractBervanTableView<Long, ProductBasedOnDateAttributes> {
     private final JsonLogger log = JsonLogger.getLogger(getClass(), "shopping");
     private final Product product;

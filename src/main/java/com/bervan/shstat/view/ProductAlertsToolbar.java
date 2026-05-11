@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
+@Deprecated
 public class ProductAlertsToolbar extends BervanTableToolbar<Long, ProductAlert> {
     private BervanButton notifyAboutProducts;
     private BervanFloatingToolbar floatingToolbar;

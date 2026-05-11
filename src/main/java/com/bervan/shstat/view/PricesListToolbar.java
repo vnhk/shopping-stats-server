@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
+@Deprecated
 public class PricesListToolbar extends BervanTableToolbar<Long, ProductBasedOnDateAttributes> {
     private BervanButton decreasePrice10times;
     private BervanButton decreasePrice5times;

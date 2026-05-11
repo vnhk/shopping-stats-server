@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Deprecated
 public abstract class AbstractBestOffersView extends BaseProductsPage implements HasUrlParameter<Void> {
     public static final String ROUTE_NAME = "/shopping/best-offers";
     private final DiscountsViewService discountsViewService;

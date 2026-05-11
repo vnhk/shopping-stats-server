@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+@Deprecated
 public abstract class BaseProductsPage extends BaseProductPage {
     protected static final int PAGE_SIZE = 10;
     protected static final int MAX_PRODUCTS = 500;

@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.Arrays;
 import java.util.Set;
 
+@Deprecated
 public abstract class AbstractProductsView extends BaseProductsPage implements HasUrlParameter<Void> {
     public static final String ROUTE_NAME = "/shopping/products";
     private final ProductViewService productViewService;

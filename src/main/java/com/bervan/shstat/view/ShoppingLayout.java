@@ -3,6 +3,7 @@ package com.bervan.shstat.view;
 import com.bervan.common.MenuNavigationComponent;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
+@Deprecated
 public class ShoppingLayout extends MenuNavigationComponent {
 
     public ShoppingLayout(String currentRoute) {

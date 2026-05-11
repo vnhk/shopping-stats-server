@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+@Deprecated
 public abstract class BaseProductPage extends AbstractPageView {
 
     private StringBuilder getLatestPriceTextWithDiscount(List<PriceDTO> prices, ProductDTO productDTO) {

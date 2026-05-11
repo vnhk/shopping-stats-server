@@ -35,6 +35,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Deprecated
 public abstract class AbstractProductView extends BaseProductPage implements HasUrlParameter<Long> {
     public static final String ROUTE_NAME = "/shopping/product";
     private final ProductViewService productViewService;
