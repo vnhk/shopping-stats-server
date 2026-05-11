@@ -62,7 +62,6 @@ columns:
   - field: productCategories
     displayName: "Product Categories"
     internalName: "productCategories"
-    extension: "VaadinDynamicMultiDropdownBervanColumn"
     inSaveForm: true
     inEditForm: true
     inTable: true
@@ -71,7 +70,6 @@ columns:
   - field: emails
     displayName: "Emails"
     internalName: "emails"
-    extension: "VaadinDynamicMultiDropdownBervanColumn"
     inSaveForm: true
     inEditForm: true
     inTable: true

@@ -3,7 +3,7 @@
 > **IMPORTANT**: Keep this file updated when making significant changes to the codebase. This file serves as persistent memory between Claude Code sessions.
 
 ## Overview
-E-commerce product price monitoring and analytics platform. Tracks prices across shops, computes discount statistics, manages favorites/alerts, and scrapes product data via async queue. Built with Spring Boot + Vaadin + RabbitMQ.
+E-commerce product price monitoring and analytics platform. Tracks prices across shops, computes discount statistics, manages favorites/alerts, and scrapes product data via async queue. Built with Spring Boot + RabbitMQ (REST API).
 
 ## Key Architecture
 
@@ -74,8 +74,8 @@ E-commerce product price monitoring and analytics platform. Tracks prices across
 - Actual products flush: hourly (`0 0 * * * *`)
 - Cleanup stale data: daily 00:15 (`0 15 0 * * *`)
 
-### Views (Vaadin, via ShoppingLayout)
-- Products search, Best offers, Product details, Shop config, Product config, Scrap audit, Price alerts
+### REST API (`com.bervan.shstat`)
+- `ShoppingApiController` — products search, best-offers, product alerts CRUD, shop/product configs CRUD, scrap audits
 
 ## Configuration
 - `src/main/resources/autoconfig/`: ProductAlert.yml, ScrapAudit.yml, ShopConfig.yml, ProductConfig.yml, ProductBasedOnDateAttributes.yml
