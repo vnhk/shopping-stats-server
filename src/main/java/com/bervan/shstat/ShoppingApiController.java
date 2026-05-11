@@ -14,9 +14,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -99,10 +101,6 @@ public class ShoppingApiController {
 
     // ── Product Alerts ────────────────────────────────────────────────────────
 
-    record ProductAlertDto(Long id, String name, Integer priceMin, Integer priceMax,
-                           Integer discountMin, Integer discountMax, String productName,
-                           List<String> productCategories, List<String> emails) {}
-
     @GetMapping("/product-alerts")
     public ResponseEntity<List<ProductAlertDto>> getProductAlerts() {
         SearchRequest request = new SearchRequest();
@@ -156,10 +154,6 @@ public class ShoppingApiController {
                 a.getProductCategories(), a.getEmails());
     }
 
-    // ── Shop Configs ──────────────────────────────────────────────────────────
-
-    record ShopConfigDto(Long id, String shopName, String baseUrl) {}
-
     @GetMapping("/shop-configs")
     public ResponseEntity<List<ShopConfigDto>> getShopConfigs() {
         SearchRequest request = new SearchRequest();
@@ -171,6 +165,8 @@ public class ShoppingApiController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
+
+    // ── Shop Configs ──────────────────────────────────────────────────────────
 
     @PostMapping("/shop-configs")
     public ResponseEntity<ShopConfigDto> createShopConfig(@RequestBody ShopConfigDto dto) {
@@ -200,11 +196,6 @@ public class ShoppingApiController {
         shop.setBaseUrl(dto.baseUrl());
     }
 
-    // ── Product Configs ───────────────────────────────────────────────────────
-
-    record ProductConfigDto(Long id, String name, String url, Integer minPrice, Integer maxPrice,
-                            String scrapTime, List<String> categories, Long shopId, String shopName) {}
-
     @GetMapping("/product-configs")
     public ResponseEntity<List<ProductConfigDto>> getProductConfigs(@RequestParam(required = false) Long shopId) {
         SearchRequest request = new SearchRequest();
@@ -230,6 +221,8 @@ public class ShoppingApiController {
         ProductConfig saved = productConfigService.save(config);
         return ResponseEntity.ok(toProductConfigDto(saved));
     }
+
+    // ── Product Configs ───────────────────────────────────────────────────────
 
     @PutMapping("/product-configs/{id}")
     public ResponseEntity<ProductConfigDto> updateProductConfig(@PathVariable Long id, @RequestBody ProductConfigDto dto) {
@@ -268,10 +261,6 @@ public class ShoppingApiController {
                 c.getShop() != null ? c.getShop().getShopName() : null);
     }
 
-    // ── Scrap Audits ──────────────────────────────────────────────────────────
-
-    record ScrapAuditDto(Long id, String date, long savedProducts, String productDetails) {}
-
     @GetMapping("/scrap-audits")
     public ResponseEntity<List<ScrapAuditDto>> getScrapAudits(@RequestParam(required = false) String date) {
         SearchRequest request = new SearchRequest();
@@ -296,5 +285,22 @@ public class ShoppingApiController {
     public ResponseEntity<Void> deleteScrapAudit(@PathVariable Long id) {
         scrapAuditService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    record ProductAlertDto(Long id, String name, Integer priceMin, Integer priceMax,
+                           Integer discountMin, Integer discountMax, String productName,
+                           List<String> productCategories, List<String> emails) {
+    }
+
+    // ── Scrap Audits ──────────────────────────────────────────────────────────
+
+    record ShopConfigDto(Long id, String shopName, String baseUrl) {
+    }
+
+    record ProductConfigDto(Long id, String name, String url, Integer minPrice, Integer maxPrice,
+                            String scrapTime, List<String> categories, Long shopId, String shopName) {
+    }
+
+    record ScrapAuditDto(Long id, String date, long savedProducts, String productDetails) {
     }
 }
