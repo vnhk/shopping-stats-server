@@ -88,7 +88,9 @@ public class ProductSearchService {
         if (name != null) {
             name = name.toUpperCase();
         }
-        return findBestOffers(categories, shop, Double.valueOf(prevPriceMin), Double.valueOf(prevPriceMax), discountMin, discountMax, name, months, pageable);
+        double priceMin = prevPriceMin != null ? prevPriceMin.doubleValue() : 0.0;
+        double priceMax = prevPriceMax != null ? prevPriceMax.doubleValue() : Double.MAX_VALUE;
+        return findBestOffers(categories, shop, priceMin, priceMax, discountMin, discountMax, name, months, pageable);
     }
 
     public Page<Product> findBestOffers(
