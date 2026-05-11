@@ -68,6 +68,10 @@ public class ProductConfig extends BervanBaseEntity<Long> implements Persistable
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public ShopConfig getShop() {
         return shop;
     }
