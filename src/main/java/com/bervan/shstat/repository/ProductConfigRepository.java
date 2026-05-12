@@ -13,21 +13,21 @@ import java.util.Set;
 
 @Repository
 public interface ProductConfigRepository extends BaseRepository<ProductConfig, Long> {
-    @Query("SELECT DISTINCT c FROM ProductConfig p JOIN p.categories c WHERE (p.deleted IS FALSE OR p.deleted IS NULL)")
+    @Query("SELECT DISTINCT c FROM ProductConfig p JOIN p.categories c WHERE (p.deleted = false OR p.deleted IS NULL)")
     Set<String> loadAllCategories();
 
-    @Query("SELECT c FROM ProductConfig p JOIN p.categories c WHERE (p.deleted IS FALSE OR p.deleted IS NULL) AND p = :productConfig")
+    @Query("SELECT c FROM ProductConfig p JOIN p.categories c WHERE (p.deleted = false OR p.deleted IS NULL) AND p = :productConfig")
     List<String> loadAllCategories(ProductConfig productConfig);
 
     @Query("""
                 SELECT p FROM ProductConfig p
-                WHERE (p.deleted IS FALSE OR p.deleted IS NULL)
+                WHERE (p.deleted = false OR p.deleted IS NULL)
                   AND p.scrapTime <= :scrapTime
                   AND NOT EXISTS (
                       SELECT 1 FROM ScrapAudit sa
                       WHERE sa.productConfig = p
                         AND sa.date = :now
-                        AND (sa.deleted IS FALSE OR sa.deleted IS NULL)
+                        AND (sa.deleted = false OR sa.deleted IS NULL)
                   )
             """)
     Set<ProductConfig> findAllActiveForHour(@Param("scrapTime") LocalTime scrapTime, @Param("now") LocalDate now);
