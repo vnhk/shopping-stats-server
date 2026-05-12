@@ -42,6 +42,9 @@ public class ProductSearchService {
         ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         List<Future<List<Long>>> futures = new ArrayList<>();
 
+        if (productName == null || productName.isEmpty()) {
+            productName = "*";
+        }
         // Split product name into parts and process each part in parallel
         String[] productNameParts = productName.split(" ");
         for (String part : productNameParts) {
