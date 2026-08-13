@@ -86,7 +86,7 @@ public class ActualProductService {
         }
     }
 
-    @Scheduled(cron = "0 0 * * * *")
+//    @Scheduled(cron = "0 0 * * * *")
     public void flushActualProductsToDb() {
         try {
             if (lock.tryLock(5, TimeUnit.MINUTES)) {
@@ -115,7 +115,7 @@ public class ActualProductService {
         }
     }
 
-    @Scheduled(cron = "0 15 0 * * *")
+//    @Scheduled(cron = "0 15 0 * * *")
     public void deleteActualProducts() {
         try {
             actualProductsRepository.deleteRelatedProductOwners(currentDateOffsetInDays);
